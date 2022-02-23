@@ -1,0 +1,78 @@
+name: CI / Automated testing
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - master
+
+env:
+  DEPENDENCIES_CACHE: npm-cache
+  NX_CACHE: nx-cache
+
+jobs:
+  install-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install deps
+        uses: ./.github/workflows/composite/npm
+        with:
+          cache: ${{ env.DEPENDENCIES_CACHE }}
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    needs: install-deps
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ['lint', 'test', 'build', 'format']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install deps
+        uses: ./.github/workflows/composite/npm
+        with:
+          cache: ${{ env.DEPENDENCIES_CACHE }}
+
+      - name: Cache Nx
+        uses: actions/cache@v2
+        with:
+          path: node_modules/.cache/nx
+          key: ${{ env.NX_CACHE }}-${{ hashFiles('**/package-lock.json') }}-${{ matrix.target }}-${{ matrix.index }}-${{ github.sha }}
+          restore-keys: |
+            ${{ env.NX_CACHE }}-${{ hashFiles('**/package-lock.json') }}-${{ matrix.target }}-${{ matrix.index }}-
+            ${{ env.NX_CACHE }}-${{ hashFiles('**/package-lock.json') }}-
+            ${{ env.NX_CACHE }}-
+
+      - name: Compute Nx arguments
+        if: matrix.target == 'build' || matrix.target == 'e2e'
+        run: echo "NX_ARGUMENTS=--prod" >> $GITHUB_ENV
+
+      - name: nx affected:${{ matrix.target }}
+        if: matrix.target != 'format' && matrix.target != 'test'
+        run: npm run affected:${{ matrix.target }} -- --base=origin/$GITHUB_BASE_REF $NX_ARGUMENTS
+
+      - name: npm run test:coverage:all
+        if: matrix.target == 'test'
+        run: npm run test:coverage:all
+
+      - name: nx affected:format
+        if: matrix.target == 'format'
+        run: npm run affected -- --target=format:check --base=origin/$GITHUB_BASE_REF
+
+      - name: Send reports to Codeclimate
+        uses: paambaati/codeclimate-action@v3.0.0
+        if: ${{ matrix.target == 'test' && hashFiles('coverage/**/lcov.info') }}
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageLocations: coverage/**/lcov.info:lcov

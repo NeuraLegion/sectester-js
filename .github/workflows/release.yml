@@ -1,0 +1,27 @@
+name: Semantic release
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  DEPENDENCIES_CACHE: npm-cache
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GPR_TOKEN }}
+
+      - name: Install deps
+        uses: ./.github/workflows/composite/npm
+        with:
+          cache: ${{ env.DEPENDENCIES_CACHE }}
+
+      - name: Release a new version
+        run: npm run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GPR_TOKEN }}

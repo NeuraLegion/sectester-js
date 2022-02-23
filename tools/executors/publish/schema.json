@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "cli": "nx",
+  "id": "publish",
+  "type": "object",
+  "outputCapture": "pipe",
+  "required": ["dist"],
+  "properties": {
+    "dist": {
+      "description": "Publishes the package contained in the specified folder. <folder>/package.json should specify the package details.",
+      "type": "string"
+    },
+    "dryRun": {
+      "description": "Runs the publishing process without actual publishing to the registry",
+      "type": "boolean",
+      "default": false
+    },
+    "packageVersion": {
+      "type": "string",
+      "description": "Skips the prompt for new version by using the value of version instead."
+    },
+    "tag": {
+      "type": "string",
+      "description": "Providing a tag to publish packages with a specific tag."
+    }
+  },
+  "additionalProperties": false
+}

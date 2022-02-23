@@ -1,0 +1,16 @@
+{
+  "builders": {
+    "publish": {
+      "implementation": "../../dist/out-tsc/tools/executors/publish/compat",
+      "schema": "publish/schema.json",
+      "description": "This executor is a wrapper of `npm publish`."
+    }
+  },
+  "executors": {
+    "publish": {
+      "implementation": "../../dist/out-tsc/tools/executors/publish/publish.impl",
+      "schema": "publish/schema.json",
+      "description": "This executor is a wrapper of `npm publish`."
+    }
+  }
+}

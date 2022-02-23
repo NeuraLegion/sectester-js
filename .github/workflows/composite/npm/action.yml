@@ -1,0 +1,35 @@
+name: 'NPM'
+description: 'Installs NPM deps'
+
+inputs:
+  cache:
+    description: 'NPM cache name'
+    default: 'npm-cache'
+    required: false
+  registry:
+    description: 'NPM registry'
+    default: 'https://registry.npmjs.org'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16
+        registry-url: ${{ inputs.registry }}
+
+    - name: Cache npm modules
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ inputs.cache }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ inputs.cache }}-
+
+    - name: Install deps in quiet mode
+      shell: bash
+      run: npm ci -q
+      env:
+        NODE_AUTH_TOKEN: ${{ env.NODE_AUTH_TOKEN }}

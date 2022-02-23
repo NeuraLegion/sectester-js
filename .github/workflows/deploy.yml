@@ -1,0 +1,89 @@
+name: Automated deploy
+
+on:
+  release:
+    types: [created]
+
+env:
+  DEPENDENCIES_CACHE: npm-cache
+  VERSION: ${{ github.event.release.tag_name }}
+  TARGET_REF: ${{ github.event.release.target_commitish }}
+  TAG: ${{ github.event.release.target_commitish == 'master' && 'latest' || 'next' }}
+
+jobs:
+  install-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.TARGET_REF }}
+          token: ${{ secrets.GPR_TOKEN }}
+
+      - name: Install deps
+        uses: ./.github/workflows/composite/npm
+        with:
+          cache: ${{ env.DEPENDENCIES_CACHE }}
+
+  build:
+    runs-on: ubuntu-latest
+    needs: install-deps
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.TARGET_REF }}
+          token: ${{ secrets.GPR_TOKEN }}
+
+      - name: Install deps
+        uses: ./.github/workflows/composite/npm
+        with:
+          cache: ${{ env.DEPENDENCIES_CACHE }}
+
+      - name: Build package
+        run: npm run build:all
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: |
+            dist
+            package.json
+            package-lock.json
+            README.md
+            LICENSE
+
+  publish-to-npm:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build
+
+      - name: Install deps
+        uses: ./.github/workflows/composite/npm
+        with:
+          cache: ${{ env.DEPENDENCIES_CACHE }}
+
+      - name: Publish package to NPM
+        run: npm run publish:all -- --tag $TAG --version $VERSION
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-to-gpr:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: build
+
+      - name: Install deps
+        uses: ./.github/workflows/composite/npm
+        with:
+          cache: ${{ env.DEPENDENCIES_CACHE }}
+          registry: 'https://npm.pkg.github.com/neuralegion'
+
+      - name: Publish package to GPR
+        run: npm run publish:all -- --tag $TAG --version $VERSION
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPR_TOKEN }}
