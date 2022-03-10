@@ -28,7 +28,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "typeRoots": ["node_modules/@types", "typings"],
-    "paths": {}
+    "paths": {
+      "@secbox/core": ["packages/core/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

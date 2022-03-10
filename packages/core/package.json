@@ -1,0 +1,20 @@
+{
+  "name": "@secbox/core",
+  "version": "0.0.1",
+  "private": false,
+  "scripts": {
+    "prebuild": "npm run compile -- --clean",
+    "build": "npm run compile",
+    "compile": "tsc -b tsconfig.build.json",
+    "lint": "eslint --ignore-path ../../.eslintignore ."
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "reflect-metadata": "^0.1.13",
+    "tsyringe": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.5",
+    "@types/node": "^17.0.21"
+  }
+}
