@@ -3,61 +3,47 @@ import { DefaultCredentialProvider } from '../src/configuration/DefaultCredentia
 import { env } from 'process';
 
 describe('configuration', () => {
-  it('Configuration is single instance', () => {
-    const configuration = new Configuration({});
+  const testApi = 'test/api';
+  const testBus = 'test-bus';
+  const testToken = 'test-token';
+  const credentialProvider = container.resolve(DefaultCredentialProvider);
 
-    const configuration2 = container.resolve(Configuration);
+  const configuration = Configuration.create({
+    api: testApi,
+    bus: testBus,
+    credentials: {
+      token: testToken
+    },
+    credentialProviders: [credentialProvider]
+  });
+
+  it('Configuration is single instance', () => {
+    const configuration2 = container.resolve(typeof Configuration);
     expect(configuration).toBe(configuration2);
   });
 
   it('Can get api', () => {
-    const testApi = 'test/api';
-    const configuration = new Configuration({
-      api: testApi
-    });
-
     const api = configuration.get('api');
-
     expect(testApi).toEqual(api);
   });
 
   it('Can get bus', () => {
-    const testBus = 'test-bus';
-    const configuration = new Configuration({
-      bus: testBus
-    });
-
     const bus = configuration.get('bus');
-
     expect(testBus).toEqual(bus);
   });
 
   it('Can get credentials', () => {
-    const testToken = 'test-token';
-    const configuration = new Configuration({
-      credentials: {
-        token: testToken
-      }
-    });
-
     const token = configuration.get('credentials')?.token;
 
     expect(testToken).toEqual(token);
   });
 
   it('Can get credentials from provider', async () => {
-    const testToken = 'test-token';
-    (env as any).BRIGHT_TOKEN = testToken;
-    const credentialProvider = container.resolve(DefaultCredentialProvider);
-
-    const configuration = new Configuration({
-      credentialProviders: [credentialProvider]
-    });
-
+    const providerToken = 'test-provider-token';
+    (env as any).BRIGHT_TOKEN = providerToken;
     await configuration.loadCredentials();
-
     const token = configuration.get('credentials')?.token;
 
-    expect(testToken).toEqual(token);
+    expect(providerToken).toEqual(token);
   });
 });

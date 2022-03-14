@@ -17,9 +17,19 @@ export class Configuration {
     return container;
   }
 
-  constructor(options: ConfigurationOptions) {
+  private constructor(options: ConfigurationOptions) {
     this.options = options;
-    this.container.register(Configuration, { useValue: this });
+    container.register(typeof Configuration, { useValue: this });
+  }
+
+  public static create(options: ConfigurationOptions): Configuration {
+    let instance = container.resolve<Configuration>(typeof Configuration);
+
+    if (!instance) {
+      instance = new Configuration(options);
+    }
+
+    return instance;
   }
 
   public get<T extends keyof SdkConfiguration>(key: T): SdkConfiguration[T] {
