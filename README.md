@@ -101,9 +101,27 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 
 > ⚡ We use [husky](https://github.com/typicode/husky), [commitlint](https://github.com/conventional-changelog/commitlint#readme) and [lint-staged](https://github.com/okonet/lint-staged), they will help you to follow these rules.
 
-- [How to contribute to NeuraLegion](https://team-1602965683919.atlassian.net/wiki/spaces/TEST/pages/256180295/How+to+contribute+to+NeuraLegion)
+- [How to contribute to SecBox SDKs](./CONTRIBUTING.md)
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 - [Angular Git Commit Guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
+
+### Creating publishable package
+
+Issue the following command to generate a new package:
+
+```bash
+$ nx generate @nrwl/js:lib ${lib} --importPath=@mono-lib/${lib}
+```
+
+> ⚡ It is important to have a clean git working directory before invoking a generator so that you can easily revert changes and re-invoke the generator with different inputs.
+
+This will create a new library inside the working directory according to the schematic.
+
+To generate the `publish` executor to release a package, you just need to issue the following command:
+
+```bash
+nx workspace-generator publish ${lib} --buildTarget ${lib}:build
+```
 
 ## License
 
