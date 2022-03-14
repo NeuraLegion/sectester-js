@@ -23,13 +23,11 @@ export class Configuration {
   }
 
   public static create(options: ConfigurationOptions): Configuration {
-    let instance = container.resolve<Configuration>(typeof Configuration);
-
-    if (!instance) {
-      instance = new Configuration(options);
+    if (container.isRegistered(typeof Configuration)) {
+      return container.resolve<Configuration>(typeof Configuration);
     }
 
-    return instance;
+    return new Configuration(options);
   }
 
   public get<T extends keyof SdkConfiguration>(key: T): SdkConfiguration[T] {
