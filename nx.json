@@ -9,7 +9,11 @@
   },
   "generators": {
     "@nrwl/js:library": {
-      "buildable": true
+      "buildable": true,
+      "publishable": true,
+      "pascalCaseFiles": true,
+      "testEnvironment": "node",
+      "setParserOptionsProject": true
     }
   },
   "implicitDependencies": {

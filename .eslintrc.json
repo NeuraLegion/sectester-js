@@ -127,7 +127,7 @@
             "ignoreProperties": true
           }
         ],
-        "@typescript-eslint/default-param-last": ["error"],
+        "@typescript-eslint/default-param-last": "error",
         "@typescript-eslint/consistent-type-assertions": "error",
         "@typescript-eslint/no-duplicate-imports": "error",
         "@typescript-eslint/no-non-null-assertion": "error",
@@ -149,6 +149,17 @@
             "hoist": "all"
           }
         ],
+        "@typescript-eslint/no-floating-promises": [
+          "error",
+          {
+            "ignoreVoid": true,
+            "ignoreIIFE": true
+          }
+        ],
+        "@typescript-eslint/return-await": ["error", "in-try-catch"],
+        "@typescript-eslint/require-await": "error",
+        "require-await": "off",
+        "no-return-await": "off",
         "arrow-body-style": "error",
         "camelcase": "off",
         "complexity": [
@@ -159,6 +170,7 @@
         ],
         "eqeqeq": ["error", "smart"],
         "guard-for-in": "error",
+        "import/no-namespace": "error",
         "import/no-self-import": "error",
         "import/no-absolute-path": "error",
         "import/no-duplicates": "error",
