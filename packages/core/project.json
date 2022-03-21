@@ -27,6 +27,12 @@
         "jestConfig": "packages/core/jest.config.js",
         "passWithNoTests": true
       }
+    },
+    "publish": {
+      "executor": "./tools/executors:publish",
+      "options": {
+        "dist": "dist/packages/core"
+      }
     }
   },
   "tags": ["@types/node"]
