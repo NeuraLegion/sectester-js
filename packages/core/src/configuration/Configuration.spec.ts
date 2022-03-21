@@ -1,5 +1,5 @@
-import { Configuration, container } from '../src/configuration';
-import { DefaultCredentialProvider } from '../src/configuration/DefaultCredentialProvider';
+import { Configuration, container } from '.';
+import { DefaultCredentialProvider } from './DefaultCredentialProvider';
 import { env } from 'process';
 
 describe('configuration', () => {
