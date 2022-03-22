@@ -1,5 +1,5 @@
 import { CredentialProvider, Credentials } from './CredentialsProvider';
-import { container, DependencyContainer } from 'tsyringe';
+import { container, DependencyContainer, injectable } from 'tsyringe';
 
 export interface SdkConfiguration {
   credentials?: Credentials;
@@ -11,6 +11,7 @@ export interface ConfigurationOptions extends SdkConfiguration {
   credentialProviders?: Array<CredentialProvider>;
 }
 
+@injectable()
 export class Configuration {
   private options: ConfigurationOptions;
   get container(): DependencyContainer {
