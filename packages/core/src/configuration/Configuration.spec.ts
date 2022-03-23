@@ -1,6 +1,6 @@
 import { Configuration } from './Configuration';
 import container from './container';
-import { DefaultCredentialProvider } from './DefaultCredentialProvider';
+import { EnvCredentialProvider } from './DefaultCredentialProvider';
 import { env } from 'process';
 
 describe('configuration', () => {
@@ -10,7 +10,7 @@ describe('configuration', () => {
   let configuration: Configuration;
 
   beforeAll(() => {
-    const credentialProvider = container.resolve(DefaultCredentialProvider);
+    const credentialProvider = container.resolve(EnvCredentialProvider);
 
     configuration = new Configuration({
       api: testApi,
