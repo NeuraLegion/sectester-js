@@ -14,13 +14,15 @@ export interface ConfigurationOptions extends SdkConfiguration {
 @injectable()
 export class Configuration {
   private options: ConfigurationOptions;
+  private _container = container.createChildContainer();
+
   get container(): DependencyContainer {
-    return container;
+    return this._container;
   }
 
   constructor(options: ConfigurationOptions) {
     this.options = options;
-    container.register(Configuration, { useValue: this });
+    this._container.register(Configuration, { useValue: this });
   }
 
   public get<T extends keyof SdkConfiguration>(key: T): SdkConfiguration[T] {

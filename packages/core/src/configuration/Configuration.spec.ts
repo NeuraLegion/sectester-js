@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { Configuration } from './Configuration';
 import container from './container';
 import { EnvCredentialProvider } from './DefaultCredentialProvider';
@@ -23,7 +25,7 @@ describe('configuration', () => {
   });
 
   it('should be a single instance', () => {
-    const configuration2 = container.resolve(Configuration);
+    const configuration2 = configuration.container.resolve(Configuration);
     expect(configuration).toBe(configuration2);
   });
 
