@@ -3,7 +3,7 @@ import { injectable } from 'tsyringe';
 import { env } from 'process';
 
 @injectable()
-export class DefaultCredentialProvider implements CredentialProvider {
+export class EnvCredentialProvider implements CredentialProvider {
   public get(): Promise<Credentials | undefined> {
     return new Promise(resolve => {
       const token = (env as any).BRIGHT_TOKEN;
