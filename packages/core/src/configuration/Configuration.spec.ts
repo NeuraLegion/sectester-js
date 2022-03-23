@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 
 import { Configuration } from './Configuration';
-import container from './container';
 import { EnvCredentialProvider } from './DefaultCredentialProvider';
 import { env } from 'process';
 
@@ -12,7 +11,7 @@ describe('configuration', () => {
   let configuration: Configuration;
 
   beforeAll(() => {
-    const credentialProvider = container.resolve(EnvCredentialProvider);
+    const credentialProvider = new EnvCredentialProvider();
 
     configuration = new Configuration({
       api: testApi,
