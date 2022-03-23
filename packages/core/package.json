@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "npm run compile -- --clean",
     "build": "npm run compile",
-    "compile": "tsc -b tsconfig.build.json",
+    "compile": "tsc -b tsconfig.lib.json",
     "lint": "eslint --ignore-path ../../.eslintignore ."
   },
   "dependencies": {
