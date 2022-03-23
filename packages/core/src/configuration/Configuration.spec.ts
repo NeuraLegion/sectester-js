@@ -1,4 +1,5 @@
-import { Configuration, container } from '.';
+import { Configuration } from './Configuration';
+import container from './container';
 import { DefaultCredentialProvider } from './DefaultCredentialProvider';
 import { env } from 'process';
 
