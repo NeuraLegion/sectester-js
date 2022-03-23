@@ -1,9 +1,5 @@
 {
   "name": "@secbox/core",
   "version": "0.0.1",
-  "private": false,
-  "dependencies": {
-    "reflect-metadata": "^0.1.13",
-    "tsyringe": "^4.6.0"
-  }
+  "private": false
 }

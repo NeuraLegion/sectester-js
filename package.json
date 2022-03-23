@@ -78,8 +78,9 @@
   },
   "homepage": "https://github.com/NeuraLegion/secbox-sdk-js#readme",
   "dependencies": {
-    "core": "file:packages/core",
-    "tslib": "~2.3.1"
+    "reflect-metadata": "^0.1.13",
+    "tslib": "~2.3.1",
+    "tsyringe": "^4.6.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.2.1",
