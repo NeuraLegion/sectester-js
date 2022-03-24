@@ -110,7 +110,7 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 Issue the following command to generate a new package:
 
 ```bash
-$ nx generate @nrwl/js:lib ${lib} --importPath=@mono-lib/${lib}
+$ nx generate @nrwl/node:lib ${lib} --importPath=@secbox/${lib}
 ```
 
 > ⚡ It is important to have a clean git working directory before invoking a generator so that you can easily revert changes and re-invoke the generator with different inputs.
