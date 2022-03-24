@@ -2,4 +2,4 @@ import 'reflect-metadata';
 
 export { default as container } from './container';
 export * from './Configuration';
-export * from './CredentialsProvider';
+export * from '../credentials-provider/CredentialsProvider';

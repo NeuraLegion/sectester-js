@@ -1,4 +1,4 @@
-import { CredentialProvider, Credentials } from './CredentialsProvider';
+import { CredentialProvider, Credentials } from '../credentials-provider';
 import { container, DependencyContainer, injectable } from 'tsyringe';
 
 export interface SdkConfiguration {
