@@ -18,15 +18,9 @@ First, you need to generate a new instance of `Configuration`.
 import { Configuration } from '@secbox/core';
 
 const config = new Configuration({
-    api: 'amqps://{url}:{port}',
-    bus: '{bus-name}',
-    clientQeueu: `{queue-name}`,
-    connectTimeout: 10000,
-    heartbeatInterval: 5000,
-    reconnectTime: 5000,
+    host: 'app.neuralegion.com',
     credentials: {
-      username: '{username}',
-      token: '{token}'
+      token: 'your API key'
     }
   });
 ```
