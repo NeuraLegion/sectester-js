@@ -5,7 +5,7 @@ The base package can be used to scan local targets, without exposing them to the
 ## Setup
 
 ```bash
-npm i @secbox/core
+npm i -s @secbox/core
 ```
 
 ## Usage
