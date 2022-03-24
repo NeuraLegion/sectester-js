@@ -6,53 +6,90 @@ import { Credentials } from './CredentialsProvider';
 import { instance, mock, when } from 'ts-mockito';
 
 describe('configuration', () => {
-  const testApi = 'test/api';
-  const testBus = 'test-bus';
-  const testToken = 'test-token';
-  const providerToken = 'test-provider-token';
-  let configuration: Configuration;
-  let credentialProvider: EnvCredentialProvider;
+  describe('instance', () => {
+    let configuration: Configuration;
 
-  beforeAll(() => {
-    const mockedProvider = mock(EnvCredentialProvider);
-    when(mockedProvider.get()).thenResolve({
-      token: providerToken
-    } as Credentials);
-    credentialProvider = instance(mockedProvider);
+    beforeAll(() => {
+      configuration = new Configuration({});
+    });
 
-    configuration = new Configuration({
-      api: testApi,
-      bus: testBus,
-      credentials: {
-        token: testToken
-      },
-      credentialProviders: [credentialProvider]
+    it('should be a single instance', () => {
+      const configuration2 = configuration.container.resolve(Configuration);
+      expect(configuration).toBe(configuration2);
     });
   });
 
-  it('should be a single instance', () => {
-    const configuration2 = configuration.container.resolve(Configuration);
-    expect(configuration).toBe(configuration2);
+  describe('options', () => {
+    let configuration: Configuration;
+
+    beforeAll(() => {
+      configuration = new Configuration({
+        api: 'test/api',
+        bus: 'test-bus',
+        credentials: {
+          token: 'test-token'
+        }
+      });
+    });
+
+    it('bus should be defined', () => {
+      expect(configuration.options.api).toBeDefined();
+    });
+
+    it('url should be defined', () => {
+      expect(configuration.options.bus).toBeDefined();
+    });
+
+    describe('credentials', () => {
+      it('should be defined', () => {
+        expect(configuration.options.credentials).toBeDefined();
+      });
+    });
   });
 
-  describe('get', () => {
-    it('should get api', () => {
-      const api = configuration.get('api');
-      expect(testApi).toEqual(api);
+  describe('undefined options', () => {
+    let configuration: Configuration;
+
+    beforeAll(() => {
+      configuration = new Configuration({});
     });
 
-    it('should get bus', () => {
-      const bus = configuration.get('bus');
-      expect(testBus).toEqual(bus);
+    it('bus should be undefined', () => {
+      expect(configuration.options.api).toBeUndefined();
     });
 
-    it('should get credentials', () => {
-      const token = configuration.get('credentials')?.token;
-      expect(testToken).toEqual(token);
+    it('url should be undefined', () => {
+      expect(configuration.options.bus).toBeUndefined();
+    });
+
+    describe('credentials', () => {
+      it('should be undefined', () => {
+        expect(configuration.options.credentials).toBeUndefined();
+      });
     });
   });
 
   describe('loadCredentials', () => {
+    const providerToken = 'test-provider-token';
+    let credentialProvider: EnvCredentialProvider;
+    let configuration: Configuration;
+
+    beforeAll(() => {
+      const mockedProvider = mock(EnvCredentialProvider);
+      when(mockedProvider.get()).thenResolve({
+        token: providerToken
+      } as Credentials);
+      credentialProvider = instance(mockedProvider);
+
+      configuration = new Configuration({
+        credentialProviders: [credentialProvider]
+      });
+    });
+
+    it('beafor call credentials should be undefined', () => {
+      expect(configuration.options.credentials).toBeUndefined();
+    });
+
     it('provider function should be callsed', async () => {
       const spyGet = jest.spyOn(credentialProvider, 'get');
       await configuration.loadCredentials();
@@ -60,7 +97,7 @@ describe('configuration', () => {
     });
 
     it('credentials from provider should be correct', () => {
-      const token = configuration.get('credentials')?.token;
+      const token = configuration.options.credentials?.token;
       expect(providerToken).toEqual(token);
     });
   });

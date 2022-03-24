@@ -13,27 +13,27 @@ export interface ConfigurationOptions extends SdkConfiguration {
 
 @injectable()
 export class Configuration {
-  private options: ConfigurationOptions;
+  private _options: ConfigurationOptions;
   private _container = container.createChildContainer();
 
   get container(): DependencyContainer {
     return this._container;
   }
 
+  get options(): SdkConfiguration {
+    return this._options;
+  }
+
   constructor(options: ConfigurationOptions) {
-    this.options = options;
+    this._options = options;
     this._container.register(Configuration, { useValue: this });
   }
 
-  public get<T extends keyof SdkConfiguration>(key: T): SdkConfiguration[T] {
-    return this.options[key];
-  }
-
   public async loadCredentials(): Promise<void> {
-    for (const provider of this.options.credentialProviders || []) {
-      this.options.credentials = await provider.get();
+    for (const provider of this._options.credentialProviders || []) {
+      this._options.credentials = await provider.get();
 
-      if (this.options.credentials) {
+      if (this._options.credentials) {
         break;
       }
     }
