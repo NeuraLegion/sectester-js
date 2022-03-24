@@ -31,9 +31,10 @@ export class Configuration {
 
   public async loadCredentials(): Promise<void> {
     for (const provider of this._options.credentialProviders || []) {
-      this._options.credentials = await provider.get();
+      const credentials = await provider.get();
 
-      if (this._options.credentials) {
+      if (credentials) {
+        this._options.credentials = credentials;
         break;
       }
     }
