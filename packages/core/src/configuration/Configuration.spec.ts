@@ -2,16 +2,23 @@ import 'reflect-metadata';
 
 import { Configuration } from './Configuration';
 import { EnvCredentialProvider } from './DefaultCredentialProvider';
-import { env } from 'process';
+import { Credentials } from './CredentialsProvider';
+import { instance, mock, when } from 'ts-mockito';
 
 describe('configuration', () => {
   const testApi = 'test/api';
   const testBus = 'test-bus';
   const testToken = 'test-token';
+  const providerToken = 'test-provider-token';
   let configuration: Configuration;
+  let credentialProvider: EnvCredentialProvider;
 
   beforeAll(() => {
-    const credentialProvider = new EnvCredentialProvider();
+    const mockedProvider = mock(EnvCredentialProvider);
+    when(mockedProvider.get()).thenResolve({
+      token: providerToken
+    } as Credentials);
+    credentialProvider = instance(mockedProvider);
 
     configuration = new Configuration({
       api: testApi,
@@ -46,12 +53,14 @@ describe('configuration', () => {
   });
 
   describe('loadCredentials', () => {
-    it('should load credentials from provider', async () => {
-      const providerToken = 'test-provider-token';
-      (env as any).BRIGHT_TOKEN = providerToken;
+    it('provider function should be callsed', async () => {
+      const spyGet = jest.spyOn(credentialProvider, 'get');
       await configuration.loadCredentials();
-      const token = configuration.get('credentials')?.token;
+      expect(spyGet).toHaveBeenCalled();
+    });
 
+    it('credentials from provider should be correct', () => {
+      const token = configuration.get('credentials')?.token;
       expect(providerToken).toEqual(token);
     });
   });
