@@ -1,8 +1,7 @@
 import 'reflect-metadata';
 
 import { Configuration } from './Configuration';
-import { EnvCredentialProvider } from '../credentials-provider';
-import { Credentials } from '../credentials-provider';
+import { EnvCredentialProvider, Credentials } from '../credentials-provider';
 import { instance, mock, when } from 'ts-mockito';
 
 describe('configuration', () => {
