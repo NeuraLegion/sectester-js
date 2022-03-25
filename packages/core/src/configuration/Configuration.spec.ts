@@ -69,11 +69,11 @@ describe('configuration', () => {
 
   describe('loadCredentials', () => {
     const providerToken = 'test-provider-token';
-    let credentialProvider: EnvCredentialProvider;
-    let configuration: Configuration;
+    let credentialProvider!: EnvCredentialProvider;
+    let configuration!: Configuration;
 
-    beforeAll(() => {
-      const mockedProvider = mock(EnvCredentialProvider);
+    beforeEach(() => {
+      const mockedProvider = mock<EnvCredentialProvider>();
       when(mockedProvider.get()).thenResolve({
         token: providerToken
       } as Credentials);
@@ -94,7 +94,8 @@ describe('configuration', () => {
       expect(spyGet).toHaveBeenCalled();
     });
 
-    it('credentials from provider should be correct', () => {
+    it('credentials from provider should be correct', async () => {
+      await configuration.loadCredentials();
       const token = configuration.options.credentials?.token;
       expect(providerToken).toEqual(token);
     });
