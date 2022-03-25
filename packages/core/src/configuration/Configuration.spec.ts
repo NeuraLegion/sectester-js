@@ -6,7 +6,7 @@ import { instance, mock, when } from 'ts-mockito';
 
 describe('configuration', () => {
   describe('instance', () => {
-    let configuration: Configuration;
+    let configuration!: Configuration;
 
     beforeAll(() => {
       configuration = new Configuration({});
