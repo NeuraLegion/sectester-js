@@ -34,6 +34,5 @@
         "dist": "dist/packages/core"
       }
     }
-  },
-  "tags": ["@types/node"]
+  }
 }
