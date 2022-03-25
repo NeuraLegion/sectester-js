@@ -8,6 +8,9 @@ export interface SdkConfiguration {
 }
 
 export interface ConfigurationOptions extends SdkConfiguration {
+  credentials?: Credentials;
+  bus?: string;
+  api?: string;
   credentialProviders?: Array<CredentialProvider>;
 }
 
