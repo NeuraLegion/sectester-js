@@ -1,13 +1,7 @@
 import { CredentialProvider, Credentials } from '../credentials-provider';
 import { container, DependencyContainer, injectable } from 'tsyringe';
 
-export interface SdkConfiguration {
-  credentials?: Credentials;
-  bus?: string;
-  api?: string;
-}
-
-export interface ConfigurationOptions extends SdkConfiguration {
+export interface ConfigurationOptions {
   credentials?: Credentials;
   bus?: string;
   api?: string;
@@ -16,28 +10,36 @@ export interface ConfigurationOptions extends SdkConfiguration {
 
 @injectable()
 export class Configuration {
-  private _options: ConfigurationOptions;
+  public readonly bus?: string;
+  public readonly api?: string;
+  public readonly credentialProviders?: Array<CredentialProvider>;
+
+  private _credentials?: Credentials;
   private _container = container.createChildContainer();
 
   get container(): DependencyContainer {
     return this._container;
   }
 
-  get options(): SdkConfiguration {
-    return this._options;
+  get credentials() {
+    return this._credentials;
   }
 
   constructor(options: ConfigurationOptions) {
-    this._options = options;
+    this._credentials = options.credentials;
+    this.bus = options.bus;
+    this.api = options.api;
+    this.credentialProviders = options.credentialProviders;
+
     this._container.register(Configuration, { useValue: this });
   }
 
   public async loadCredentials(): Promise<void> {
-    for (const provider of this._options.credentialProviders || []) {
+    for (const provider of this.credentialProviders || []) {
       const credentials = await provider.get();
 
       if (credentials) {
-        this._options.credentials = credentials;
+        this._credentials = credentials;
         break;
       }
     }
