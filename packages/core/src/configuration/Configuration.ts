@@ -5,14 +5,14 @@ export interface ConfigurationOptions {
   credentials?: Credentials;
   bus?: string;
   api?: string;
-  credentialProviders?: Array<CredentialProvider>;
+  credentialProviders?: CredentialProvider[];
 }
 
 @injectable()
 export class Configuration {
   public readonly bus?: string;
   public readonly api?: string;
-  public readonly credentialProviders?: Array<CredentialProvider>;
+  public readonly credentialProviders?: CredentialProvider[];
 
   private _credentials?: Credentials;
   private _container = container.createChildContainer();
