@@ -11,9 +11,7 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "rules": {
-        "import/no-extraneous-dependencies": "off"
-      }
+      "rules": {}
     },
     {
       "files": ["*.js", "*.jsx"],
