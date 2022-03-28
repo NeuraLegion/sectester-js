@@ -1,2 +1,2 @@
 export * from './CredentialsProvider';
-export * from './DefaultCredentialProvider';
+export * from './DefaultCredentialsProvider';
