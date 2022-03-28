@@ -149,6 +149,13 @@
             "hoist": "all"
           }
         ],
+        "@typescript-eslint/array-type": [
+          "error",
+          {
+            "default": "array",
+            "readonly": "array"
+          }
+        ],
         "@typescript-eslint/no-floating-promises": [
           "error",
           {
