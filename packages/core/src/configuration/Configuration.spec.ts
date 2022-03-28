@@ -11,11 +11,7 @@ describe('configuration', () => {
   });
 
   describe('loadCredentials', () => {
-    let mockedProvider!: EnvCredentialProvider;
-
-    beforeEach(() => {
-      mockedProvider = mock<EnvCredentialProvider>();
-    });
+    const mockedProvider = mock<EnvCredentialProvider>();
 
     afterEach(() => {
       reset(mockedProvider);
