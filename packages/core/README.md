@@ -39,9 +39,8 @@ interface ConfigurationOptions {
   bus?: string;
   api?: string;
   credentials?: Credentials;
-  credentialProviders?: Array<CredentialProvider>;
+  credentialProviders?: CredentialProvider[];
 }
-```
 
 `bus` - key of exchange\
 `api` - URL that will be used to connect to the queue\
