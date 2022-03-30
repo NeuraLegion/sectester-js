@@ -4,21 +4,31 @@ import { EnvCredentialProvider } from '../credentials-provider';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
 
 describe('configuration', () => {
+  const mockedProvider = mock<EnvCredentialProvider>();
+
+  afterEach(() => {
+    reset(mockedProvider);
+  });
+
   it('should be a single instance', () => {
-    const configuration = new Configuration({});
+    const configuration = new Configuration({
+      cluster: 'app.neuralegion.com',
+      credentials: {
+        token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+      }
+    });
     const configuration2 = configuration.container.resolve(Configuration);
     expect(configuration).toBe(configuration2);
   });
 
   describe('loadCredentials', () => {
-    const mockedProvider = mock<EnvCredentialProvider>();
-
-    afterEach(() => {
-      reset(mockedProvider);
-    });
-
     it('should not throw if provider not defined', async () => {
-      const configuration = new Configuration({});
+      const configuration = new Configuration({
+        cluster: 'app.neuralegion.com',
+        credentials: {
+          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        }
+      });
       await expect(configuration.loadCredentials()).resolves.not.toThrow();
     });
 
@@ -28,6 +38,7 @@ describe('configuration', () => {
       };
       const credentialProvider = instance(mockedProvider);
       const configuration = new Configuration({
+        cluster: 'app.neuralegion.com',
         credentialProviders: [credentialProvider]
       });
 
