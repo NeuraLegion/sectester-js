@@ -73,7 +73,7 @@ More info about [setting up an API key](https://docs.neuralegion.com/docs/manage
 Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. By default is present `EnvCredentialProvider`.
 
 #### EnvCredentialProvider
-Use this provider to read credentials from the following environment variable: BRIGHT_TOKEN
+Use this provider to read credentials from the following environment variable: `BRIGHT_TOKEN`
 
 If the BRIGHT_TOKEN environment variable is not set or contains a falsy value, it will return undefined.
 
