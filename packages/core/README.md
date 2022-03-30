@@ -48,7 +48,7 @@ Set url that used to access the application.
 
 ```ts
 new Configuration({
-  cluster: 'neuralegion.com' 
+  cluster: 'app.neuralegion.com',
 })
 ```
 
