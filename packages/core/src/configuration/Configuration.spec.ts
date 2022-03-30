@@ -6,9 +6,7 @@ import { instance, mock, reset, verify, when } from 'ts-mockito';
 describe('configuration', () => {
   const mockedProvider = mock<EnvCredentialProvider>();
 
-  afterEach(() => {
-    reset(mockedProvider);
-  });
+  afterEach(() => reset(mockedProvider));
 
   describe('constructor', () => {
     it('should be a single instance', () => {
