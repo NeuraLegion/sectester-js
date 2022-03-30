@@ -1,6 +1,6 @@
 # @secbox/core
 
-The base package can be used to obtaining config including credentials from different sources, and provide simplified abstraction to handle integration events and commands.
+The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.
 
 ## Setup
 
@@ -18,55 +18,74 @@ First, you need to generate a new instance of `Configuration`.
 import { Configuration } from '@secbox/core';
 
 const config = new Configuration({
-    api: 'app.neuralegion.com',
-    bus: 'EventBus'
-    credentials: {
-      token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-    }
-  });
+  api: 'app.neuralegion.com',
+  bus: 'EventBus'
+  credentials: {
+    token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  }
+});
 ```
 
- After that, you can inject it using `container`.
+After that, you can resolve the configuration using the IoC container.
 
 ```ts
-const injectedConfig = config.container.resolve(Configuration);
+const config = config.container.resolve(Configuration);
 ```
 
 #### Options
-
 ```ts
 interface ConfigurationOptions {
-  bus?: string;
-  api?: string;
+  cluster: string;
   credentials?: Credentials;
   credentialProviders?: CredentialProvider[];
 }
+```
 
-`bus` - key of exchange\
-`api` - URL that will be used to connect to the queue\
-`credentials` -  credentials that are needed to get access to the queue\
-`credentialProviders` - array of providers that provide credentials
 
-#### Credentials
+#### cluster
+- type `string`
 
-You have two ways to pass credentials:
-  - `credentials` option
-  - `credentialProviders` property
+Set url that used to access the application.
 
-`credentials` property is the easiest way to pass credentials. You just need to pass credentials to this property.
-`credentialProviders` allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials.\
-By default is present `EnvCredentialProvider`. `EnvCredentialProvider` load credentials from the environment.
+```ts
+new Configuration({
+  cluster: 'neuralegion.com' 
+})
+```
+
+#### credentials
+- type `Credentials`
+
+Set credentials to access the application.
+
+```ts
+new Configuration({
+  credentials: {
+    token: 'your API key'
+  }
+})
+```
+
+More info about [setting up an API key](https://docs.neuralegion.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens)
+
+#### credentialProviders
+- array of `CredentialProvider`
+
+Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. By default is present `EnvCredentialProvider`.
+
+#### EnvCredentialProvider
+Use this provider to read credentials from the following environment variable: BRIGHT_TOKEN
+
+If the BRIGHT_TOKEN environment variable is not set or contains a falsy value, it will return undefined.
 
 ```ts
 import { Configuration, EnvCredentialProvider } from '@secbox/core';
 
 const credentialsProvider = new EnvCredentialProvider();
 const config = new Configuration({
-    api: 'app.neuralegion.com',
-    bus: 'EventBus',
-    credentialProviders: [credentialsProvider]
+  credentialProviders: [credentialsProvider]
 });
-```
+````
 
 ## License
 

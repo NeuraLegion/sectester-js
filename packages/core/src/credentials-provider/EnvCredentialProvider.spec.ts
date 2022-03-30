@@ -1,5 +1,5 @@
 import { CredentialProvider } from './CredentialsProvider';
-import { EnvCredentialProvider } from './DefaultCredentialsProvider';
+import { EnvCredentialProvider } from './EnvCredentialProvider';
 import { reset, spy, when } from 'ts-mockito';
 
 describe('EnvCredentialProvider', () => {
@@ -23,9 +23,9 @@ describe('EnvCredentialProvider', () => {
       const testToken = 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
       when(spiedEnv['BRIGHT_TOKEN']).thenReturn(testToken);
 
-      const token = (await provider.get())?.token;
+      const result = await provider.get();
 
-      expect(token).toEqual(testToken);
+      expect(result).toBeDefined();
     });
   });
 });
