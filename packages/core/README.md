@@ -44,7 +44,7 @@ interface ConfigurationOptions {
 #### cluster
 - type: `string`
 
-Set url that used to access the application.
+Set the application name (domain name), that is used to establish connection with. By default, the option is equal to `app.neuralegion.com`.
 
 ```ts
 new Configuration({
