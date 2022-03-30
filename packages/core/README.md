@@ -18,8 +18,7 @@ First, you need to generate a new instance of `Configuration`.
 import { Configuration } from '@secbox/core';
 
 const config = new Configuration({
-  api: 'app.neuralegion.com',
-  bus: 'EventBus'
+  cluster: 'app.neuralegion.com',
   credentials: {
     token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
   }
