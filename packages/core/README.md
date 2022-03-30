@@ -42,7 +42,7 @@ interface ConfigurationOptions {
 
 
 #### cluster
-- type `string`
+- type: `string`
 
 Set url that used to access the application.
 
