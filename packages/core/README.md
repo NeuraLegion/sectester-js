@@ -58,7 +58,7 @@ new Configuration({
 Set credentials to access the application.
 
 ```ts
-new Configuration({
+const config = new Configuration({
   credentials: {
     token: 'your API key'
   }
