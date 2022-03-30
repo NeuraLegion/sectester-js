@@ -47,7 +47,7 @@ interface ConfigurationOptions {
 Set the application name (domain name), that is used to establish connection with. By default, the option is equal to `app.neuralegion.com`.
 
 ```ts
-new Configuration({
+const config = new Configuration({
   cluster: 'app.neuralegion.com',
 })
 ```
