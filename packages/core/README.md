@@ -33,7 +33,7 @@ const config = config.container.resolve(Configuration);
 
 #### Options
 ```ts
-interface ConfigurationOptions {
+export interface ConfigurationOptions {
   cluster: string;
   credentials?: Credentials;
   credentialProviders?: CredentialProvider[];
