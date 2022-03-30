@@ -29,7 +29,7 @@ const config = new Configuration({
  After that, you can inject it using `container`.
 
 ```ts
-const injectedConfig = config.container.resolve(Configuration);
+const config = config.container.resolve(Configuration);
 ```
 
 #### Options
