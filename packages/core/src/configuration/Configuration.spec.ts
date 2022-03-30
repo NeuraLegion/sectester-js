@@ -47,10 +47,9 @@ describe('configuration', () => {
       when(mockedProvider.get()).thenResolve(mockedCredentials);
 
       await configuration.loadCredentials();
-      const credentials = configuration.credentials;
 
       verify(mockedProvider.get()).once();
-      expect(credentials).toMatchObject(mockedCredentials);
+      expect(configuration).toMatchObject({ credentials: mockedCredentials });
     });
   });
 });

@@ -1,6 +1,6 @@
 # @secbox/core
 
-The base package can be used to obtaining config including credentials from different sources, and provide simplified abstraction to handle integration events and commands.
+The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.
 
 ## Setup
 
@@ -26,15 +26,15 @@ const config = new Configuration({
   });
 ```
 
- After that, you can inject it using `container`.
+After that, you can inject it using `container`.
 
 ```ts
-const injectedConfig = config.container.resolve(Configuration);
+const config = config.container.resolve(Configuration);
 ```
 
 #### Options
 
-```ts
+````ts
 interface ConfigurationOptions {
   bus?: string;
   api?: string;
@@ -66,7 +66,7 @@ const config = new Configuration({
     bus: 'EventBus',
     credentialProviders: [credentialsProvider]
 });
-```
+````
 
 ## License
 
