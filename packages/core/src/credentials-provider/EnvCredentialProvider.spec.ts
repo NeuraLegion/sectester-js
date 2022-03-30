@@ -23,9 +23,9 @@ describe('EnvCredentialProvider', () => {
       const testToken = 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
       when(spiedEnv['BRIGHT_TOKEN']).thenReturn(testToken);
 
-      const token = (await provider.get())?.token;
+      const result = await provider.get();
 
-      expect(token).toEqual(testToken);
+      expect(result).toBeDefined();
     });
   });
 });
