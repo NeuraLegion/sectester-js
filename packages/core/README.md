@@ -70,7 +70,7 @@ More info about [setting up an API key](https://docs.neuralegion.com/docs/manage
 #### credentialProviders
 - type: `CredentialProvider[]`
 
-Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. By default is present `EnvCredentialProvider`.
+Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. Currently, only `EnvCredentialProvider` is accessible.
 
 #### EnvCredentialProvider
 Use this provider to read credentials from the following environment variable: `BRIGHT_TOKEN`
