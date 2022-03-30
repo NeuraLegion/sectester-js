@@ -10,15 +10,17 @@ describe('configuration', () => {
     reset(mockedProvider);
   });
 
-  it('should be a single instance', () => {
-    const configuration = new Configuration({
-      cluster: 'app.neuralegion.com',
-      credentials: {
-        token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-      }
+  describe('constructor', () => {
+    it('should be a single instance', () => {
+      const configuration = new Configuration({
+        cluster: 'app.neuralegion.com',
+        credentials: {
+          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        }
+      });
+      const configuration2 = configuration.container.resolve(Configuration);
+      expect(configuration).toBe(configuration2);
     });
-    const configuration2 = configuration.container.resolve(Configuration);
-    expect(configuration).toBe(configuration2);
   });
 
   describe('loadCredentials', () => {
@@ -48,7 +50,7 @@ describe('configuration', () => {
       const credentials = configuration.credentials;
 
       verify(mockedProvider.get()).once();
-      expect(credentials).toBe(mockedCredentials);
+      expect(credentials).toMatchObject(mockedCredentials);
     });
   });
 });
