@@ -18,12 +18,12 @@ First, you need to generate a new instance of `Configuration`.
 import { Configuration } from '@secbox/core';
 
 const config = new Configuration({
-    api: 'app.neuralegion.com',
-    bus: 'EventBus'
-    credentials: {
-      token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-    }
-  });
+  api: 'app.neuralegion.com',
+  bus: 'EventBus'
+  credentials: {
+    token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  }
+});
 ```
 
 After that, you can inject it using `container`.
@@ -36,16 +36,14 @@ const config = config.container.resolve(Configuration);
 
 ````ts
 interface ConfigurationOptions {
-  bus?: string;
-  api?: string;
+  cluster: string;
   credentials?: Credentials;
   credentialProviders?: CredentialProvider[];
 }
 
-`bus` - key of exchange
-`api` - URL that will be used to connect to the queue\
-`credentials` -  credentials that are needed to get access to the queue\
-`credentialProviders` - array of providers that provide credentials
+- `cluster` - URL that will be used to connect to the queue
+- `credentials` -  credentials that are needed to get access to the queue
+- `credentialProviders` - array of providers that provide credentials
 
 #### Credentials
 
@@ -54,7 +52,7 @@ You have two ways to pass credentials:
   - `credentialProviders` property
 
 `credentials` property is the easiest way to pass credentials. You just need to pass credentials to this property.
-`credentialProviders` allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials.\
+`credentialProviders` allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials.
 By default is present `EnvCredentialProvider`. `EnvCredentialProvider` load credentials from the environment.
 
 ```ts
@@ -62,9 +60,9 @@ import { Configuration, EnvCredentialProvider } from '@secbox/core';
 
 const credentialsProvider = new EnvCredentialProvider();
 const config = new Configuration({
-    api: 'app.neuralegion.com',
-    bus: 'EventBus',
-    credentialProviders: [credentialsProvider]
+  api: 'app.neuralegion.com',
+  bus: 'EventBus',
+  credentialProviders: [credentialsProvider]
 });
 ````
 
