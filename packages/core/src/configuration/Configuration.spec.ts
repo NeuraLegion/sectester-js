@@ -36,10 +36,9 @@ describe('configuration', () => {
       const mockedCredentials = {
         token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
       };
-      const credentialProvider = instance(mockedProvider);
       const configuration = new Configuration({
         cluster: 'app.neuralegion.com',
-        credentialProviders: [credentialProvider]
+        credentialProviders: [instance(mockedProvider)]
       });
 
       when(mockedProvider.get()).thenResolve(mockedCredentials);
