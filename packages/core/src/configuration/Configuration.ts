@@ -9,8 +9,7 @@ export interface ConfigurationOptions {
 
 @injectable()
 export class Configuration {
-  public readonly bus?: string;
-  public readonly api?: string;
+  public readonly cluster: string;
   public readonly credentialProviders?: CredentialProvider[];
 
   private _credentials?: Credentials;
@@ -25,9 +24,11 @@ export class Configuration {
   }
 
   constructor(options: ConfigurationOptions) {
+    if (!options.credentials && !options.credentialProviders) {
+      throw new Error(`Please provide 'credentials' or 'credentialProviders'`);
+    }
     this._credentials = options.credentials;
-    this.bus = options.bus;
-    this.api = options.api;
+    this.cluster = options.cluster;
     this.credentialProviders = options.credentialProviders;
 
     this._container.register(Configuration, { useValue: this });
