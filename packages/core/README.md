@@ -75,7 +75,7 @@ Allows you to provide credentials and load it in runtime. You can pass many prov
 #### EnvCredentialProvider
 Use this provider to read credentials from the following environment variable: `BRIGHT_TOKEN`
 
-If the BRIGHT_TOKEN environment variable is not set or contains a falsy value, it will return undefined.
+If the `BRIGHT_TOKEN` environment variable is not set or contains a falsy value, it will return undefined.
 
 ```ts
 import { Configuration, EnvCredentialProvider } from '@secbox/core';
