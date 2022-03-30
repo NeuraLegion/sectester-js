@@ -1,5 +1,5 @@
 import { CredentialProvider } from './CredentialsProvider';
-import { EnvCredentialProvider } from './DefaultCredentialsProvider';
+import { EnvCredentialProvider } from './EnvCredentialProvider';
 import { reset, spy, when } from 'ts-mockito';
 
 describe('EnvCredentialProvider', () => {
