@@ -42,7 +42,7 @@ interface ConfigurationOptions {
   credentialProviders?: CredentialProvider[];
 }
 
-`bus` - key of exchange\
+`bus` - key of exchange
 `api` - URL that will be used to connect to the queue\
 `credentials` -  credentials that are needed to get access to the queue\
 `credentialProviders` - array of providers that provide credentials
