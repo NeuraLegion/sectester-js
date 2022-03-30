@@ -3,8 +3,7 @@ import { container, DependencyContainer, injectable } from 'tsyringe';
 
 export interface ConfigurationOptions {
   credentials?: Credentials;
-  bus?: string;
-  api?: string;
+  cluster: string;
   credentialProviders?: CredentialProvider[];
 }
 

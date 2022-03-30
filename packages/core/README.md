@@ -39,9 +39,8 @@ interface ConfigurationOptions {
   bus?: string;
   api?: string;
   credentials?: Credentials;
-  credentialProviders?: Array<CredentialProvider>;
+  credentialProviders?: CredentialProvider[];
 }
-```
 
 `bus` - key of exchange\
 `api` - URL that will be used to connect to the queue\
@@ -51,7 +50,7 @@ interface ConfigurationOptions {
 #### Credentials
 
 You have two ways to pass credentials:
-  - `credentials` property
+  - `credentials` option
   - `credentialProviders` property
 
 `credentials` property is the easiest way to pass credentials. You just need to pass credentials to this property.
