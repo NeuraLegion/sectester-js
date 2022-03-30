@@ -51,7 +51,7 @@ interface ConfigurationOptions {
 #### Credentials
 
 You have two ways to pass credentials:
-  - `credentials` property
+  - `credentials` option
   - `credentialProviders` property
 
 `credentials` property is the easiest way to pass credentials. You just need to pass credentials to this property.
