@@ -68,7 +68,7 @@ new Configuration({
 More info about [setting up an API key](https://docs.neuralegion.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens)
 
 #### credentialProviders
-- array of `CredentialProvider`
+- type: `CredentialProvider[]`
 
 Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. By default is present `EnvCredentialProvider`.
 
