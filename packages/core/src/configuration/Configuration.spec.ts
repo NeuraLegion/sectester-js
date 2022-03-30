@@ -48,7 +48,7 @@ describe('configuration', () => {
       const credentials = configuration.credentials;
 
       verify(mockedProvider.get()).once();
-      expect(credentials).toBe(mockedCredentials);
+      expect(configuration).toMatchObject({ credentials: mockedCredentials });
     });
   });
 });
