@@ -53,7 +53,7 @@ new Configuration({
 ```
 
 #### credentials
-- type `Credentials`
+- type: `Credentials`
 
 Set credentials to access the application.
 
