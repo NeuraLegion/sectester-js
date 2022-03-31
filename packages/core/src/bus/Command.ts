@@ -1,5 +1,5 @@
 import { CommandDispatcher } from './CommandDispatcher';
-import { randomBytes } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 export abstract class Command<T, R> {
   public readonly expectReply: boolean = true;
@@ -28,8 +28,7 @@ export abstract class Command<T, R> {
     }
 
     this.type = type || this.getType(payload);
-    this.correlationId =
-      correlationId || randomBytes(32).toString('hex').slice(0, 32);
+    this.correlationId = correlationId || uuidv4();
     this.createdAt = createdAt || new Date();
   }
 
