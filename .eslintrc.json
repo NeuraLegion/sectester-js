@@ -184,6 +184,7 @@
         "import/no-extraneous-dependencies": [
           "error",
           {
+            "packageDir": ".",
             "devDependencies": false,
             "optionalDependencies": false,
             "peerDependencies": false
@@ -258,6 +259,7 @@
         "import/no-extraneous-dependencies": [
           "error",
           {
+            "packageDir": ".",
             "devDependencies": true
           }
         ]
