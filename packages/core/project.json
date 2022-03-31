@@ -8,9 +8,10 @@
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/core",
-        "main": "packages/core/src/index.ts",
         "tsConfig": "packages/core/tsconfig.lib.json",
-        "assets": ["packages/core/*.md", "LICENSE"]
+        "packageJson": "packages/core/package.json",
+        "main": "packages/core/src/index.ts",
+        "assets": ["packages/core/*.md"]
       }
     },
     "lint": {
@@ -27,12 +28,7 @@
         "jestConfig": "packages/core/jest.config.js",
         "passWithNoTests": true
       }
-    },
-    "publish": {
-      "executor": "./tools/executors:publish",
-      "options": {
-        "dist": "dist/packages/core"
-      }
     }
-  }
+  },
+  "tags": []
 }

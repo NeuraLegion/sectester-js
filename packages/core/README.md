@@ -18,8 +18,7 @@ First, you need to generate a new instance of `Configuration`.
 import { Configuration } from '@secbox/core';
 
 const config = new Configuration({
-  api: 'app.neuralegion.com',
-  bus: 'EventBus'
+  cluster: 'app.neuralegion.com',
   credentials: {
     token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
   }
@@ -34,7 +33,7 @@ const config = config.container.resolve(Configuration);
 
 #### Options
 ```ts
-interface ConfigurationOptions {
+export interface ConfigurationOptions {
   cluster: string;
   credentials?: Credentials;
   credentialProviders?: CredentialProvider[];
@@ -43,23 +42,23 @@ interface ConfigurationOptions {
 
 
 #### cluster
-- type `string`
+- type: `string`
 
-Set url that used to access the application.
+Set the application name (domain name), that is used to establish connection with. By default, the option is equal to `app.neuralegion.com`.
 
 ```ts
-new Configuration({
-  cluster: 'neuralegion.com' 
+const config = new Configuration({
+  cluster: 'app.neuralegion.com',
 })
 ```
 
 #### credentials
-- type `Credentials`
+- type: `Credentials`
 
 Set credentials to access the application.
 
 ```ts
-new Configuration({
+const config = new Configuration({
   credentials: {
     token: 'your API key'
   }
@@ -69,14 +68,14 @@ new Configuration({
 More info about [setting up an API key](https://docs.neuralegion.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens)
 
 #### credentialProviders
-- array of `CredentialProvider`
+- type: `CredentialProvider[]`
 
-Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. By default is present `EnvCredentialProvider`.
+Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. Currently, only `EnvCredentialProvider` is accessible.
 
 #### EnvCredentialProvider
-Use this provider to read credentials from the following environment variable: BRIGHT_TOKEN
+Use this provider to read credentials from the following environment variable: `BRIGHT_TOKEN`
 
-If the BRIGHT_TOKEN environment variable is not set or contains a falsy value, it will return undefined.
+If the `BRIGHT_TOKEN` environment variable is not set or contains a falsy value, it will return undefined.
 
 ```ts
 import { Configuration, EnvCredentialProvider } from '@secbox/core';
