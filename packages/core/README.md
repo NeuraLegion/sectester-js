@@ -47,10 +47,7 @@ The default configuration is as follows:
 
 ```js
 {
-  cluster: 'app.neuralegion.com',
-  credentialProviders: [
-    new EnvCredentialProvider()
-  ]
+  credentialProviders: [new EnvCredentialProvider()];
 }
 ```
 
