@@ -1,5 +1,5 @@
 import { CredentialProvider, Credentials } from '../credentials-provider';
-import { container, DependencyContainer, injectable } from 'tsyringe';
+import { container, injectable } from 'tsyringe';
 
 export interface ConfigurationOptions {
   cluster: string;
@@ -15,25 +15,18 @@ export class Configuration {
     return this._credentialProviders;
   }
 
-  private _credentials?: Credentials;
-  private _api!: string;
-  private _bus!: string;
   private _container = container.createChildContainer();
 
-  get container(): DependencyContainer {
-    return this._container;
-  }
+  private _credentials?: Credentials;
+  private _api!: string;
 
   get credentials() {
     return this._credentials;
   }
+  private _bus!: string;
 
   get api() {
     return this._api;
-  }
-
-  get bus() {
-    return this._bus;
   }
 
   constructor(options: ConfigurationOptions) {
@@ -43,15 +36,24 @@ export class Configuration {
       );
     }
 
+    this._credentials = options.credentials;
+    this._credentialProviders = options.credentialProviders;
+
     if (!options.cluster) {
       throw new Error(`Please provide 'cluster' option.`);
     }
 
-    this._credentials = options.credentials;
-    this._credentialProviders = options.credentialProviders;
-    this.handleCluster(options.cluster);
+    this.resolveUrls(options.cluster);
 
     this._container.register(Configuration, { useValue: this });
+  }
+
+  get bus() {
+    return this._bus;
+  }
+
+  get container() {
+    return this._container;
   }
 
   public async loadCredentials(): Promise<void> {
@@ -65,21 +67,29 @@ export class Configuration {
     }
   }
 
-  private handleCluster(cluster: string): void {
-    let host = cluster.split(/:\d+/)[0];
+  private resolveUrls(cluster: string): void {
+    if (!/^.+:\/\//.test(cluster)) {
+      cluster = cluster.replace(/^(?!(?:\w+:)?\/\/)|^\/\//, 'https://');
+    }
+
+    let hostname = cluster;
 
     try {
-      ({ host } = new URL(host));
+      ({ hostname } = new URL(cluster));
     } catch {
       // noop
     }
 
-    if (['localhost', '127.0.0.1'].includes(host)) {
-      this._bus = `amqp://${host}:5672`;
-      this._api = `http://${host}:8000`;
+    if (['localhost', '127.0.0.1'].includes(hostname)) {
+      this._bus = `amqp://${hostname}:5672`;
+      this._api = `http://${hostname}:8000`;
+    } else if (hostname) {
+      this._bus = `amqps://amq.${hostname}:5672`;
+      this._api = `https://${hostname}`;
     } else {
-      this._bus = `amqps://amq.${host}:5672`;
-      this._api = `https://${host}`;
+      throw new Error(
+        `Please make sure that you pass correct 'cluster' option.`
+      );
     }
   }
 }
