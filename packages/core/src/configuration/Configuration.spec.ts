@@ -19,6 +19,27 @@ describe('configuration', () => {
       const configuration2 = configuration.container.resolve(Configuration);
       expect(configuration).toBe(configuration2);
     });
+
+    it('should throw if cluster is not passed', () => {
+      expect(
+        () =>
+          new Configuration({
+            cluster: '',
+            credentials: {
+              token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+            }
+          })
+      ).toThrow();
+    });
+
+    it('should throw if credentials or credentialProviders are not passed', () => {
+      expect(
+        () =>
+          new Configuration({
+            cluster: 'example.com'
+          })
+      ).toThrow();
+    });
   });
 
   describe('loadCredentials', () => {
