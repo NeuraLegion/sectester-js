@@ -9,7 +9,11 @@ export interface ConfigurationOptions {
 
 @injectable()
 export class Configuration {
-  public readonly credentialProviders?: CredentialProvider[];
+  private _credentialProviders?: CredentialProvider[];
+  
+  get credentialProviders(): readonly CredentialProvider[] {
+    return this._credentialProviders;
+  }
 
   private _credentials?: Credentials;
   private _api: string;
