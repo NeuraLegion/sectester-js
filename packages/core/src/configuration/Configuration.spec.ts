@@ -3,7 +3,7 @@ import { Configuration } from './Configuration';
 import { EnvCredentialProvider } from '../credentials-provider';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
 
-describe('configuration', () => {
+describe('Configuration', () => {
   const mockedProvider = mock<EnvCredentialProvider>();
 
   afterEach(() => reset(mockedProvider));
@@ -133,7 +133,7 @@ describe('configuration', () => {
   describe('loadCredentials', () => {
     it('should do nothing if provider not defined', async () => {
       const credentials = {
-        token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
       };
       const configuration = new Configuration({
         credentials,
@@ -147,7 +147,7 @@ describe('configuration', () => {
 
     it('should load credentials using a provider', async () => {
       const credentials = {
-        token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
       };
       const configuration = new Configuration({
         cluster: 'app.neuralegion.com',
@@ -159,6 +159,18 @@ describe('configuration', () => {
 
       verify(mockedProvider.get()).once();
       expect(configuration).toMatchObject({ credentials });
+    });
+
+    it('should throw an error if no one provider does not find credentials', async () => {
+      const configuration = new Configuration({
+        cluster: 'app.neuralegion.com',
+        credentialProviders: [instance(mockedProvider)]
+      });
+      when(mockedProvider.get()).thenResolve(undefined);
+
+      const result = configuration.loadCredentials();
+
+      await expect(result).rejects.toThrow('Could not load credentials');
     });
   });
 });

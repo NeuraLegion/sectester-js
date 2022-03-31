@@ -87,7 +87,7 @@ More info about [setting up an API key](https://docs.neuralegion.com/docs/manage
 
 - type: `CredentialProvider[]`
 
-Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. Currently, only `EnvCredentialProvider` is accessible.
+Allows you to provide credentials and load it in runtime. The configuration will invoke one provider at a time and only continue to the next if no credentials have been located. For example, if the process finds values defined via the `BRIGHT_TOKEN` environment variables, the file at `.secboxrc` will not be read.
 
 #### EnvCredentialProvider
 
