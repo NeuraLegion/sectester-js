@@ -10,14 +10,14 @@ export interface ConfigurationOptions {
 @injectable()
 export class Configuration {
   private _credentialProviders?: CredentialProvider[];
-  
-  get credentialProviders(): readonly CredentialProvider[] {
+
+  get credentialProviders(): readonly CredentialProvider[] | undefined {
     return this._credentialProviders;
   }
 
   private _credentials?: Credentials;
-  private _api: string;
-  private _bus: string;
+  private _api!: string;
+  private _bus!: string;
   private _container = container.createChildContainer();
 
   get container(): DependencyContainer {
@@ -38,7 +38,9 @@ export class Configuration {
 
   constructor(options: ConfigurationOptions) {
     if (!options.credentials && !options.credentialProviders) {
-      throw new Error(`Please provide either 'credentials' or 'credentialProviders'`);
+      throw new Error(
+        `Please provide either 'credentials' or 'credentialProviders'`
+      );
     }
 
     if (!options.cluster) {
@@ -46,9 +48,25 @@ export class Configuration {
     }
 
     this._credentials = options.credentials;
-    this.credentialProviders = options.credentialProviders;
+    this._credentialProviders = options.credentialProviders;
+    this.handleCluster(options.cluster);
 
-    let host = options.cluster.split(/:\d+/)[0];
+    this._container.register(Configuration, { useValue: this });
+  }
+
+  public async loadCredentials(): Promise<void> {
+    for (const provider of this.credentialProviders || []) {
+      const credentials = await provider.get();
+
+      if (credentials) {
+        this._credentials = credentials;
+        break;
+      }
+    }
+  }
+
+  private handleCluster(cluster: string): void {
+    let host = cluster.split(/:\d+/)[0];
 
     try {
       ({ host } = new URL(host));
@@ -62,19 +80,6 @@ export class Configuration {
     } else {
       this._bus = `amqps://amq.${host}:5672`;
       this._api = `https://${host}`;
-    }
-
-    this._container.register(Configuration, { useValue: this });
-  }
-
-  public async loadCredentials(): Promise<void> {
-    for (const provider of this.credentialProviders || []) {
-      const credentials = await provider.get();
-
-      if (credentials) {
-        this._credentials = credentials;
-        break;
-      }
     }
   }
 }
