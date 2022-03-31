@@ -197,7 +197,7 @@ describe('configuration', () => {
       await expect(configuration.loadCredentials()).resolves.not.toThrow();
     });
 
-    it('Should load credentials from profider', async () => {
+    it('should load credentials from profider', async () => {
       const mockedCredentials = {
         token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
       };
