@@ -1,5 +1,5 @@
-export class NotInitedBus extends Error {
-  constructor() {
-    super('You should call `init()` to proceed working with distpacher.');
+export class IllegalOperation extends Error {
+  constructor(instance: EventDispatcher | CommandDispatcher) {
+    super(`Please make sure that `${instance.constructor.name}` established a connection with host..');
   }
 }
