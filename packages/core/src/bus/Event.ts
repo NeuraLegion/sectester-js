@@ -8,7 +8,7 @@ export abstract class Event<T> {
   public readonly correlationId!: string;
   public readonly createdAt!: Date;
 
-  constructor(
+  protected constructor(
     payload: T,
     type?: string,
     correlationId?: string,

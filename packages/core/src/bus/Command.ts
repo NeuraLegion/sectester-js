@@ -10,7 +10,7 @@ export abstract class Command<T, R> {
   public readonly correlationId!: string;
   public readonly createdAt!: Date;
 
-  constructor(
+  protected constructor(
     payload: T,
     expectReply?: boolean,
     ttl?: number,
