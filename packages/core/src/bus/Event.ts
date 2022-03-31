@@ -1,4 +1,5 @@
 import { EventDispatcher } from './EventDispatcher';
+import { getTypeName } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
 
 export abstract class Event<T> {
@@ -14,19 +15,13 @@ export abstract class Event<T> {
     createdAt?: Date
   ) {
     this.payload = payload;
-    this.type = type || this.getType(payload);
+    this.type = type || getTypeName(payload);
     this.correlationId = correlationId || uuidv4();
     this.createdAt = createdAt || new Date();
   }
 
   public publish(dispatcher: EventDispatcher): Promise<void> {
     return dispatcher.publish<T>(this);
-  }
-
-  private getType(payload: T) {
-    const { constructor } = Object.getPrototypeOf(payload);
-
-    return constructor.name as string;
   }
 }
 
