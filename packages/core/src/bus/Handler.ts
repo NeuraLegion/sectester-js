@@ -1,3 +1,3 @@
-export interface Handler<T, R> {
-  handle(argument: T): Promise<R>;
+export interface EventHandler<T, R = void> {
+  handle(payload: T): Promise<R | undefined>;
 }
