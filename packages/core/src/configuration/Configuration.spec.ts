@@ -32,7 +32,7 @@ describe('configuration', () => {
       ).toThrow();
     });
 
-    it('should throw if credentials or credentialProviders are not passed', () => {
+    it('should throw an error if credentials or credential providers are not passed', () => {
       expect(
         () =>
           new Configuration({
