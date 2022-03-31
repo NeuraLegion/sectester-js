@@ -32,7 +32,7 @@ export abstract class Command<T, R> {
     this.createdAt = createdAt || new Date();
   }
 
-  public execute(dispatcher: CommandDispatcher): Promise<R> {
+  public execute(dispatcher: CommandDispatcher): Promise<R | undefined> {
     return dispatcher.execute<T, R>(this);
   }
 
