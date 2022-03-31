@@ -21,7 +21,7 @@ describe('EnvCredentialProvider', () => {
 
     it('should return credentials from environment', async () => {
       const testToken = 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-      when(spiedEnv['BRIGHT_TOKEN']).thenReturn(testToken);
+      when(spiedEnv.BRIGHT_TOKEN).thenReturn(testToken);
 
       const result = await provider.get();
 
