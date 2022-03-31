@@ -32,7 +32,7 @@ describe('configuration', () => {
       ).toThrow();
     });
 
-    it('should throw if credentials or credentialProviders are not passed', () => {
+    it('should throw an error if credentials or credential providers are not passed', () => {
       expect(
         () =>
           new Configuration({
@@ -41,148 +41,77 @@ describe('configuration', () => {
       ).toThrow();
     });
 
-    it('should generate correct api and bus for localhost', () => {
+    it.each([
+      {
+        input: 'localhost',
+        expected: { bus: 'amqp://localhost:5672', api: 'http://localhost:8000' }
+      },
+      {
+        input: 'localhost:8080',
+        expected: { bus: 'amqp://localhost:5672', api: 'http://localhost:8000' }
+      },
+      {
+        input: 'http://localhost',
+        expected: { bus: 'amqp://localhost:5672', api: 'http://localhost:8000' }
+      },
+      {
+        input: 'http://localhost:8080',
+        expected: { bus: 'amqp://localhost:5672', api: 'http://localhost:8000' }
+      },
+      {
+        input: '127.0.0.1',
+        expected: { bus: 'amqp://127.0.0.1:5672', api: 'http://127.0.0.1:8000' }
+      },
+      {
+        input: '127.0.0.1:8080',
+        expected: { bus: 'amqp://127.0.0.1:5672', api: 'http://127.0.0.1:8000' }
+      },
+      {
+        input: 'http://127.0.0.1',
+        expected: { bus: 'amqp://127.0.0.1:5672', api: 'http://127.0.0.1:8000' }
+      },
+      {
+        input: 'http://127.0.0.1:8080',
+        expected: { bus: 'amqp://127.0.0.1:5672', api: 'http://127.0.0.1:8000' }
+      },
+      {
+        input: 'example.com',
+        expected: {
+          bus: 'amqps://amq.example.com:5672',
+          api: 'https://example.com'
+        }
+      },
+      {
+        input: 'example.com:443',
+        expected: {
+          bus: 'amqps://amq.example.com:5672',
+          api: 'https://example.com'
+        }
+      },
+      {
+        input: 'http://example.com',
+        expected: {
+          bus: 'amqps://amq.example.com:5672',
+          api: 'https://example.com'
+        }
+      },
+      {
+        input: 'http://example.com:443',
+        expected: {
+          bus: 'amqps://amq.example.com:5672',
+          api: 'https://example.com'
+        }
+      }
+    ])('should generate correct api and bus for $input', entry => {
       const configuration = new Configuration({
-        cluster: 'localhost',
+        cluster: entry.input,
         credentials: {
           token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
         }
       });
 
-      expect(configuration.bus).toEqual('amqp://localhost:5672');
-      expect(configuration.api).toEqual('http://localhost:8000');
-    });
-
-    it('should generate correct api and bus for localhost:{port}', () => {
-      const configuration = new Configuration({
-        cluster: 'localhost:8080',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqp://localhost:5672');
-      expect(configuration.api).toEqual('http://localhost:8000');
-    });
-
-    it('should generate correct api and bus for 127.0.0.1', () => {
-      const configuration = new Configuration({
-        cluster: '127.0.0.1',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqp://127.0.0.1:5672');
-      expect(configuration.api).toEqual('http://127.0.0.1:8000');
-    });
-
-    it('should generate correct api and bus for 127.0.0.1:{port}', () => {
-      const configuration = new Configuration({
-        cluster: '127.0.0.1:8080',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqp://127.0.0.1:5672');
-      expect(configuration.api).toEqual('http://127.0.0.1:8000');
-    });
-
-    it('should generate correct api and bus for http://localhost', () => {
-      const configuration = new Configuration({
-        cluster: 'localhost',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqp://localhost:5672');
-      expect(configuration.api).toEqual('http://localhost:8000');
-    });
-
-    it('should generate correct api and bus for http://localhost:{port}', () => {
-      const configuration = new Configuration({
-        cluster: 'localhost:8080',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqp://localhost:5672');
-      expect(configuration.api).toEqual('http://localhost:8000');
-    });
-
-    it('should generate correct api and bus for http://127.0.0.1', () => {
-      const configuration = new Configuration({
-        cluster: '127.0.0.1',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqp://127.0.0.1:5672');
-      expect(configuration.api).toEqual('http://127.0.0.1:8000');
-    });
-
-    it('should generate correct api and bus for http://127.0.0.1:{port}', () => {
-      const configuration = new Configuration({
-        cluster: '127.0.0.1:8080',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqp://127.0.0.1:5672');
-      expect(configuration.api).toEqual('http://127.0.0.1:8000');
-    });
-
-    it('should generate correct api and bus for example.com', () => {
-      const configuration = new Configuration({
-        cluster: 'example.com',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqps://amq.example.com:5672');
-      expect(configuration.api).toEqual('https://example.com');
-    });
-
-    it('should generate correct api and bus for example.com:443', () => {
-      const configuration = new Configuration({
-        cluster: 'example.com:443',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqps://amq.example.com:5672');
-      expect(configuration.api).toEqual('https://example.com');
-    });
-
-    it('should generate correct api and bus for https://example.com', () => {
-      const configuration = new Configuration({
-        cluster: 'https://example.com',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqps://amq.example.com:5672');
-      expect(configuration.api).toEqual('https://example.com');
-    });
-
-    it('should generate correct api and bus for https://example.com:443', () => {
-      const configuration = new Configuration({
-        cluster: 'https://example.com:443',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
-
-      expect(configuration.bus).toEqual('amqps://amq.example.com:5672');
-      expect(configuration.api).toEqual('https://example.com');
+      expect(configuration.bus).toEqual(entry.expected.bus);
+      expect(configuration.api).toEqual(entry.expected.api);
     });
   });
 
@@ -197,7 +126,7 @@ describe('configuration', () => {
       await expect(configuration.loadCredentials()).resolves.not.toThrow();
     });
 
-    it('Should load credentials from profider', async () => {
+    it('should load credentials from profider', async () => {
       const mockedCredentials = {
         token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
       };
