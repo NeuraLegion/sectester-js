@@ -4,8 +4,6 @@ export * from './Event';
 export * from './EventDispatcher';
 export * from './EventBus';
 export * from './RetryStartegy';
-export * from './Handler';
 export * from './EventHandler';
 export * from './exceptions';
 export * from './decorators';
-export * from './ConectionFactory';
