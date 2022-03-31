@@ -2,8 +2,8 @@ import { CredentialProvider, Credentials } from '../credentials-provider';
 import { container, DependencyContainer, injectable } from 'tsyringe';
 
 export interface ConfigurationOptions {
-  credentials?: Credentials;
   cluster: string;
+  credentials?: Credentials;
   credentialProviders?: CredentialProvider[];
 }
 
