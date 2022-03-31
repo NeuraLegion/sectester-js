@@ -38,7 +38,7 @@ export class Configuration {
 
   constructor(options: ConfigurationOptions) {
     if (!options.credentials && !options.credentialProviders) {
-      throw new Error(`Please provide 'credentials' or 'credentialProviders'`);
+      throw new Error(`Please provide either 'credentials' or 'credentialProviders'`);
     }
 
     if (!options.cluster) {
