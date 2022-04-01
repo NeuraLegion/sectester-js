@@ -5,7 +5,7 @@ on:
 
   pull_request:
     branches:
-      - master
+      - '**'
 
 env:
   DEPENDENCIES_CACHE: npm-cache
@@ -58,21 +58,9 @@ jobs:
         run: echo "NX_ARGUMENTS=--prod" >> $GITHUB_ENV
 
       - name: nx affected:${{ matrix.target }}
-        if: matrix.target != 'format' && matrix.target != 'test'
+        if: matrix.target != 'format'
         run: npm run affected:${{ matrix.target }} -- --base=origin/$GITHUB_BASE_REF $NX_ARGUMENTS
-
-      - name: npm run test:coverage:all
-        if: matrix.target == 'test'
-        run: npm run test:coverage:all
 
       - name: nx affected:format
         if: matrix.target == 'format'
         run: npm run affected -- --target=format:check --base=origin/$GITHUB_BASE_REF
-
-      - name: Send reports to Codeclimate
-        uses: paambaati/codeclimate-action@v3.0.0
-        if: ${{ matrix.target == 'test' && hashFiles('coverage/**/lcov.info') }}
-        env:
-          CC_TEST_REPORTER_ID: 603d6113ce4313a4330ab7d1a08193545630d22cb6a7c18b658393bb56d95aa0
-        with:
-          coverageLocations: coverage/**/lcov.info:lcov
