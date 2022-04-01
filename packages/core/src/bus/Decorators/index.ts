@@ -1,1 +1,1 @@
-export * from './Bind';
+export * from './bind';
