@@ -1,4 +1,4 @@
-export class IntegrationEventHandlerNotFound extends Error {
+export class EventHandlerNotFound extends Error {
   constructor(...eventNames: string[]) {
     super(
       `For events ${eventNames.join(', ')} was not registered any handlers.`
