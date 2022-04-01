@@ -45,6 +45,7 @@ jobs:
         with:
           name: build
           path: |
+            .github
             dist
             package.json
             package-lock.json
