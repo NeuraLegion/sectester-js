@@ -16,7 +16,7 @@ export abstract class Event<T> {
   ) {
     this.payload = payload;
     this.type = type || getTypeName(payload);
-    this.correlationId = correlationId || uuidv4();
+    this.correlationId = correlationId || v4();
     this.createdAt = createdAt || new Date();
   }
 
@@ -24,7 +24,3 @@ export abstract class Event<T> {
     return dispatcher.publish<T>(this);
   }
 }
-
-export type EventConstructor<T = unknown, R extends Event<T> = Event<T>> = new (
-  ...args: any[]
-) => R;

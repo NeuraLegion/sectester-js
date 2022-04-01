@@ -3,12 +3,12 @@ import { getTypeName } from '../utils';
 import { v4 } from 'uuid';
 
 export abstract class Command<T, R> {
-  public readonly expectReply: boolean = true;
-  public readonly ttl: number = 10000;
   public readonly type: string;
   public readonly payload: T;
   public readonly correlationId: string;
   public readonly createdAt: Date;
+  public readonly expectReply: boolean = true;
+  public readonly ttl: number = 10000;
 
   protected constructor(
     payload: T,
@@ -29,7 +29,7 @@ export abstract class Command<T, R> {
     }
 
     this.type = type || getTypeName(payload);
-    this.correlationId = correlationId || uuidv4();
+    this.correlationId = correlationId || v4();
     this.createdAt = createdAt || new Date();
   }
 
