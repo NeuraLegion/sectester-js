@@ -20,7 +20,7 @@ export abstract class Command<T, R> {
   ) {
     this.payload = payload;
 
-    if (expectReply) {
+    if (typeof expectReply === 'boolean') {
       this.expectReply = expectReply;
     }
 
