@@ -2,11 +2,6 @@ import { CredentialProvider } from './CredentialsProvider';
 import { EnvCredentialProvider } from './DefaultCredentialProvider';
 
 describe('EnvCredentialProvider', () => {
-  it('sholud create new instance', () => {
-    const provider = new EnvCredentialProvider();
-    expect(provider).toBeDefined();
-  });
-
   describe('get', () => {
     const OLD_ENV = process.env;
     let provider: CredentialProvider;
