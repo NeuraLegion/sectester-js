@@ -1,33 +1,27 @@
 import { CredentialProvider } from './CredentialsProvider';
-import { EnvCredentialProvider } from './DefaultCredentialProvider';
+import { EnvCredentialProvider } from './DefaultCredentialsProvider';
+import { reset, spy, when } from 'ts-mockito';
 
 describe('EnvCredentialProvider', () => {
   describe('get', () => {
-    const OLD_ENV = process.env;
-    let provider: CredentialProvider;
+    const spiedEnv = spy(process.env);
+    let provider!: CredentialProvider;
 
-    beforeAll(() => {
+    beforeEach(() => {
       provider = new EnvCredentialProvider();
     });
 
-    beforeEach(() => {
-      jest.resetModules();
-      process.env = { ...OLD_ENV };
-    });
+    afterEach(() => reset(spiedEnv));
 
-    afterAll(() => {
-      process.env = OLD_ENV;
-    });
-
-    it('should return undefuned if credentials in nit set', async () => {
+    it('should return undefined if credentials in not provided', async () => {
       const token = (await provider.get())?.token;
 
       expect(token).toBeUndefined();
     });
 
     it('should return credentials from environment', async () => {
-      const testToken = 'test-token';
-      (process.env as any).BRIGHT_TOKEN = testToken;
+      const testToken = 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+      when(spiedEnv['BRIGHT_TOKEN']).thenReturn(testToken);
 
       const token = (await provider.get())?.token;
 
