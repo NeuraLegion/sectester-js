@@ -14,9 +14,9 @@ describe('EnvCredentialProvider', () => {
     afterEach(() => reset(spiedEnv));
 
     it('should return undefined if credentials in not provided', async () => {
-      const token = (await provider.get())?.token;
+      const result = await provider.get();
 
-      expect(token).toBeUndefined();
+      expect(result).toBeUndefined();
     });
 
     it('should return credentials from environment', async () => {
