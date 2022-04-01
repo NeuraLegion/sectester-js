@@ -123,15 +123,6 @@ await dispatcher.execute(new Command<T, R>(/*parameters*/));
 
 Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
 
-By default in `Command` presented the next options:
-
-- `payload`
-- `expectReply`
-- `ttl`
-- `type`
-- `correlationId`
-- `createdAt`
-
 #### payload (`required`)
 
 - type depend from command
@@ -184,13 +175,6 @@ The `Event` can be executed in a way that is more approach you or convenient fro
 await new Event<T>(/*parameters*/).execute(dispatcher);
 await dispatcher.execute(new Event<T>(/*parameters*/));
 ```
-
-By default in `Command` presented the next options:
-
-- `payload`
-- `type`
-- `correlationId`
-- `createdAt`
 
 #### payload (`required`)
 
