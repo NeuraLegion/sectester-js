@@ -150,7 +150,7 @@ Command can be execute synchroniouse, to do it you should set `expectReply` to `
 |     `command.ttl`      | _number_  |    _optional_     | Period of time that command should be handled before being discarded. By default `10000` ms.                |
 |     **_command.type_**     | _string_  |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
 | **_command.corelationId_** | _string_  |    _optional_     | ID that used to join response to the command. |
-|  **_command.createdAt_**   |  _Date_   |    _optional_     | The date when command instans was created. By default curent time.    |
+|  **_command.createdAt_**   |  _Date_   |    _optional_     | The exact date and time the command was created.  |
 
 ### Event
 
