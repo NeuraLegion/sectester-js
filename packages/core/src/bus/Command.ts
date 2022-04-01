@@ -24,7 +24,7 @@ export abstract class Command<T, R> {
       this.expectReply = expectReply;
     }
 
-    if (ttl) {
+    if (typeof ttl === 'number' && ttl > 0) {
       this.ttl = ttl;
     }
 
