@@ -1,4 +1,5 @@
 import { CommandDispatcher } from './CommandDispatcher';
+import { getTypeName } from '../utils';
 import { v4 as uuidv4 } from 'uuid';
 
 export abstract class Command<T, R> {
@@ -27,18 +28,12 @@ export abstract class Command<T, R> {
       this.ttl = ttl;
     }
 
-    this.type = type || this.getType(payload);
+    this.type = type || getTypeName(payload);
     this.correlationId = correlationId || uuidv4();
     this.createdAt = createdAt || new Date();
   }
 
   public execute(dispatcher: CommandDispatcher): Promise<R | undefined> {
     return dispatcher.execute<T, R>(this);
-  }
-
-  private getType(payload: T) {
-    const { constructor } = Object.getPrototypeOf(payload);
-
-    return constructor.name as string;
   }
 }
