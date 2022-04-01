@@ -109,41 +109,14 @@ await dispatcher.execute(new Command<T, R>(/*parameters*/));
 
 Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
 
-#### payload (`required`)
-
-- type depend from command
-
-Data that should be sent in queue
-
-#### expectReply (`optional`)
-
-- type `boolean`
-
-Indicates whether to wait for a response. By default `true`.
-
-#### ttl (`optional`)
-
-- type `number`
-
-Time what we should wait response. By default `number`.
-
-#### type (`optional`)
-
-- type 'string'
-
-The name of payload type. Will be taken `payload` constructor name
-
-#### corelationId (`optional`)
-
-- type `string`
-
-Id that used to join response to the command. By default random uuid.
-
-#### createdAt (`optional`)
-
-- type `Date`
-
-The date when command instans was created. By default curent time.
+|           Option           |   Type    | required/optional | Description                                                           |
+| :------------------------: | :-------: | :---------------: | --------------------------------------------------------------------- |
+|   **_command.payload_**    | dynamick  |    _required_     | Data that will be provided by EventBus                                |
+| **_command.expectReply_**  | _boolean_ |    _optional_     | Indicates whether to wait for a response. By default `true`.          |
+|     **_command.ttl_**      | _number_  |    _optional_     | Time what we should wait response. By default `10000`.                |
+|     **_command.type_**     | _string_  |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
+| **_command.corelationId_** | _string_  |    _optional_     | Id that used to join response to the command. By default random uuid. |
+|  **_command.createdAt_**   |  _Date_   |    _optional_     | The date when command instans was created. By default curent time.    |
 
 ### Event
 
@@ -162,29 +135,12 @@ await new Event<T>(/*parameters*/).execute(dispatcher);
 await dispatcher.execute(new Event<T>(/*parameters*/));
 ```
 
-#### payload (`required`)
-
-- type depend from command
-
-Data that should be sent in queue
-
-#### type (`optional`)
-
-- type 'string'
-
-The name of payload type. Will be taken `payload` constructor name
-
-#### corelationId (`optional`)
-
-- type `string`
-
-Id that used to join response to the command. By default random uuid.
-
-#### createdAt (`optional`)
-
-- type `Date`
-
-The date when command instans was created. By default curent time.
+|          Option          |   Type   | required/optional | Description                                                           |
+| :----------------------: | :------: | :---------------: | --------------------------------------------------------------------- |
+|   **_event.payload_**    | dynamick |    _required_     | Data that will be provided by EventBus                                |
+|     **_event.type_**     | _string_ |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
+| **_event.corelationId_** | _string_ |    _optional_     | Id that used to join response to the command. By default random uuid. |
+|  **_event.createdAt_**   |  _Date_  |    _optional_     | The date when command instans was created. By default curent time.    |
 
 ## License
 
