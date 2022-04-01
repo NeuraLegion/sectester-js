@@ -5,7 +5,7 @@ import { EventHandler } from './EventHandler';
 
 export interface EventBus extends EventDispatcher, CommandDispatcher {
   register<T extends Event<R>, R>(
-    type: new (...args: unknown[]) => EventHandler<T>
+    type: EventHandlerConstructor<T, R>
   ): Promise<void>;
 
   unregister<T extends Event<R>, R>(
