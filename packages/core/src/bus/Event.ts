@@ -1,5 +1,5 @@
 import { EventDispatcher } from './EventDispatcher';
-import { randomBytes } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 export abstract class Event<T> {
   public readonly type!: string;
@@ -15,8 +15,7 @@ export abstract class Event<T> {
   ) {
     this.payload = payload;
     this.type = type || this.getType(payload);
-    this.correlationId =
-      correlationId || randomBytes(32).toString('hex').slice(0, 32);
+    this.correlationId = correlationId || uuidv4();
     this.createdAt = createdAt || new Date();
   }
 
