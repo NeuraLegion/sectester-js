@@ -149,7 +149,7 @@ Command can be execute synchroniouse, to do it you should set `expectReply` to `
 | **_command.expectReply_**  | _boolean_ |    _optional_     | Indicates whether to wait for a reply. By default `true`.          |
 |     **_command.ttl_**      | _number_  |    _optional_     | Time what we should wait response. By default `10000`.                |
 |     **_command.type_**     | _string_  |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
-| **_command.corelationId_** | _string_  |    _optional_     | Id that used to join response to the command. By default random uuid. |
+| **_command.corelationId_** | _string_  |    _optional_     | ID that used to join response to the command. |
 |  **_command.createdAt_**   |  _Date_   |    _optional_     | The date when command instans was created. By default curent time.    |
 
 ### Event
