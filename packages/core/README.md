@@ -66,7 +66,6 @@ const config = new Configuration({
 ```
 
 #### credentials
-
 - type: `Credentials`
 
 Set credentials to access the application.
