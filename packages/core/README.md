@@ -92,7 +92,7 @@ const config = new Configuration({
 
 ### Command
 
-`abstract class` which one should extend your command class.
+`abstract class` which one should extend your command class. 
 
 ```ts
 export class Test<T, R> extend Command<T, R> {
@@ -107,11 +107,31 @@ await new Command<T, R>(/*parameters*/).execute(dispatcher);
 await dispatcher.execute(new Command<T, R>(/*parameters*/));
 ```
 
+`Command` should be used in the case when you need execute NeuraLegion application command. For example registred repeater.
+
+```ts
+export class RegisterRepeater {
+  constructor(
+    public readonly repeaterId: string,
+    public readonly version: string,
+    public readonly localScriptsUsed: boolean
+  ) {}
+}
+
+await new Command(
+  new RegisterRepeater(
+    repeaterId,
+    version,
+    false
+  )
+).execute(dispatcher);
+```
+
 Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
 
 |           Option           |   Type    | required/optional | Description                                                           |
 | :------------------------: | :-------: | :---------------: | --------------------------------------------------------------------- |
-|   **_command.payload_**    | dynamick  |    _required_     | Data that will be provided by EventBus                                |
+|   **_command.payload_**    | dynamick  |    _required_     | Data that will be passed, by EventBus                                 |
 | **_command.expectReply_**  | _boolean_ |    _optional_     | Indicates whether to wait for a response. By default `true`.          |
 |     **_command.ttl_**      | _number_  |    _optional_     | Time what we should wait response. By default `10000`.                |
 |     **_command.type_**     | _string_  |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
@@ -120,7 +140,7 @@ Command can be execute synchroniouse, to do it you should set `expectReply` to `
 
 ### Event
 
-`abstract class` which one should extend your event class.
+`abstract class` which one should extend your event class. 
 
 ```ts
 export class Test<T> extend Event<T> {
@@ -135,9 +155,22 @@ await new Event<T>(/*parameters*/).execute(dispatcher);
 await dispatcher.execute(new Event<T>(/*parameters*/));
 ```
 
+`Event` should be used in case when you need to update NeuraLegion application component state.
+
+```ts
+export class RepeaterStatusUpdated {
+  constructor(
+    public readonly repeaterId: string,
+    public readonly status: 'connected' | 'disconnected'
+  ) {}
+}
+
+await new Event(new RepeaterStatusUpdated(repeaterId, 'connected')).publish(dispatcher);
+```
+
 |          Option          |   Type   | required/optional | Description                                                           |
 | :----------------------: | :------: | :---------------: | --------------------------------------------------------------------- |
-|   **_event.payload_**    | dynamick |    _required_     | Data that will be provided by EventBus                                |
+|   **_event.payload_**    | dynamick |    _required_     | Data that will be passed, by EventBus                                 |
 |     **_event.type_**     | _string_ |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
 | **_event.corelationId_** | _string_ |    _optional_     | Id that used to join response to the command. By default random uuid. |
 |  **_event.createdAt_**   |  _Date_  |    _optional_     | The date when command instans was created. By default curent time.    |
