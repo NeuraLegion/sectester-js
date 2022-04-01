@@ -147,7 +147,7 @@ Command can be execute synchroniouse, to do it you should set `expectReply` to `
 | :------------------------: | :-------: | :---------------: | --------------------------------------------------------------------- |
 |   `command.payload`    | dynamick  |    _required_     | Message that we want to transmit to the remote service.                                 |
 | **_command.expectReply_**  | _boolean_ |    _optional_     | Indicates whether to wait for a reply. By default `true`.          |
-|     **_command.ttl_**      | _number_  |    _optional_     | Time what we should wait response. By default `10000`.                |
+|     `command.ttl`      | _number_  |    _optional_     | Period of time that command should be handled before being discarded. By default `10000` ms.                |
 |     **_command.type_**     | _string_  |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
 | **_command.corelationId_** | _string_  |    _optional_     | ID that used to join response to the command. |
 |  **_command.createdAt_**   |  _Date_   |    _optional_     | The date when command instans was created. By default curent time.    |
