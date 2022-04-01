@@ -4,9 +4,9 @@ import { v4 } from 'uuid';
 
 export abstract class Event<T> {
   public readonly type: string;
-  public readonly payload!: T;
-  public readonly correlationId!: string;
-  public readonly createdAt!: Date;
+  public readonly payload: T;
+  public readonly correlationId: string;
+  public readonly createdAt: Date;
 
   protected constructor(
     payload: T,
