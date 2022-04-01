@@ -1,6 +1,6 @@
 import { CommandDispatcher } from './CommandDispatcher';
 import { getTypeName } from '../utils';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from 'uuid';
 
 export abstract class Command<T, R> {
   public readonly expectReply: boolean = true;
