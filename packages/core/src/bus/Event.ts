@@ -30,6 +30,6 @@ export abstract class Event<T> {
   }
 }
 
-export type EventType<T = unknown, R extends Event<T> = Event<T>> = new (
+export type EventConstructor<T = unknown, R extends Event<T> = Event<T>> = new (
   ...args: any[]
 ) => R;
