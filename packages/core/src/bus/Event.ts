@@ -1,6 +1,6 @@
 import { EventDispatcher } from './EventDispatcher';
 import { getTypeName } from '../utils';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from 'uuid';
 
 export abstract class Event<T> {
   public readonly type: string;
