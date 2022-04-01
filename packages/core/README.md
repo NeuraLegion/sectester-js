@@ -114,7 +114,7 @@ export class Test<T, R> extend Command<T, R> {
 The Command can be executed in a way that is more approach you or convenient from the client's perspective.
 ```ts
 await new Command<T, R>(/*parameters*/).execute(dispatcher);
-await dispatcher.execute(await new Command<T, R>(/*parameters*/));
+await dispatcher.execute(new Command<T, R>(/*parameters*/));
 ```
 
 Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
