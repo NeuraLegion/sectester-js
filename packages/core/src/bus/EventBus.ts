@@ -1,16 +1,11 @@
 import { CommandDispatcher } from './CommandDispatcher';
-import { Event } from './Event';
 import { EventDispatcher } from './EventDispatcher';
-import { EventHandler } from './EventHandler';
+import { EventHandlerConstructor } from './EventHandler';
 
 export interface EventBus extends EventDispatcher, CommandDispatcher {
-  register<T, R>(
-    type: EventHandlerConstructor<T, R>
-  ): Promise<void>;
+  register<T, R>(type: EventHandlerConstructor<T, R>): Promise<void>;
 
-  unregister<T extends Event<R>, R>(
-    type: new (...args: unknown[]) => EventHandler<T>
-  ): Promise<void>;
+  unregister<T, R>(type: EventHandlerConstructor<T, R>): Promise<void>;
 
   init?(): Promise<void>;
   destroy?(): Promise<void>;
