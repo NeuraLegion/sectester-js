@@ -71,10 +71,10 @@ export class Configuration {
 
     this.resolveUrls(cluster);
 
-    let host = options.cluster;
+    let host = options.cluster.split(/:\d+/)[0];
 
     try {
-      ({ host } = new URL(options.cluster));
+      ({ host } = new URL(host));
     } catch {
       // noop
     }
