@@ -1,5 +1,5 @@
-export const getTypeName = (payload: unknown) => {
+export const getTypeName = (payload: unknown): string => {
   const { constructor } = Object.getPrototypeOf(payload);
 
-  return constructor.name as string;
+  return constructor.name;
 };
