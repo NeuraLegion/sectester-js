@@ -145,7 +145,7 @@ Command can be execute synchroniouse, to do it you should set `expectReply` to `
 
 |           Option           |   Type    | required/optional | Description                                                           |
 | :------------------------: | :-------: | :---------------: | --------------------------------------------------------------------- |
-|   **_command.payload_**    | dynamick  |    _required_     | Data that will be passed, by EventBus                                 |
+|   `command.payload`    | dynamick  |    _required_     | Message that we want to transmit to the remote service.                                 |
 | **_command.expectReply_**  | _boolean_ |    _optional_     | Indicates whether to wait for a reply. By default `true`.          |
 |     **_command.ttl_**      | _number_  |    _optional_     | Time what we should wait response. By default `10000`.                |
 |     **_command.type_**     | _string_  |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
