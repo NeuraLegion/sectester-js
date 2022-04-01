@@ -8,7 +8,6 @@ export interface PublishOptions {
   dist: string;
   dryRun?: boolean;
   tag?: string;
-  packageVersion?: string;
 }
 
 export default async (
@@ -78,14 +77,6 @@ const checkFilePerms = async (path: string): Promise<boolean> => {
   }
 };
 
-const generateVersionArg = (
-  packageManager: 'yarn' | 'npm',
-  options: PublishOptions
-): string =>
-  `--${packageManager === 'yarn' ? 'new-version' : 'version'} ${
-    options.packageVersion
-  }`;
-
 const generatePublishCommand = (
   packageManager: 'yarn' | 'npm',
   options: PublishOptions
@@ -93,9 +84,6 @@ const generatePublishCommand = (
   const cmd = `${packageManager} publish ${options.dist}`;
   const args = [
     ...(options.tag ? [`--tag ${options.tag}`] : []),
-    ...(options.packageVersion
-      ? [generateVersionArg(packageManager, options)]
-      : []),
     ...(options.dryRun ? ['--dry-run'] : []),
     ...(packageManager === 'npm' ? ['--loglevel error'] : [])
   ];

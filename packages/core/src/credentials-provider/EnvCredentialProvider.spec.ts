@@ -20,12 +20,12 @@ describe('EnvCredentialProvider', () => {
     });
 
     it('should return credentials from environment', async () => {
-      const testToken = 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-      when(spiedEnv['BRIGHT_TOKEN']).thenReturn(testToken);
+      const token = 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0';
+      when(spiedEnv.BRIGHT_TOKEN).thenReturn(token);
 
       const result = await provider.get();
 
-      expect(result).toBeDefined();
+      expect(result).toEqual({ token });
     });
   });
 });

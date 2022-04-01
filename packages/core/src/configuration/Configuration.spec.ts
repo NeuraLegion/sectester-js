@@ -3,7 +3,7 @@ import { Configuration } from './Configuration';
 import { EnvCredentialProvider } from '../credentials-provider';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
 
-describe('configuration', () => {
+describe('Configuration', () => {
   const mockedProvider = mock<EnvCredentialProvider>();
 
   afterEach(() => reset(mockedProvider));
@@ -11,10 +11,7 @@ describe('configuration', () => {
   describe('constructor', () => {
     it('should be a single instance', () => {
       const configuration = new Configuration({
-        cluster: 'app.neuralegion.com',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
+        cluster: 'example.com'
       });
       const configuration2 = configuration.container.resolve(Configuration);
       expect(configuration).toBe(configuration2);
@@ -24,10 +21,7 @@ describe('configuration', () => {
       expect(
         () =>
           new Configuration({
-            cluster: '',
-            credentials: {
-              token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-            }
+            cluster: ''
           })
       ).toThrow();
     });
@@ -36,9 +30,22 @@ describe('configuration', () => {
       expect(
         () =>
           new Configuration({
-            cluster: 'example.com'
+            cluster: 'example.com',
+            credentialProviders: []
           })
       ).toThrow();
+    });
+
+    it('should use options with default values', () => {
+      const config = new Configuration({
+        cluster: 'example.com'
+      });
+
+      expect(config).toMatchObject({
+        credentialProviders: expect.arrayContaining([
+          expect.any(EnvCredentialProvider)
+        ])
+      });
     });
 
     it.each([
@@ -102,45 +109,68 @@ describe('configuration', () => {
           api: 'https://example.com'
         }
       }
-    ])('should generate correct api and bus for $input', entry => {
-      const configuration = new Configuration({
-        cluster: entry.input,
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
-      });
+    ])(
+      'should generate correct api and bus for $input',
+      ({ expected, input }) => {
+        const configuration = new Configuration({
+          cluster: input
+        });
 
-      expect(configuration.bus).toEqual(entry.expected.bus);
-      expect(configuration.api).toEqual(entry.expected.api);
+        expect(configuration).toMatchObject(expected);
+      }
+    );
+
+    it('should throw an error if cluster is wrong', () => {
+      expect(
+        () =>
+          new Configuration({
+            cluster: ':test'
+          })
+      ).toThrow("pass correct 'cluster' option");
     });
   });
 
   describe('loadCredentials', () => {
-    it('should not throw if provider not defined', async () => {
+    it('should do nothing if provider not defined', async () => {
+      const credentials = {
+        token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
+      };
       const configuration = new Configuration({
-        cluster: 'app.neuralegion.com',
-        credentials: {
-          token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-        }
+        credentials,
+        cluster: 'app.neuralegion.com'
       });
-      await expect(configuration.loadCredentials()).resolves.not.toThrow();
+
+      await configuration.loadCredentials();
+
+      expect(configuration).toMatchObject({ credentials });
     });
 
-    it('should load credentials from profider', async () => {
-      const mockedCredentials = {
-        token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    it('should load credentials using a provider', async () => {
+      const credentials = {
+        token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
       };
       const configuration = new Configuration({
         cluster: 'app.neuralegion.com',
         credentialProviders: [instance(mockedProvider)]
       });
-
-      when(mockedProvider.get()).thenResolve(mockedCredentials);
+      when(mockedProvider.get()).thenResolve(credentials);
 
       await configuration.loadCredentials();
 
       verify(mockedProvider.get()).once();
-      expect(configuration).toMatchObject({ credentials: mockedCredentials });
+      expect(configuration).toMatchObject({ credentials });
+    });
+
+    it('should throw an error if no one provider does not find credentials', async () => {
+      const configuration = new Configuration({
+        cluster: 'app.neuralegion.com',
+        credentialProviders: [instance(mockedProvider)]
+      });
+      when(mockedProvider.get()).thenResolve(undefined);
+
+      const result = configuration.loadCredentials();
+
+      await expect(result).rejects.toThrow('Could not load credentials');
     });
   });
 });

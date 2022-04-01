@@ -15,10 +15,6 @@
       "type": "boolean",
       "default": false
     },
-    "packageVersion": {
-      "type": "string",
-      "description": "Skips the prompt for new version by using the value of version instead."
-    },
     "tag": {
       "type": "string",
       "description": "Providing a tag to publish packages with a specific tag."

@@ -20,7 +20,7 @@ import { Configuration } from '@secbox/core';
 const config = new Configuration({
   cluster: 'app.neuralegion.com',
   credentials: {
-    token: 'xxxxxxx.xxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    token: 'your API key'
   }
 });
 ```
@@ -33,11 +33,21 @@ const config = config.container.resolve(Configuration);
 
 #### Options
 
+Configuration can be customized using the following options:
+
 ```ts
 export interface ConfigurationOptions {
   cluster: string;
   credentials?: Credentials;
   credentialProviders?: CredentialProvider[];
+}
+```
+
+The default configuration is as follows:
+
+```js
+{
+  credentialProviders: [new EnvCredentialProvider()];
 }
 ```
 
@@ -48,6 +58,8 @@ export interface ConfigurationOptions {
 Set the application name (domain name), that is used to establish connection with. By default, the option is equal to `app.neuralegion.com`.
 
 ```ts
+import { Configuration } from '@secbox/core';
+
 const config = new Configuration({
   cluster: 'app.neuralegion.com'
 });
@@ -60,6 +72,8 @@ const config = new Configuration({
 Set credentials to access the application.
 
 ```ts
+import { Configuration } from '@secbox/core';
+
 const config = new Configuration({
   credentials: {
     token: 'your API key'
@@ -73,7 +87,7 @@ More info about [setting up an API key](https://docs.neuralegion.com/docs/manage
 
 - type: `CredentialProvider[]`
 
-Allows you to provide credentials and load it in runtime. You can pass many providers, and credentials will be loaded from the first provider which successfully provides credentials. Currently, only `EnvCredentialProvider` is accessible.
+Allows you to provide credentials and load it in runtime. The configuration will invoke one provider at a time and only continue to the next if no credentials have been located. For example, if the process finds values defined via the `BRIGHT_TOKEN` environment variables, the file at `.secboxrc` will not be read.
 
 #### EnvCredentialProvider
 
@@ -92,7 +106,7 @@ const config = new Configuration({
 
 ### Command
 
-`abstract class` which one should extend your command class. 
+`abstract class` which one should extend your command class.
 
 ```ts
 export class Test<T, R> extend Command<T, R> {
@@ -118,13 +132,9 @@ export class RegisterRepeater {
   ) {}
 }
 
-await new Command(
-  new RegisterRepeater(
-    repeaterId,
-    version,
-    false
-  )
-).execute(dispatcher);
+await new Command(new RegisterRepeater(repeaterId, version, false)).execute(
+  dispatcher
+);
 ```
 
 Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
@@ -140,7 +150,7 @@ Command can be execute synchroniouse, to do it you should set `expectReply` to `
 
 ### Event
 
-`abstract class` which one should extend your event class. 
+`abstract class` which one should extend your event class.
 
 ```ts
 export class Test<T> extend Event<T> {
@@ -165,7 +175,9 @@ export class RepeaterStatusUpdated {
   ) {}
 }
 
-await new Event(new RepeaterStatusUpdated(repeaterId, 'connected')).publish(dispatcher);
+await new Event(new RepeaterStatusUpdated(repeaterId, 'connected')).publish(
+  dispatcher
+);
 ```
 
 |          Option          |   Type   | required/optional | Description                                                           |

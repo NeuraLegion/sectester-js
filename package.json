@@ -1,7 +1,7 @@
 {
   "name": "secbox-sdk-js",
-  "version": "0.0.0",
-  "private": false,
+  "version": "0.1.0",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
@@ -26,10 +26,6 @@
       "@commitlint/config-conventional"
     ]
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/neuralegion",
-    "access": "restricted"
-  },
   "lint-staged": {
     "*.ts": [
       "eslint --fix"
@@ -49,7 +45,7 @@
     "build": "nx build",
     "build:tools": "tsc -b tools/tsconfig.tools.json",
     "publish": "nx publish",
-    "prerelease": "npm run build:tools",
+    "prepublish": "npm run build:tools",
     "test": "nx test",
     "test:coverage": "npm run test -- --coverage",
     "lint": "nx workspace-lint && nx lint",
