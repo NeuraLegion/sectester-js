@@ -66,6 +66,7 @@ const config = new Configuration({
 ```
 
 #### credentials
+
 - type: `Credentials`
 
 Set credentials to access the application.
@@ -104,7 +105,9 @@ const config = new Configuration({
 ```
 
 ### Command
+
 `abstract class` which one should extend your command class.
+
 ```ts
 export class Test<T, R> extend Command<T, R> {
   // ...
@@ -112,6 +115,7 @@ export class Test<T, R> extend Command<T, R> {
 ```
 
 The Command can be executed in a way that is more approach you or convenient from the client's perspective.
+
 ```ts
 await new Command<T, R>(/*parameters*/).execute(dispatcher);
 await dispatcher.execute(new Command<T, R>(/*parameters*/));
@@ -120,6 +124,7 @@ await dispatcher.execute(new Command<T, R>(/*parameters*/));
 Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
 
 By default in `Command` presented the next options:
+
 - `payload`
 - `expectReply`
 - `ttl`
@@ -128,36 +133,43 @@ By default in `Command` presented the next options:
 - `createdAt`
 
 #### payload (`required`)
+
 - type depend from command
 
 Data that should be sent in queue
 
 #### expectReply (`optional`)
+
 - type `boolean`
 
 Indicates whether to wait for a response. By default `true`.
 
 #### ttl (`optional`)
+
 - type `number`
 
 Time what we should wait response. By default `number`.
 
 #### type (`optional`)
+
 - type 'string'
 
 The name of payload type. Will be taken `payload` constructor name
 
-#### corelationId  (`optional`)
+#### corelationId (`optional`)
+
 - type `string`
 
 Id that used to join response to the command. By default random uuid.
 
 #### createdAt (`optional`)
+
 - type `Date`
 
 The date when command instans was created. By default curent time.
 
 ### Event
+
 `abstract class` which one should extend your event class.
 
 ```ts
@@ -167,38 +179,42 @@ export class Test<T> extend Event<T> {
 ```
 
 The `Event` can be executed in a way that is more approach you or convenient from the client's perspective.
+
 ```ts
 await new Event<T>(/*parameters*/).execute(dispatcher);
-await dispatcher.execute(await new Event<T>(/*parameters*/));
+await dispatcher.execute(new Event<T>(/*parameters*/));
 ```
 
 By default in `Command` presented the next options:
+
 - `payload`
 - `type`
 - `correlationId`
 - `createdAt`
 
 #### payload (`required`)
+
 - type depend from command
 
 Data that should be sent in queue
 
 #### type (`optional`)
+
 - type 'string'
 
 The name of payload type. Will be taken `payload` constructor name
 
-#### corelationId  (`optional`)
+#### corelationId (`optional`)
+
 - type `string`
 
 Id that used to join response to the command. By default random uuid.
 
 #### createdAt (`optional`)
+
 - type `Date`
 
 The date when command instans was created. By default curent time.
-
-
 
 ## License
 
