@@ -41,6 +41,7 @@ export interface ConfigurationOptions {
   credentials?: Credentials;
   credentialProviders?: CredentialProvider[];
 }
+```
 
 The default configuration is as follows:
 
