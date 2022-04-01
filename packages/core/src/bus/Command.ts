@@ -6,9 +6,9 @@ export abstract class Command<T, R> {
   public readonly expectReply: boolean = true;
   public readonly ttl: number = 10000;
   public readonly type: string;
-  public readonly payload!: T;
-  public readonly correlationId!: string;
-  public readonly createdAt!: Date;
+  public readonly payload: T;
+  public readonly correlationId: string;
+  public readonly createdAt: Date;
 
   protected constructor(
     payload: T,
