@@ -1,13 +1,5 @@
-import { CredentialProvider } from '.';
-import { EnvCredentialProvider } from './DefaultCredentialProvider';
-import { container, Lifecycle } from 'tsyringe';
+import { container } from 'tsyringe';
 
-container
-  .register('tsyringe', { useValue: container })
-  .register(
-    CredentialProvider,
-    { useClass: EnvCredentialProvider },
-    { lifecycle: Lifecycle.Singleton }
-  );
+container.register('tsyringe', { useValue: container });
 
 export default container;
