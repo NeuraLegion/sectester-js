@@ -1,0 +1,50 @@
+name: CI / Coverage
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - master
+
+env:
+  DEPENDENCIES_CACHE: npm-cache
+  NX_CACHE: nx-cache
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install deps
+        uses: ./.github/workflows/composite/npm
+        with:
+          cache: ${{ env.DEPENDENCIES_CACHE }}
+
+      - name: Cache Nx
+        uses: actions/cache@v2
+        with:
+          path: node_modules/.cache/nx
+          key: ${{ env.NX_CACHE }}-${{ hashFiles('**/package-lock.json') }}-${{ matrix.target }}-${{ matrix.index }}-${{ github.sha }}
+          restore-keys: |
+            ${{ env.NX_CACHE }}-${{ hashFiles('**/package-lock.json') }}-${{ matrix.target }}-${{ matrix.index }}-
+            ${{ env.NX_CACHE }}-${{ hashFiles('**/package-lock.json') }}-
+            ${{ env.NX_CACHE }}-
+
+      - name: npm run test:coverage:all
+        run: npm run test:coverage:all
+
+      - name: Send reports to Codeclimate
+        uses: paambaati/codeclimate-action@v3.0.0
+        if: ${{ hashFiles('coverage/**/lcov.info') }}
+        env:
+          CC_TEST_REPORTER_ID: 603d6113ce4313a4330ab7d1a08193545630d22cb6a7c18b658393bb56d95aa0
+        with:
+          coverageLocations: coverage/**/lcov.info:lcov
