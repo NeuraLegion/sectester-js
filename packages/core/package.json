@@ -1,4 +1,35 @@
 {
   "name": "@secbox/core",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "description": "The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
+  },
+  "engines": {
+    "node": ">=16",
+    "npm": "^8.1.0"
+  },
+  "author": {
+    "name": "Artem Derevnjuk",
+    "email": "artem.derevnjuk@neuralegion.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NeuraLegion/secbox-sdk-js/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "security",
+    "testing",
+    "e2e",
+    "test",
+    "typescript",
+    "appsec",
+    "pentesting",
+    "qa",
+    "brightsec"
+  ]
 }
