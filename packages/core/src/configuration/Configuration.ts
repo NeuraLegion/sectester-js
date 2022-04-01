@@ -128,4 +128,22 @@ export class Configuration {
       this._api = `https://${hostname}`;
     }
   }
+
+  private handleCluster(cluster: string): void {
+    let host = cluster.split(/:\d+/)[0];
+
+    try {
+      ({ host } = new URL(host));
+    } catch {
+      // noop
+    }
+
+    if (['localhost', '127.0.0.1'].includes(host)) {
+      this._bus = `amqp://${host}:5672`;
+      this._api = `http://${host}:8000`;
+    } else {
+      this._bus = `amqps://amq.${host}:5672`;
+      this._api = `https://${host}`;
+    }
+  }
 }
