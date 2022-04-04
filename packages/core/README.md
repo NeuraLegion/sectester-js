@@ -106,7 +106,7 @@ const config = new Configuration({
 
 ### Command
 
-`abstract class` which one should extend your command class. 
+Abstract class which one should extend your command class.
 
 ```ts
 export class Test<T, R> extend Command<T, R> {
@@ -132,29 +132,25 @@ export class RegisterRepeater {
   ) {}
 }
 
-await new Command(
-  new RegisterRepeater(
-    repeaterId,
-    version,
-    false
-  )
-).execute(dispatcher);
+await new Command(new RegisterRepeater(repeaterId, version, false)).execute(
+  dispatcher
+);
 ```
 
 Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
 
-|           Option           |   Type    | required/optional | Description                                                           |
-| :------------------------: | :-------: | :---------------: | --------------------------------------------------------------------- |
-|   `command.payload`    | dynamick  |    _required_     | Message that we want to transmit to the remote service.                                 |
-| **_command.expectReply_**  | _boolean_ |    _optional_     | Indicates whether to wait for a reply. By default `true`.          |
-|     `command.ttl`      | _number_  |    _optional_     | Period of time that command should be handled before being discarded. By default `10000` ms.                |
-|     **_command.type_**     | _string_  |    _optional_     | The name of payload type. Will be taken `payload` constructor name    |
-| **_command.corelationId_** | _string_  |    _optional_     | ID that used to join response to the command. |
-|  **_command.createdAt_**   |  _Date_   |    _optional_     | The exact date and time the command was created.  |
+|           Option           |   Type    | required/optional | Description                                                                                  |
+| :------------------------: | :-------: | :---------------: | -------------------------------------------------------------------------------------------- |
+|     `command.payload`      | dynamick  |    _required_     | Message that we want to transmit to the remote service.                                      |
+| **_command.expectReply_**  | _boolean_ |    _optional_     | Indicates whether to wait for a reply. By default `true`.                                    |
+|       `command.ttl`        | _number_  |    _optional_     | Period of time that command should be handled before being discarded. By default `10000` ms. |
+|     **_command.type_**     | _string_  |    _optional_     | The name of payload type. Will be taken `payload` constructor name                           |
+| **_command.corelationId_** | _string_  |    _optional_     | ID that used to join response to the command.                                                |
+|  **_command.createdAt_**   |  _Date_   |    _optional_     | The exact date and time the command was created.                                             |
 
 ### Event
 
-`abstract class` which one should extend your event class. 
+Abstract class which one should extend your event class.
 
 ```ts
 export class Test<T> extend Event<T> {
@@ -179,7 +175,9 @@ export class RepeaterStatusUpdated {
   ) {}
 }
 
-await new Event(new RepeaterStatusUpdated(repeaterId, 'connected')).publish(dispatcher);
+await new Event(new RepeaterStatusUpdated(repeaterId, 'connected')).publish(
+  dispatcher
+);
 ```
 
 |          Option          |   Type   | required/optional | Description                                                           |
