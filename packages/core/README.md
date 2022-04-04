@@ -139,14 +139,14 @@ await new Command(new RegisterRepeater(repeaterId, version, false)).execute(
 
 Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
 
-|           Option           | Description                                                                                  |
-| :------------------------: | -------------------------------------------------------------------------------------------- |
-|   **_command.payload_**    | Message that we want to transmit to the remote service.                                      |
-| **_command.expectReply_**  | Indicates whether to wait for a reply. By default `true`.                                    |
-|     **_command.ttl_**      | Period of time that command should be handled before being discarded. By default `10000` ms. |
-|     **_command.type_**     | The name of payload type. Will be taken `payload` constructor name                           |
-| **_command.corelationId_** | ID that used to join response to the command.                                                |
-|  **_command.createdAt_**   | The exact date and time the command was created.                                             |
+|           Option           | Description                                                                                                           |
+| :------------------------: | --------------------------------------------------------------------------------------------------------------------- |
+|   **_command.payload_**    | Message that we want to transmit to the remote service.                                                               |
+| **_command.expectReply_**  | Indicates whether to wait for a reply. By default `true`.                                                             |
+|     **_command.ttl_**      | Period of time that command should be handled before being discarded. By default `10000` ms.                          |
+|     **_command.type_**     | The name of payload type. Will be taken `payload` constructor name                                                    |
+| **_command.corelationId_** | It might be used to "join" a reply to a particular command, but it depends on implementation. By default random uuid. |
+|  **_command.createdAt_**   | The exact date and time the command was created.                                                                      |
 
 ### Event
 
@@ -180,12 +180,12 @@ await new Event(new RepeaterStatusUpdated(repeaterId, 'connected')).publish(
 );
 ```
 
-|          Option          | Description                                                           |
-| :----------------------: | --------------------------------------------------------------------- |
-|   **_event.payload_**    | Data that will be passed, by EventBus                                 |
-|     **_event.type_**     | The name of payload type. Will be taken `payload` constructor name    |
-| **_event.corelationId_** | Id that used to join response to the command. By default random uuid. |
-|  **_event.createdAt_**   | The date when command instans was created. By default curent time.    |
+|          Option          | Description                                                                                                         |
+| :----------------------: | ------------------------------------------------------------------------------------------------------------------- |
+|   **_event.payload_**    | Data that will be passed, by EventBus                                                                               |
+|     **_event.type_**     | The name of payload type. Will be taken `payload` constructor name                                                  |
+| **_event.corelationId_** | It might be used to "join" a reply to a particular event, but it depends on implementation. By default random uuid. |
+|  **_event.createdAt_**   | The date when event instans was created. By default curent time.                                                    |
 
 ## License
 
