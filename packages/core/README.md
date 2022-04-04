@@ -104,88 +104,81 @@ const config = new Configuration({
 });
 ```
 
-### Command
+### Request-response
+The `Command` is message that used to syncing state between Service or external services. This functionality is done by sending messages outside using a cocreate implementation of Dispatcher. Depending on the type of derived class from the Message, it might be addressed to only one consumer.
 
-Abstract class which one should extend your command class.
+To create custom command you should exdend abstarct class `Command`
 
 ```ts
-export class Test<T, R> extend Command<T, R> {
-  // ...
+interface Request {
+  url: string, 
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  headers?: Record<string, string>
+  body?: string
+}
+
+class TestCommand<R = unknown> extends Command<Request, R> {
+  // implemantation
 }
 ```
 
-The Command can be executed in a way that is more approach you or convenient from the client's perspective.
+To adjust its behavior you can use next options:
+
+|          Option          | Description                                                                                                           |
+| :----------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **command.payload**      | Message that we want to transmit to the remote service.                                                               |
+| **command.expectReply**  | Indicates whether to wait for a reply. By default `true`.                                                             |
+| **command.ttl**          | Period of time that command should be handled before being discarded. By default `10000` ms.                          |
+| **command.type**         | The name of payload type. Will be taken `payload` constructor name                                                    |
+| **command.corelationId** | Used to ensure atomicity while working with EventBus. By default random uuid.                                         |
+| **command.createdAt**    | The exact date and time the command was created.                                                                      |
+
+
+### Publish-subscribe
+The `Event` is message that used to syncing state between Service or external services. This functionality is done by sending messages outside using a cocreate implementation of Dispatcher. Depending on the type of derived class from the Message, it might be addressed to multiple consumers. When a message is sent to multiple consumers, the appropriate event handler in each consumer handles the message.
+ 
+To create a custom event you should extend abstarct class `Event`
 
 ```ts
-await new Command<T, R>(/*parameters*/).execute(dispatcher);
-await dispatcher.execute(new Command<T, R>(/*parameters*/));
-```
-
-`Command` should be used in the case when you need execute NeuraLegion application command. For example registred repeater.
-
-```ts
-export class RegisterRepeater {
-  constructor(
-    public readonly repeaterId: string,
-    public readonly version: string,
-    public readonly localScriptsUsed: boolean
-  ) {}
+interface Request {
+  url: string, 
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  headers?: Record<string, string>
+  body?: string
 }
 
-await new Command(new RegisterRepeater(repeaterId, version, false)).execute(
-  dispatcher
-);
-```
-
-Command can be execute synchroniouse, to do it you should set `expectReply` to `true`.
-
-|           Option           | Description                                                                                                           |
-| :------------------------: | --------------------------------------------------------------------------------------------------------------------- |
-|   **_command.payload_**    | Message that we want to transmit to the remote service.                                                               |
-| **_command.expectReply_**  | Indicates whether to wait for a reply. By default `true`.                                                             |
-|     **_command.ttl_**      | Period of time that command should be handled before being discarded. By default `10000` ms.                          |
-|     **_command.type_**     | The name of payload type. Will be taken `payload` constructor name                                                    |
-| **_command.corelationId_** | It might be used to "join" a reply to a particular command, but it depends on implementation. By default random uuid. |
-|  **_command.createdAt_**   | The exact date and time the command was created.                                                                      |
-
-### Event
-
-Abstract class which one should extend your event class.
-
-```ts
-export class Test<T> extend Event<T> {
-  // ...
+class TestEvent extends Event<Request> {
+  // implemantation
 }
 ```
 
-The `Event` can be executed in a way that is more approach you or convenient from the client's perspective.
+To adjust its behavior you can use next options:
+
+|         Option         | Description                                                                                                         |
+| :--------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **event.payload**      | Data that will be passed, by EventBus                                                                               |
+| **event.type**         | The name of payload type. Will be taken `payload` constructor name                                                  |
+| **event.corelationId** | Used to ensure atomicity while working with EventBus. By default random uuid.                                       |
+| **event.createdAt**    | The date when event instans was created. By default curent time.                                                    |
+
+### Sending messages
+
+For instance, you can execute a command in a way that is more approach you or convenient from the client's perspective.
 
 ```ts
-await new Event<T>(/*parameters*/).execute(dispatcher);
-await dispatcher.execute(new Event<T>(/*parameters*/));
-```
+await new TestCommand<R>({ url, ...options, method: 'GET' }, /*...*/).execute(dispatcher);
 
-`Event` should be used in case when you need to update NeuraLegion application component state.
+await dispatcher.execute(new TestCommand<R>({ url, ...options, method: 'GET' }, /*...*/));
+```
+### Publishing events
+
+For instance, you can fire a event in a way that is more approach you or convenient from the client's perspective.
 
 ```ts
-export class RepeaterStatusUpdated {
-  constructor(
-    public readonly repeaterId: string,
-    public readonly status: 'connected' | 'disconnected'
-  ) {}
-}
+await new TestEvent<R>({ url, ...options, method: 'GET' }, /*...*/).publish(dispatcher);
 
-await new Event(new RepeaterStatusUpdated(repeaterId, 'connected')).publish(
-  dispatcher
-);
+await dispatcher.publish(new TestEvent<R>({ url, ...options, method: 'GET' }, /*...*/));
 ```
-
-|          Option          | Description                                                                                                         |
-| :----------------------: | ------------------------------------------------------------------------------------------------------------------- |
-|   **_event.payload_**    | Data that will be passed, by EventBus                                                                               |
-|     **_event.type_**     | The name of payload type. Will be taken `payload` constructor name                                                  |
-| **_event.corelationId_** | It might be used to "join" a reply to a particular event, but it depends on implementation. By default random uuid. |
-|  **_event.createdAt_**   | The date when event instans was created. By default curent time.                                                    |
 
 ## License
 
