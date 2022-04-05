@@ -4,7 +4,9 @@ type GetTypeName = {
 };
 
 export const getTypeName: GetTypeName = (payload: unknown) => {
-  const { constructor } = Object.getPrototypeOf(payload);
+  if (payload !== null && payload !== undefined) {
+    const { constructor } = Object.getPrototypeOf(payload);
 
-  return constructor?.name;
+    return constructor.name;
+  }
 };

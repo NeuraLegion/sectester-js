@@ -18,7 +18,7 @@ describe('getTypeName', () => {
     { input: '', expected: 'String' },
     { input: undefined, expected: undefined },
     { input: null, expected: undefined }
-  ])('should return name of type', ({ input, expected }) => {
+  ])('should return a type name of $input', ({ input, expected }) => {
     // act
     const result = getTypeName(input);
 
