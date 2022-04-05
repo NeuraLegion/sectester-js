@@ -104,81 +104,124 @@ const config = new Configuration({
 });
 ```
 
-### Request-response
-The `Command` is message that used to syncing state between Service or external services. This functionality is done by sending messages outside using a cocreate implementation of Dispatcher. Depending on the type of derived class from the Message, it might be addressed to only one consumer.
+### Messages
 
-To create custom command you should exdend abstarct class `Command`
+Message is used for syncing state between SDK, application and/or external services.
+This functionality is done by sending messages outside using a concrete implementation of `Dispatcher`.
+
+Depending on the type of derived class from the `Message`, it might be addressed to only one consumer or have typically multiple consumers as well.
+When a message is sent to multiple consumers, the appropriate event handler in each consumer handles the message.
+
+The `Message` is a data-holding class, but it implements a [Visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern#:~:text=In%20object%2Doriented%20programming%20and,structures%20without%20modifying%20the%20structures.)
+to allow clients to perform operations on it using a visitor class (see `Dispatcher`) without modifying the source.
+
+For instance, you can dispatch a message in a way that is more approach you or convenient from the client's perspective.
 
 ```ts
-interface Request {
-  url: string, 
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
-  headers?: Record<string, string>
-  body?: string
+import { CommandDispatcher } from '@secbox/core';
+
+const dispatcher = container.resolve(CommandDispatcher);
+
+interface Payload {
+  status: 'connected' | 'disconnected';
 }
 
-class TestCommand<R = unknown> extends Command<Request, R> {
-  // implemantation
+class Ping extends Command<Payload> {
+  constructor(payload: Payload) {
+    super(payload);
+  }
+}
+
+// using a visitor pattern
+await new Ping({ status: 'connected' }).execute(dispatcher);
+
+// or directly
+await dispatcher.execute(new Ping({ status: 'disconnected' }));
+```
+
+The same is applicable for the `Event`. You just need to use the `EventDispatcher` instead of `CommandDispatcher`.
+
+Each message have a correlation ID to ensure atomicity. The regular UUID is used, but you might also want to consider other options.
+
+### Request-response
+
+The request-response message (aka `Command`) style is useful when you need to exchange messages between various external services.
+Using `Command` you can easily ensure that the service has actually received the message and sent a response back.
+
+To create an instance of `Command` use the abstract class as follows:
+
+```ts
+interface RequestOptions {
+  url: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record<string, string>;
+  body?: string;
+}
+
+class Request<R = unknown> extends Command<RequestOptions, R> {
+  constructor(options: RequestOptions) {
+    super(options);
+  }
 }
 ```
 
 To adjust its behavior you can use next options:
 
-|          Option          | Description                                                                                                           |
-| :----------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| **command.payload**      | Message that we want to transmit to the remote service.                                                               |
-| **command.expectReply**  | Indicates whether to wait for a reply. By default `true`.                                                             |
-| **command.ttl**          | Period of time that command should be handled before being discarded. By default `10000` ms.                          |
-| **command.type**         | The name of payload type. Will be taken `payload` constructor name                                                    |
-| **command.corelationId** | Used to ensure atomicity while working with EventBus. By default random uuid.                                         |
-| **command.createdAt**    | The exact date and time the command was created.                                                                      |
-
+| Option         | Description                                                                                  |
+| :------------- | -------------------------------------------------------------------------------------------- |
+| `payload`      | Message that we want to transmit to the remote service.                                      |
+| `expectReply`  | Indicates whether to wait for a reply. By default `true`.                                    |
+| `ttl`          | Period of time that command should be handled before being discarded. By default `10000` ms. |
+| `type`         | The name of a command. By default, it is the name of specific class.                         |
+| `corelationId` | Used to ensure atomicity while working with EventBus. By default, random UUID.               |
+| `createdAt`    | The exact date and time the command was created.                                             |
 
 ### Publish-subscribe
-The `Event` is message that used to syncing state between Service or external services. This functionality is done by sending messages outside using a cocreate implementation of Dispatcher. Depending on the type of derived class from the Message, it might be addressed to multiple consumers. When a message is sent to multiple consumers, the appropriate event handler in each consumer handles the message.
- 
-To create a custom event you should extend abstarct class `Event`
+
+When you just want to publish events without waiting for a response, it is better to use the `Event`.
+The ideal use case for the publish-subscribe model is when you want to simply notify another service that a certain condition has occurred.
+
+To create an instance of `Event` use the abstract class as follows:
 
 ```ts
-interface Request {
-  url: string, 
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
-  headers?: Record<string, string>
-  body?: string
+interface Issue {
+  name: string;
+  details: string;
+  type: string;
+  cvss?: string;
+  cwe?: string;
 }
 
-class TestEvent extends Event<Request> {
-  // implemantation
+class IssueDetected extends Event<Issue> {
+  constructor(payload: Issue) {
+    super(payload);
+  }
 }
 ```
 
 To adjust its behavior you can use next options:
 
-|         Option         | Description                                                                                                         |
-| :--------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **event.payload**      | Data that will be passed, by EventBus                                                                               |
-| **event.type**         | The name of payload type. Will be taken `payload` constructor name                                                  |
-| **event.corelationId** | Used to ensure atomicity while working with EventBus. By default random uuid.                                       |
-| **event.createdAt**    | The date when event instans was created. By default curent time.                                                    |
+| Option         | Description                                                                    |
+| :------------- | ------------------------------------------------------------------------------ |
+| `payload`      | Message that we want to transmit to the remote service.                        |
+| `type`         | The name of a command. By default, it is the name of specific class.           |
+| `corelationId` | Used to ensure atomicity while working with EventBus. By default, random UUID. |
+| `createdAt`    | The exact date and time the event was created.                                 |
 
-### Sending messages
-
-For instance, you can execute a command in a way that is more approach you or convenient from the client's perspective.
+To create an event handler, you should implement the `Handler` interface and use the `@bind()` decorator to subscribe a handler to an event:
 
 ```ts
-await new TestCommand<R>({ url, ...options, method: 'GET' }, /*...*/).execute(dispatcher);
-
-await dispatcher.execute(new TestCommand<R>({ url, ...options, method: 'GET' }, /*...*/));
+@bind(IssueDetected)
+class IssueDetectedHandler implements EventHandler<Issue> {
+  public handle(payload: Issue): Promise<void> {
+    // implementation
+  }
+}
 ```
-### Publishing events
 
-For instance, you can fire a event in a way that is more approach you or convenient from the client's perspective.
+You can register multiple event handlers for a single event pattern and all of them will be automatically triggered in parallel.
 
-```ts
-await new TestEvent<R>({ url, ...options, method: 'GET' }, /*...*/).publish(dispatcher);
-
-await dispatcher.publish(new TestEvent<R>({ url, ...options, method: 'GET' }, /*...*/));
-```
+As soon as the `IssueDetected` event appears, the event handler takes a single argument, the data passed from the client (in this case, an event payload which has been sent over the network).
 
 ## License
 
