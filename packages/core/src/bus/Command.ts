@@ -1,12 +1,7 @@
 import { CommandDispatcher } from './CommandDispatcher';
-import { getTypeName } from '../utils';
-import { v4 } from 'uuid';
+import { Message } from './Message';
 
-export abstract class Command<T, R> {
-  public readonly type: string;
-  public readonly payload: T;
-  public readonly correlationId: string;
-  public readonly createdAt: Date;
+export abstract class Command<T, R> extends Message<T> {
   public readonly expectReply: boolean = true;
   public readonly ttl: number = 10000;
 
@@ -18,7 +13,7 @@ export abstract class Command<T, R> {
     correlationId?: string,
     createdAt?: Date
   ) {
-    this.payload = payload;
+    super(payload, type, correlationId, createdAt);
 
     if (typeof expectReply === 'boolean') {
       this.expectReply = expectReply;
@@ -27,10 +22,6 @@ export abstract class Command<T, R> {
     if (typeof ttl === 'number' && ttl > 0) {
       this.ttl = ttl;
     }
-
-    this.type = type || getTypeName(payload);
-    this.correlationId = correlationId || v4();
-    this.createdAt = createdAt || new Date();
   }
 
   public execute(dispatcher: CommandDispatcher): Promise<R | undefined> {

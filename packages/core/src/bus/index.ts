@@ -1,6 +1,7 @@
 export * from './Command';
 export * from './CommandDispatcher';
 export * from './Event';
+export * from './Message';
 export * from './EventDispatcher';
 export * from './EventBus';
 export * from './RetryStartegy';
