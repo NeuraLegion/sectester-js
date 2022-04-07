@@ -1,550 +1,550 @@
-// eslint-disable-next-line max-classes-per-file
+/* eslint-disable max-classes-per-file */
 import { RMQEventBus } from './RMQEventBus';
-import { ConnectionFactory } from '../factories';
 import { RMQEventBusConfig } from './RMQEventBusConfig';
 import {
   bind,
   Command,
   Configuration,
   Event,
-  EventHandler
+  EventHandler,
+  NoResponse
 } from '@secbox/core';
-import { injectable } from 'tsyringe';
-import { ConfirmChannel, Connection } from 'amqplib';
-import { anything, instance, mock, reset, verify, when } from 'ts-mockito';
+import {
+  anyFunction,
+  anyOfClass,
+  anyString,
+  anything,
+  deepEqual,
+  instance,
+  mock,
+  objectContaining,
+  reset,
+  resetCalls,
+  spy,
+  verify,
+  when
+} from 'ts-mockito';
+import { AmqpConnectionManager, ChannelWrapper } from 'amqp-connection-manager';
+import { Channel } from 'amqplib';
+import { DependencyContainer } from 'tsyringe';
 
-// Temporary fix for https://github.com/NagRock/ts-mockito/issues/191
-const resolvableInstance = <T extends object>(mockInstance: T): T =>
-  new Proxy<T>(instance(mockInstance), {
-    get(target, prop, receiver) {
-      if (
-        ['Symbol(Symbol.toPrimitive)', 'then', 'catch'].includes(
-          prop.toString()
-        )
-      ) {
-        return undefined;
-      }
-
-      return Reflect.get(target, prop, receiver);
-    }
-  });
-
-const randomString = (length: number): string => {
-  let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+class ConcreteCommand extends Command<string, void> {
+  constructor(
+    payload: string,
+    expectReply?: boolean,
+    ttl?: number,
+    type?: string,
+    correlationId?: string,
+    createdAt?: Date
+  ) {
+    super(payload, expectReply, ttl, type, correlationId, createdAt);
   }
+}
 
-  return result;
-};
+class ConcreteEvent extends Event<string> {
+  constructor(
+    payload: string,
+    type?: string,
+    correlationId?: string,
+    createdAt?: Date
+  ) {
+    super(payload, type, correlationId, createdAt);
+  }
+}
+
+@bind(ConcreteEvent)
+class ConcreteFirstHandler implements EventHandler<string> {
+  public async handle(_: string): Promise<void> {
+    // noop
+  }
+}
+
+@bind(ConcreteEvent)
+class ConcreteSecondHandler implements EventHandler<string> {
+  public async handle(_: string): Promise<void> {
+    // noop
+  }
+}
 
 describe('RMQEventBus', () => {
-  const sdkConfig = new Configuration({
-    cluster: 'localhost',
-    credentials: {
-      token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
-    }
-  });
-  const busConfig: RMQEventBusConfig = {
-    url: 'amqp://localhost',
-    exchange: 'EventBus',
-    clientQueue: 'agent:nnCF9MfHpbvdJVtSbQfKa1',
-    socketOptions: {
-      connectTimeout: 10000,
-      heartbeatInterval: 5000,
-      reconnectTime: 5000
-    }
+  const amqpConnectionManager = mock<AmqpConnectionManager>();
+  const mockedChannelWrapper = mock<ChannelWrapper>();
+  const mockedChannel = mock<Channel>();
+  const mockedConfiguration = mock<Configuration>();
+  const mockedDependencyContainer = mock<DependencyContainer>();
+  const options: RMQEventBusConfig = {
+    url: 'amqp://localhost:5672',
+    exchange: 'event-bus',
+    clientQueue: 'Agent',
+    appQueue: 'App'
   };
+  const spiedOptions = spy(options);
 
-  const mockedConnectionFactory = mock<ConnectionFactory<Connection>>();
-  const mockedConnection = mock<Connection>();
-  const mockedConfirmChannel = mock<ConfirmChannel>();
-
-  let eventBus!: RMQEventBus;
+  let rmq!: RMQEventBus;
 
   beforeEach(() => {
-    when(
-      mockedConfirmChannel.consume(anything(), anything(), anything())
-    ).thenResolve({ consumerTag: `agent:${randomString(22)}` } as any);
-
-    when(
-      mockedConfirmChannel.assertExchange(anything(), anything(), anything())
-    ).thenResolve();
-
-    when(
-      mockedConfirmChannel.assertQueue(anything(), anything())
-    ).thenResolve();
-
-    const confirmChannel = resolvableInstance(mockedConfirmChannel);
-    when(mockedConnection.createConfirmChannel()).thenResolve(
-      confirmChannel as any
+    jest.mock('amqp-connection-manager', () => ({
+      connect: jest.fn().mockReturnValue(instance(amqpConnectionManager))
+    }));
+    when(amqpConnectionManager.on('connect', anyFunction())).thenCall(
+      (_: string, callback: (...args: unknown[]) => unknown) => callback()
     );
-
-    const connection = resolvableInstance(mockedConnection);
-    when(mockedConnectionFactory.create(anything(), anything())).thenResolve(
-      connection
+    when(amqpConnectionManager.createChannel(anything())).thenReturn(
+      instance(mockedChannelWrapper)
     );
-
-    eventBus = new RMQEventBus(
-      sdkConfig,
-      busConfig,
-      instance(mockedConnectionFactory)
+    when(mockedChannelWrapper.addSetup(anyFunction())).thenCall(
+      (callback: (...args: unknown[]) => unknown) =>
+        callback(instance(mockedChannel))
     );
+    when(
+      mockedChannel.consume(anyString(), anyFunction(), anything())
+    ).thenResolve({ consumerTag: 'tag' } as any);
+    when(mockedConfiguration.container).thenReturn(
+      instance(mockedDependencyContainer)
+    );
+    rmq = new RMQEventBus(instance(mockedConfiguration), options);
   });
 
-  afterEach(() =>
-    reset<ConnectionFactory<Connection> | Connection | ConfirmChannel>(
-      mockedConnectionFactory,
-      mockedConnection,
-      mockedConfirmChannel
-    )
-  );
-
-  describe('init', () => {
-    it('should init event bus', async () => {
-      await expect(eventBus.init?.call(eventBus)).resolves.not.toThrow();
-      verify(mockedConnectionFactory.create(anything(), anything())).once();
-      verify(mockedConnection.createConfirmChannel()).once();
-      verify(
-        mockedConfirmChannel.consume(anything(), anything(), anything())
-      ).twice();
-      verify(
-        mockedConfirmChannel.assertExchange(anything(), anything(), anything())
-      ).once();
-      verify(mockedConfirmChannel.assertQueue(anything(), anything())).once();
-    });
-
-    it('should throw if create failsed', async () => {
-      when(mockedConnectionFactory.create(anything(), anything())).thenReject();
-      await expect(eventBus.init?.call(eventBus)).rejects.toThrow();
-      verify(mockedConnectionFactory.create(anything(), anything())).atLeast(1);
-      verify(mockedConnection.createConfirmChannel()).never();
-      verify(
-        mockedConfirmChannel.consume(anything(), anything(), anything())
-      ).never();
-      verify(
-        mockedConfirmChannel.assertExchange(anything(), anything(), anything())
-      ).never();
-      verify(mockedConfirmChannel.assertQueue(anything(), anything())).never();
-    });
-  });
-
-  describe('register', () => {
-    it('should register handler', async () => {
-      when(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).thenResolve();
-
-      sdkConfig.container.register(BondedTestHandler, {
-        useClass: BondedTestHandler
-      });
-
-      await eventBus.init?.();
-
-      await expect(eventBus.register(BondedTestHandler)).resolves.not.toThrow();
-      verify(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).once();
-    });
-
-    it('should throw if bus not inited', async () => {
-      when(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).thenResolve();
-
-      sdkConfig.container.register(BondedTestHandler, {
-        useClass: BondedTestHandler
-      });
-
-      await expect(eventBus.register(BondedTestHandler)).rejects.toThrow();
-      verify(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).never();
-    });
-
-    it('should throw if failed bindQueue', async () => {
-      when(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).thenReject();
-
-      sdkConfig.container.register(BondedTestHandler, {
-        useClass: BondedTestHandler
-      });
-
-      await eventBus.init?.();
-
-      await expect(eventBus.register(BondedTestHandler)).rejects.toThrow();
-      verify(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).once();
-    });
-
-    it('should throw if cant get bonded event name', async () => {
-      when(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).thenResolve();
-      sdkConfig.container.register(UnbondedTestHandler, {
-        useClass: UnbondedTestHandler
-      });
-      await eventBus.init?.();
-
-      await expect(eventBus.register(UnbondedTestHandler)).rejects.toThrow();
-      verify(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).never();
-    });
-
-    it('should throw if handler is unregister', async () => {
-      when(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).thenThrow();
-      await eventBus.init?.();
-
-      await expect(eventBus.register(BondedTestHandler)).rejects.toThrow();
-      verify(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).never();
-    });
-  });
-
-  describe('unregister', () => {
-    beforeEach(() => {
-      when(
-        mockedConfirmChannel.bindQueue(anything(), anything(), anything())
-      ).thenResolve();
-    });
-
-    it('should unregister the registered handler', async () => {
-      when(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).thenResolve();
-      sdkConfig.container.register(BondedTestHandler, {
-        useClass: BondedTestHandler
-      });
-      await eventBus.init?.();
-
-      await eventBus.register(BondedTestHandler);
-
-      await expect(
-        eventBus.unregister(BondedTestHandler)
-      ).resolves.not.toThrow();
-      verify(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).once();
-    });
-
-    it('should not throw if handler is not registered', async () => {
-      when(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).thenResolve();
-      sdkConfig.container.register(BondedTestHandler, {
-        useClass: BondedTestHandler
-      });
-      await eventBus.init?.();
-
-      await expect(
-        eventBus.unregister(BondedTestHandler)
-      ).resolves.not.toThrow();
-      verify(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).never();
-    });
-
-    it('should throw if bus is not inited', async () => {
-      when(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).thenResolve();
-      sdkConfig.container.register(BondedTestHandler, {
-        useClass: BondedTestHandler
-      });
-
-      await expect(eventBus.unregister(BondedTestHandler)).rejects.toThrow();
-      verify(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).never();
-    });
-
-    it('should throw if handler is not registered', async () => {
-      when(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).thenResolve();
-
-      await eventBus.init?.();
-
-      await expect(eventBus.unregister(BondedTestHandler)).rejects.toThrow();
-      verify(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).never();
-    });
-
-    it('should throw if event not bonded to handler', async () => {
-      when(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).thenResolve();
-
-      await eventBus.init?.();
-
-      await expect(eventBus.unregister(UnbondedTestHandler)).rejects.toThrow();
-      verify(
-        mockedConfirmChannel.unbindQueue(anything(), anything(), anything())
-      ).never();
-    });
+  afterEach(() => {
+    (rmq as any).handlers.clear();
+    reset<
+      | ChannelWrapper
+      | AmqpConnectionManager
+      | Channel
+      | RMQEventBusConfig
+      | DependencyContainer
+      | Configuration
+    >(
+      amqpConnectionManager,
+      mockedChannelWrapper,
+      mockedChannel,
+      spiedOptions,
+      mockedConfiguration,
+      mockedDependencyContainer
+    );
+    jest.resetModules();
+    jest.resetAllMocks();
   });
 
   describe('execute', () => {
-    it('should execute command', async () => {
+    it('should throw an error if client is not initialized yet', async () => {
+      // arrange
+      const command = new ConcreteCommand('test');
+
+      // act
+      const result = rmq.execute(command);
+
+      // assert
+      await expect(result).rejects.toThrow(
+        'established a connection with host'
+      );
+    });
+
+    it('should send a message to queue', async () => {
+      // arrange
+      const command = new ConcreteCommand('test');
       when(
-        mockedConfirmChannel.sendToQueue(anything(), anything(), anything())
-      ).thenReturn();
+        mockedChannelWrapper.sendToQueue(
+          anyString(),
+          anyOfClass(Buffer),
+          anything()
+        )
+      ).thenResolve();
 
-      const command = new TestCommand({
-        method: 'GET',
-        url: 'https://example.com'
-      });
+      await rmq.init();
 
-      await eventBus.init?.();
+      process.nextTick(() => (rmq as any).subject.emit(command.correlationId));
 
-      await expect(eventBus.execute(command)).resolves.not.toThrow();
+      // act
+      const result = await rmq.execute(command);
+
+      // assert
+      expect(result).toBeUndefined();
       verify(
-        mockedConfirmChannel.sendToQueue(anything(), anything(), anything())
+        mockedChannelWrapper.publish(
+          '',
+          options.appQueue,
+          anyOfClass(Buffer),
+          deepEqual({
+            type: command.type,
+            mandatory: true,
+            persistent: true,
+            contentType: 'application/json',
+            timestamp: command.createdAt.getTime(),
+            correlationId: command.correlationId,
+            replyTo: 'amq.rabbitmq.reply-to'
+          })
+        )
       ).once();
     });
 
-    it('should throw if bus not inited', async () => {
+    it('should send a message to queue and get a reply', async () => {
+      // arrange
+      const command = new ConcreteCommand('test');
       when(
-        mockedConfirmChannel.sendToQueue(anything(), anything(), anything())
-      ).thenReturn();
+        mockedChannelWrapper.sendToQueue(
+          anyString(),
+          anyOfClass(Buffer),
+          anything()
+        )
+      ).thenResolve();
 
-      const command = new TestCommand({
-        method: 'GET',
-        url: 'https://example.com'
-      });
+      await rmq.init();
 
-      await expect(eventBus.execute(command)).rejects.toThrow();
+      const expected = { foo: 'bar' };
+      process.nextTick(() =>
+        (rmq as any).subject.emit(command.correlationId, expected)
+      );
+
+      // act
+      const result = await rmq.execute(command);
+
+      // assert
+      expect(result).toEqual(expected);
       verify(
-        mockedConfirmChannel.sendToQueue(anything(), anything(), anything())
-      ).never();
+        mockedChannelWrapper.publish(
+          '',
+          options.appQueue,
+          anyOfClass(Buffer),
+          deepEqual({
+            type: command.type,
+            mandatory: true,
+            persistent: true,
+            contentType: 'application/json',
+            timestamp: command.createdAt.getTime(),
+            correlationId: command.correlationId,
+            replyTo: 'amq.rabbitmq.reply-to'
+          })
+        )
+      ).once();
     });
 
-    it('should not throw if sendToQueue failed', async () => {
+    it('should throw a error if no response', async () => {
+      // arrange
+      const command = new ConcreteCommand('test', true, 1);
       when(
-        mockedConfirmChannel.sendToQueue(anything(), anything(), anything())
-      ).thenThrow();
+        mockedChannelWrapper.sendToQueue(
+          anyString(),
+          anyOfClass(Buffer),
+          anything()
+        )
+      ).thenResolve();
 
-      const command = new TestCommand({
-        method: 'GET',
-        url: 'https://example.com'
-      });
+      await rmq.init();
 
-      await eventBus.init?.();
+      // act
+      const result = rmq.execute(command);
 
-      await expect(eventBus.execute(command)).resolves.not.toThrow();
+      // assert
       verify(
-        mockedConfirmChannel.sendToQueue(anything(), anything(), anything())
+        mockedChannelWrapper.publish(
+          '',
+          options.appQueue,
+          anyOfClass(Buffer),
+          deepEqual({
+            type: command.type,
+            mandatory: true,
+            persistent: true,
+            contentType: 'application/json',
+            timestamp: command.createdAt.getTime(),
+            correlationId: command.correlationId,
+            replyTo: 'amq.rabbitmq.reply-to'
+          })
+        )
       ).once();
+      await expect(result).rejects.toThrow(NoResponse);
+    });
+  });
+
+  describe('init', () => {
+    it('should skip initialization if client is already initialized', async () => {
+      // arrange
+      await rmq.init();
+
+      // act
+      await rmq.init();
+
+      // assert
+      verify(
+        amqpConnectionManager.createChannel(
+          deepEqual({
+            json: false
+          })
+        )
+      ).once();
+    });
+
+    it('should create a channel', async () => {
+      // act
+      await rmq.init();
+
+      // assert
+      verify(
+        amqpConnectionManager.createChannel(
+          deepEqual({
+            json: false
+          })
+        )
+      ).once();
+    });
+
+    it('should consume regular messages', async () => {
+      // arrange
+      when(
+        mockedChannel.consume(anyString(), anyFunction(), anything())
+      ).thenResolve({ consumerTag: 'tag' } as any);
+
+      // act
+      await rmq.init();
+
+      // assert
+      verify(
+        mockedChannel.consume(
+          options.clientQueue,
+          anyFunction(),
+          deepEqual({
+            noAck: true
+          })
+        )
+      ).once();
+    });
+
+    it('should consume reply messages', async () => {
+      // arrange
+      when(
+        mockedChannel.consume(anyString(), anyFunction(), anything())
+      ).thenResolve({ consumerTag: 'tag' } as any);
+
+      // act
+      await rmq.init();
+
+      // assert
+      verify(
+        mockedChannel.consume(
+          'amq.rabbitmq.reply-to',
+          anyFunction(),
+          deepEqual({
+            noAck: true
+          })
+        )
+      ).once();
+    });
+
+    it('should bind exchanges to queue', async () => {
+      // act
+      await rmq.init();
+
+      // assert
+      verify(
+        mockedChannel.assertExchange(
+          options.exchange,
+          'direct',
+          deepEqual({
+            durable: true
+          })
+        )
+      ).once();
+      verify(
+        mockedChannel.assertQueue(
+          options.clientQueue,
+          deepEqual({
+            durable: true,
+            exclusive: false,
+            autoDelete: true
+          })
+        )
+      ).once();
+      verify(mockedChannel.prefetch(1)).once();
+    });
+
+    it.todo('should bind DLXs');
+
+    it.todo('should skip DLXs binding');
+  });
+
+  describe('destroy', () => {
+    beforeEach(() => rmq.init());
+
+    afterEach(() => resetCalls(mockedChannelWrapper));
+
+    it('should remove channel and client', async () => {
+      // arrange
+      when(amqpConnectionManager.close()).thenResolve();
+      when(mockedChannelWrapper.close()).thenResolve();
+
+      // act
+      await rmq.destroy();
+
+      // assert
+      verify(amqpConnectionManager.close()).once();
+      verify(mockedChannelWrapper.close()).once();
+      expect(rmq).not.toMatchObject({
+        channel: expect.anything(),
+        client: expect.anything()
+      });
     });
   });
 
   describe('publish', () => {
-    it('should publish event', async () => {
+    it('should throw an error if client is not initialized yet', async () => {
+      // arrange
+      const message = new ConcreteEvent('test');
+
+      // act
+      const result = rmq.publish(message);
+
+      // assert
+      await expect(result).rejects.toThrow(
+        'established a connection with host'
+      );
+    });
+
+    it('should publish an message', async () => {
+      // arrange
+      const message = new ConcreteEvent('test');
+
       when(
-        mockedConfirmChannel.publish(
-          anything(),
-          anything(),
+        mockedChannelWrapper.publish(
+          anyString(),
+          anyString(),
           anything(),
           anything()
         )
       ).thenReturn();
 
-      await eventBus.init?.();
-      const event = new TestEvent({
-        method: 'GET',
-        url: 'https://example.com'
-      });
+      await rmq.init();
 
-      await expect(eventBus.publish(event)).resolves.not.toThrow();
+      // act
+      await rmq.publish(message);
+
+      // assert
       verify(
-        mockedConfirmChannel.publish(
-          anything(),
-          anything(),
-          anything(),
-          anything()
+        mockedChannelWrapper.publish(
+          options.exchange,
+          message.type,
+          anyOfClass(Buffer),
+          objectContaining({
+            type: message.type,
+            mandatory: true,
+            persistent: true,
+            contentType: 'application/json',
+            timestamp: message.createdAt.getTime(),
+            correlationId: message.correlationId
+          })
+        )
+      ).once();
+    });
+  });
+
+  describe('subscribe', () => {
+    beforeEach(async () => {
+      await rmq.init();
+
+      resetCalls(mockedChannelWrapper);
+    });
+
+    it('should add handler for event', async () => {
+      // arrange
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
+      when(
+        mockedDependencyContainer.resolve<ConcreteFirstHandler>(anything())
+      ).thenReturn(new ConcreteFirstHandler());
+
+      // act
+      await rmq.register(ConcreteFirstHandler);
+
+      // assert
+      verify(mockedChannelWrapper.addSetup(anyFunction())).once();
+      verify(
+        mockedChannel.bindQueue(
+          options.clientQueue,
+          options.exchange,
+          ConcreteEvent.name
         )
       ).once();
     });
 
-    it('should throw if bus in not inited', async () => {
+    it('should add multiple handlers for the same event', async () => {
+      // arrange
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
       when(
-        mockedConfirmChannel.publish(
-          anything(),
-          anything(),
-          anything(),
-          anything()
-        )
-      ).thenReturn();
+        mockedDependencyContainer.resolve<ConcreteFirstHandler>(anything())
+      ).thenReturn(new ConcreteFirstHandler());
 
-      const event = new TestEvent({
-        method: 'GET',
-        url: 'https://example.com'
-      });
+      // act
+      await rmq.register(ConcreteFirstHandler);
+      await rmq.register(ConcreteSecondHandler);
 
-      await expect(eventBus.publish(event)).rejects.toThrow();
+      // assert
+      verify(mockedChannelWrapper.addSetup(anyFunction())).once();
       verify(
-        mockedConfirmChannel.publish(
-          anything(),
-          anything(),
-          anything(),
-          anything()
+        mockedChannel.bindQueue(
+          options.clientQueue,
+          options.exchange,
+          ConcreteEvent.name
+        )
+      ).once();
+    });
+  });
+
+  describe('unsubscribe', () => {
+    beforeEach(async () => {
+      await rmq.init();
+
+      resetCalls(mockedChannelWrapper);
+    });
+
+    it('should remove handler for event', async () => {
+      // arrange
+      when(mockedChannelWrapper.removeSetup(anyFunction())).thenCall(
+        (callback: (...args: unknown[]) => unknown) =>
+          callback(instance(mockedChannel))
+      );
+      when(
+        mockedChannel.unbindQueue(anyString(), anyString(), anyString())
+      ).thenResolve();
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
+      when(
+        mockedDependencyContainer.resolve<ConcreteFirstHandler>(anything())
+      ).thenReturn(new ConcreteFirstHandler());
+
+      await rmq.register(ConcreteFirstHandler);
+
+      // act
+      await rmq.unregister(ConcreteFirstHandler);
+
+      // assert
+      verify(mockedChannelWrapper.removeSetup(anyFunction())).once();
+      verify(
+        mockedChannel.unbindQueue(
+          options.clientQueue,
+          options.exchange,
+          ConcreteEvent.name
+        )
+      ).once();
+    });
+
+    it('should remove multiple handlers for the same event', async () => {
+      // arrange
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
+      when(
+        mockedDependencyContainer.resolve<ConcreteFirstHandler>(anything())
+      ).thenReturn(new ConcreteFirstHandler());
+      await rmq.register(ConcreteFirstHandler);
+      await rmq.register(ConcreteSecondHandler);
+
+      // act
+      await rmq.unregister(ConcreteFirstHandler);
+
+      // assert
+      verify(mockedChannelWrapper.removeSetup(anyFunction())).never();
+      verify(
+        mockedChannel.unbindQueue(
+          options.clientQueue,
+          options.exchange,
+          ConcreteEvent.name
         )
       ).never();
     });
-
-    it('should throw if publish failed', async () => {
-      when(
-        mockedConfirmChannel.publish(
-          anything(),
-          anything(),
-          anything(),
-          anything()
-        )
-      ).thenThrow(new Error());
-
-      const event = new TestEvent({
-        method: 'GET',
-        url: 'https://example.com'
-      });
-
-      await eventBus.init?.();
-
-      await expect(eventBus.publish(event)).rejects.toThrow();
-      verify(
-        mockedConfirmChannel.publish(
-          anything(),
-          anything(),
-          anything(),
-          anything()
-        )
-      ).atLeast(1);
-    });
-  });
-
-  describe('destroy', () => {
-    it('should destroy event bus', async () => {
-      when(mockedConfirmChannel.waitForConfirms()).thenResolve();
-      when(mockedConfirmChannel.cancel(anything())).thenResolve();
-      when(mockedConfirmChannel.close()).thenResolve();
-      when(mockedConnection.close()).thenResolve();
-
-      await eventBus.init?.();
-
-      await expect(eventBus.destroy?.()).resolves.not.toThrow();
-      verify(mockedConfirmChannel.waitForConfirms()).once();
-      verify(mockedConfirmChannel.cancel(anything())).atLeast(2);
-      verify(mockedConfirmChannel.close()).once();
-      verify(mockedConnection.close()).once();
-    });
-
-    it('should throw if bus is not inited', async () => {
-      await expect(eventBus.destroy?.()).rejects.toThrow();
-    });
-
-    it('should throw if waitForConfirms failed', async () => {
-      when(mockedConfirmChannel.waitForConfirms()).thenReject();
-      when(mockedConfirmChannel.cancel(anything())).thenResolve();
-      when(mockedConfirmChannel.close()).thenResolve();
-      when(mockedConnection.close()).thenResolve();
-
-      await eventBus.init?.();
-
-      await expect(eventBus.destroy?.()).rejects.toThrow();
-      verify(mockedConfirmChannel.waitForConfirms()).once();
-      verify(mockedConfirmChannel.cancel(anything())).never();
-      verify(mockedConfirmChannel.close()).never();
-      verify(mockedConnection.close()).never();
-    });
-
-    it('should throw if cancel failed', async () => {
-      when(mockedConfirmChannel.waitForConfirms()).thenResolve();
-      when(mockedConfirmChannel.cancel(anything())).thenReject();
-      when(mockedConfirmChannel.close()).thenResolve();
-      when(mockedConnection.close()).thenResolve();
-
-      await eventBus.init?.();
-
-      await expect(eventBus.destroy?.()).rejects.toThrow();
-      verify(mockedConfirmChannel.waitForConfirms()).once();
-      verify(mockedConfirmChannel.cancel(anything())).atLeast(1);
-      verify(mockedConfirmChannel.close()).never();
-      verify(mockedConnection.close()).never();
-    });
-
-    it('should throw if chanel close failed', async () => {
-      when(mockedConfirmChannel.waitForConfirms()).thenResolve();
-      when(mockedConfirmChannel.cancel(anything())).thenResolve();
-      when(mockedConfirmChannel.close()).thenReject();
-      when(mockedConnection.close()).thenResolve();
-
-      await eventBus.init?.();
-
-      await expect(eventBus.destroy?.()).rejects.toThrow();
-      verify(mockedConfirmChannel.waitForConfirms()).once();
-      verify(mockedConfirmChannel.cancel(anything())).atLeast(1);
-      verify(mockedConfirmChannel.close()).once();
-      verify(mockedConnection.close()).never();
-    });
-
-    it('should throw if connection close failed', async () => {
-      when(mockedConfirmChannel.waitForConfirms()).thenResolve();
-      when(mockedConfirmChannel.cancel(anything())).thenResolve();
-      when(mockedConfirmChannel.close()).thenResolve();
-      when(mockedConnection.close()).thenReject();
-
-      await eventBus.init?.();
-
-      await expect(eventBus.destroy?.()).rejects.toThrow();
-      verify(mockedConfirmChannel.waitForConfirms()).once();
-      verify(mockedConfirmChannel.cancel(anything())).atLeast(1);
-      verify(mockedConfirmChannel.close()).once();
-      verify(mockedConnection.close()).once();
-    });
   });
 });
-
-interface Request {
-  url: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  headers?: Record<string, string>;
-  body?: string;
-}
-
-class TestCommand<R = unknown> extends Command<Request, R> {
-  public readonly expectReply = false;
-
-  constructor(public readonly payload: Request) {
-    super(payload);
-  }
-}
-
-class TestEvent extends Event<Request> {
-  constructor(payload: Request) {
-    super(payload);
-  }
-}
-
-@injectable()
-@bind(TestEvent)
-class BondedTestHandler implements EventHandler<TestEvent> {
-  public handle(argument: TestEvent): Promise<any> {
-    return new Promise(resolve => resolve(argument.payload));
-  }
-}
-
-@injectable()
-class UnbondedTestHandler implements EventHandler<TestEvent> {
-  public handle(argument: TestEvent): Promise<any> {
-    return new Promise(resolve => resolve(argument.payload));
-  }
-}

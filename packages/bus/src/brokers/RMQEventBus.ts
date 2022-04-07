@@ -1,10 +1,10 @@
-import { ConnectionFactory } from '../factories';
 import { RMQEventBusConfig } from './RMQEventBusConfig';
 import {
   Command,
   Configuration,
   Event,
   EventBus,
+  EventConstructor,
   EventHandler,
   EventHandlerConstructor,
   EventHandlerNotFound,
@@ -12,10 +12,13 @@ import {
   NoResponse,
   NoSubscriptionsFound
 } from '@secbox/core';
-import { ConfirmChannel, Connection, ConsumeMessage } from 'amqplib';
+import type { Channel, ConsumeMessage } from 'amqplib';
 import { DependencyContainer, inject, injectable } from 'tsyringe';
+import type {
+  AmqpConnectionManager,
+  ChannelWrapper
+} from 'amqp-connection-manager';
 import { EventEmitter, once } from 'events';
-import { format } from 'url';
 
 interface ParsedConsumeMessage<T = unknown> {
   payload: T;
@@ -26,8 +29,8 @@ interface ParsedConsumeMessage<T = unknown> {
 
 @injectable()
 export class RMQEventBus implements EventBus {
-  private client?: Connection;
-  private channel?: ConfirmChannel;
+  private client: AmqpConnectionManager | undefined;
+  private channel: ChannelWrapper | undefined;
 
   private readonly subject = new EventEmitter({ captureRejections: true });
   private readonly handlers = new Map<
@@ -38,176 +41,173 @@ export class RMQEventBus implements EventBus {
   private readonly container: DependencyContainer;
 
   private readonly REPLY_QUEUE_NAME = 'amq.rabbitmq.reply-to';
-  private readonly APP_QUEUE_NAME = 'app';
-  private readonly DEFAULT_HEARTBEAT_INTERVAL = 30;
 
   constructor(
     sdkConfig: Configuration,
-    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig,
-    @inject(ConnectionFactory)
-    private readonly connectionFactory: ConnectionFactory<Connection>
+    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig
   ) {
     this.container = sdkConfig.container;
     this.subject.setMaxListeners(Infinity);
   }
 
   public async init(): Promise<void> {
-    const url = this.buildUrl();
+    if (!this.client) {
+      const { url, socketOptions = {} } = this.options;
 
-    this.client = await this.connectionFactory.create(
-      url,
-      this.options.socketOptions
-    );
+      this.client = (await import('amqp-connection-manager')).connect(
+        url,
+        socketOptions
+      );
 
-    this.client.on('close', (reason?: Error) =>
-      reason ? this.reconnect() : undefined
-    );
+      let connectTimer!: NodeJS.Timeout;
 
-    await this.createConsumerChannel();
+      this.client.once('connect', () => clearTimeout(connectTimer));
+
+      if (typeof socketOptions.connectTimeout === 'number') {
+        connectTimer = setTimeout(
+          () => void this.destroy(),
+          socketOptions.connectTimeout
+        );
+      }
+
+      await this.createConsumerChannel();
+    }
   }
 
   public async register<T, R>(
     type: EventHandlerConstructor<T, R>
   ): Promise<void> {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
+    const handler = this.resolveHandler(type);
+    const eventNames = this.reflectEventsNames(type);
+
+    if (!eventNames.length) {
+      throw new NoSubscriptionsFound(handler);
     }
 
-    const handlerInstance = this.getHandlerInstance(type);
-
-    const eventNames: string[] = this.reflectEventsNames(type, handlerInstance);
-
     await Promise.all(
-      eventNames.map(eventName =>
-        this.registerEventHandler(handlerInstance, eventName)
-      )
+      eventNames.map(eventName => this.subscribe(eventName, handler))
     );
   }
 
   public async unregister<T, R>(
     type: EventHandlerConstructor<T, R>
   ): Promise<void> {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
+    const handler = this.resolveHandler(type);
+    const eventNames = this.reflectEventsNames(type);
+
+    if (!eventNames.length) {
+      throw new NoSubscriptionsFound(handler);
     }
 
-    const handlerInstance = this.getHandlerInstance(type);
-
-    const eventNames: string[] = this.reflectEventsNames(type, handlerInstance);
-
     await Promise.all(
-      eventNames.map(eventName =>
-        this.unregisterEventHandler(handlerInstance, eventName)
-      )
+      eventNames.map(eventName => this.unsubscribe(eventName, handler))
     );
   }
 
   public async publish<T>(event: Event<T>): Promise<void> {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
     const { type, payload, correlationId, createdAt } = event;
 
-    await this.channel?.publish(
-      this.options.exchange,
+    await this.sendMessage(payload, {
       type,
-      Buffer.from(JSON.stringify(payload)),
-      {
-        type,
-        correlationId,
-        contentType: 'application/json',
-        mandatory: true,
-        persistent: true,
-        replyTo: this.REPLY_QUEUE_NAME,
-        timestamp: createdAt.getTime()
-      }
-    );
+      correlationId,
+      routingKey: type,
+      timestamp: createdAt,
+      exchange: this.options.exchange
+    });
   }
 
-  public async execute<T, R>(command: Command<T, R>): Promise<R> {
-    const { correlationId, ttl, expectReply } = command;
-
-    let waiter = Promise.resolve<unknown>(undefined);
-
-    if (expectReply) {
-      process.nextTick(() => {
-        waiter = this.expectReply<R>(correlationId, ttl);
-      });
-    }
+  public async execute<T, R>({
+    type,
+    payload,
+    correlationId,
+    createdAt,
+    expectReply,
+    ttl
+  }: Command<T, R>): Promise<R | undefined> {
+    const waiter = expectReply
+      ? this.expectReply<R>(correlationId, ttl)
+      : Promise.resolve(undefined);
 
     try {
-      this.sendCommandToQueue(command);
+      await this.sendMessage(payload, {
+        type,
+        correlationId,
+        timestamp: createdAt,
+        routingKey: this.options.appQueue,
+        replyTo: this.REPLY_QUEUE_NAME
+      });
 
-      return (await waiter) as R;
+      return await waiter;
     } finally {
       this.subject.removeAllListeners(correlationId);
     }
   }
 
   public async destroy(): Promise<void> {
-    if (!this.client) {
-      throw new IllegalOperation(this);
-    }
-
     if (this.channel) {
-      await this.channel.waitForConfirms();
       await Promise.all(
         this.consumerTags.map(consumerTag => this.channel?.cancel(consumerTag))
       );
       await this.channel.close();
     }
 
-    await this.client.close();
-    this.clear();
+    if (this.client) {
+      await (this.client as unknown as EventEmitter).removeAllListeners();
+      await this.client.close();
+    }
+
+    delete this.channel;
+    delete this.client;
+
+    this.consumerTags.splice(0, this.consumerTags.length);
+    this.subject.removeAllListeners();
   }
 
-  private async registerEventHandler<T, R>(
-    handlerInstance: EventHandler<T, R>,
-    eventName: string
-  ) {
-    const eventHandlers = this.handlers.get(eventName);
-    if (Array.isArray(eventHandlers)) {
-      eventHandlers.push(handlerInstance);
+  private async subscribe<T, R>(
+    eventName: string,
+    handler: EventHandler<T, R>
+  ): Promise<void> {
+    const handlers = this.handlers.get(eventName);
+
+    if (Array.isArray(handlers)) {
+      handlers.push(handler);
     } else {
-      this.handlers.set(eventName, [handlerInstance]);
+      this.handlers.set(eventName, [handler]);
       await this.bindQueue(eventName);
     }
   }
 
-  private async bindQueue(eventName: string) {
+  private async bindQueue(eventName: string): Promise<void> {
     if (!this.channel) {
       throw new IllegalOperation(this);
     }
 
-    await this.channel.bindQueue(
-      this.options.clientQueue,
-      this.options.exchange,
-      eventName
+    await this.channel.addSetup((channel: Channel) =>
+      channel.bindQueue(
+        this.options.clientQueue,
+        this.options.exchange,
+        eventName
+      )
     );
   }
 
-  private async unregisterEventHandler<T, R>(
-    handlerInstance: EventHandler<T, R>,
-    eventName: string
-  ) {
-    const eventHandlers = this.handlers.get(eventName);
-    if (!eventHandlers) {
-      return;
-    }
+  private async unsubscribe<T, R>(
+    eventName: string,
+    handler: EventHandler<T, R>
+  ): Promise<void> {
+    const handlers = this.handlers.get(eventName);
 
-    const handlerIndex = eventHandlers.findIndex(
-      e =>
-        Object.getPrototypeOf(e).constructor.name ===
-        Object.getPrototypeOf(handlerInstance).constructor.name
-    );
-    if (handlerIndex !== -1) {
-      eventHandlers.splice(handlerIndex, 1);
-    }
+    if (Array.isArray(handlers)) {
+      const idx = handlers.indexOf(handler);
 
-    if (eventHandlers.length === 0) {
-      this.handlers.delete(eventName);
-      await this.unbindQueue(eventName);
+      if (idx !== -1) {
+        handlers.splice(idx, 1);
+      }
+
+      if (!handlers.length) {
+        this.handlers.delete(eventName);
+        await this.unbindQueue(eventName);
+      }
     }
   }
 
@@ -216,36 +216,16 @@ export class RMQEventBus implements EventBus {
       throw new IllegalOperation(this);
     }
 
-    await this.channel.unbindQueue(
-      this.options.clientQueue,
-      this.options.exchange,
-      eventName
+    await this.channel.removeSetup((channel: Channel) =>
+      channel.unbindQueue(
+        this.options.clientQueue,
+        this.options.exchange,
+        eventName
+      )
     );
   }
 
-  private sendCommandToQueue<T, R>(command: Command<T, R>) {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
-    const { type, payload, correlationId, createdAt } = command;
-
-    this.channel.sendToQueue(
-      this.APP_QUEUE_NAME,
-      Buffer.from(JSON.stringify(payload)),
-      {
-        type,
-        correlationId,
-        contentType: 'application/json',
-        mandatory: true,
-        persistent: true,
-        timestamp: createdAt.getTime(),
-        replyTo: this.REPLY_QUEUE_NAME
-      }
-    );
-  }
-
-  private getHandlerInstance<T, R>(
+  private resolveHandler<T, R>(
     type: EventHandlerConstructor<T, R>
   ): EventHandler<T, R> {
     if (!this.container.isRegistered(type)) {
@@ -255,61 +235,48 @@ export class RMQEventBus implements EventBus {
     return this.container.resolve(type);
   }
 
-  private expectReply<R>(correlationId: string, ttl: number): Promise<R> {
-    return Promise.race([
-      once(this.subject, correlationId)[0] as Promise<R>,
+  private async expectReply<R>(
+    correlationId: string,
+    ttl: number = 5000
+  ): Promise<R> {
+    const result = await Promise.race([
+      once(this.subject, correlationId) as Promise<[R]>,
       new Promise<never>((_, reject) =>
         setTimeout(reject, ttl, new NoResponse(ttl)).unref()
       )
     ]);
+
+    const [response]: [R] = result;
+
+    return response;
   }
 
-  private async reconnect(): Promise<void> {
-    try {
-      this.clear();
-      await this.init();
-    } catch (err) {
-      // add log
-    }
-  }
-
-  private reflectEventsNames(
-    handlerType: EventHandlerConstructor<unknown, unknown>,
-    handler: EventHandler<unknown, unknown>
-  ): string[] {
-    const types: (new (...args: unknown[]) => Event<unknown>)[] =
+  private reflectEventsNames(handlerType: EventHandlerConstructor): string[] {
+    const types: EventConstructor[] =
       Reflect.getMetadata(Event, handlerType) ?? [];
 
-    if (!types.length) {
-      throw new NoSubscriptionsFound(handler);
-    }
-
-    return types.map(
-      (event: new (...args: unknown[]) => Event<unknown> | string) =>
-        typeof event === 'string' ? event : event.name
-    );
+    return types.map((event: EventConstructor) => event.name);
   }
 
   private async createConsumerChannel(): Promise<void> {
-    if (this.channel || !this.client) {
-      throw new IllegalOperation(this);
+    if (!this.channel && this.client) {
+      this.channel = this.client.createChannel({
+        json: false
+      });
+      await this.channel.addSetup((channel: Channel) =>
+        Promise.all([
+          this.bindExchangesToQueue(channel),
+          this.startBasicConsume(channel),
+          this.startReplyQueueConsume(channel)
+        ])
+      );
     }
-
-    this.channel = await this.client.createConfirmChannel();
-
-    await this.bindExchangesToQueue();
-    await this.startBasicConsume();
-    await this.startReplyQueueConsume();
   }
 
-  private async startReplyQueueConsume(): Promise<void> {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
-    const { consumerTag } = await this.channel.consume(
+  private async startReplyQueueConsume(channel: Channel): Promise<void> {
+    const { consumerTag } = await channel.consume(
       this.REPLY_QUEUE_NAME,
-      (msg: ConsumeMessage | null) => this.processReply(msg),
+      (msg: ConsumeMessage | null) => (msg ? this.processReply(msg) : void 0),
       {
         noAck: true
       }
@@ -318,14 +285,10 @@ export class RMQEventBus implements EventBus {
     this.consumerTags.push(consumerTag);
   }
 
-  private async startBasicConsume(): Promise<void> {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
-    const { consumerTag } = await this.channel.consume(
+  private async startBasicConsume(channel: Channel): Promise<void> {
+    const { consumerTag } = await channel.consume(
       this.options.clientQueue,
-      (msg: ConsumeMessage | null) => this.consumeReceived(msg),
+      (msg: ConsumeMessage | null) => (msg ? this.processMessage(msg) : void 0),
       {
         noAck: true
       }
@@ -334,20 +297,16 @@ export class RMQEventBus implements EventBus {
     this.consumerTags.push(consumerTag);
   }
 
-  private async bindExchangesToQueue(): Promise<void> {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
-    await this.channel.assertExchange(this.options.exchange, 'direct', {
+  private async bindExchangesToQueue(channel: Channel): Promise<void> {
+    await channel.assertExchange(this.options.exchange, 'direct', {
       durable: true
     });
-
-    await this.channel.assertQueue(this.options.clientQueue, {
+    await channel.assertQueue(this.options.clientQueue, {
       durable: true,
       exclusive: false,
       autoDelete: true
     });
+    await channel.prefetch(this.options.prefetchCount ?? 1);
   }
 
   private processReply(message: ConsumeMessage | null): void {
@@ -359,7 +318,7 @@ export class RMQEventBus implements EventBus {
     }
   }
 
-  private async consumeReceived(message: ConsumeMessage | null): Promise<void> {
+  private async processMessage(message: ConsumeMessage | null): Promise<void> {
     const event: ParsedConsumeMessage | undefined =
       this.parseConsumeMessage(message);
 
@@ -382,29 +341,54 @@ export class RMQEventBus implements EventBus {
   ): Promise<void> {
     try {
       const response = await handler.handle(event.payload);
-      await this.sendToQueue(event, response);
+
+      if (response && event.replyTo) {
+        await this.sendMessage(response, {
+          routingKey: event.replyTo,
+          correlationId: event.correlationId
+        });
+      }
     } catch {
-      // TODO: add logs
+      // noop
     }
   }
 
-  private sendToQueue(event: ParsedConsumeMessage, response: unknown) {
+  private async sendMessage(
+    payload: unknown,
+    options: {
+      routingKey: string;
+      exchange?: string;
+      type?: string;
+      correlationId?: string;
+      replyTo?: string;
+      timestamp?: Date;
+    }
+  ): Promise<void> {
     if (!this.channel) {
       throw new IllegalOperation(this);
     }
 
-    if (!response || !event.replyTo) {
-      return;
-    }
+    const {
+      replyTo,
+      routingKey,
+      correlationId,
+      type,
+      exchange = '',
+      timestamp = new Date()
+    } = options;
 
-    this.channel.sendToQueue(
-      event.replyTo,
-      Buffer.from(JSON.stringify(response)),
+    await this.channel.publish(
+      exchange ?? '',
+      routingKey,
+      Buffer.from(JSON.stringify(payload)),
       {
+        type,
+        replyTo,
+        correlationId,
         mandatory: true,
         persistent: true,
         contentType: 'application/json',
-        correlationId: event.correlationId
+        timestamp: timestamp?.getTime()
       }
     );
   }
@@ -419,43 +403,9 @@ export class RMQEventBus implements EventBus {
 
       const name = type ?? routingKey;
 
-      const payload: unknown = JSON.parse(content.toString());
+      const payload = JSON.parse(content.toString());
 
       return { payload, name, correlationId, replyTo };
     }
-  }
-
-  private clear(): void {
-    if (!this.channel || !this.client) {
-      throw new IllegalOperation(this);
-    }
-
-    this.consumerTags.splice(0, this.consumerTags.length);
-
-    this.channel.removeAllListeners();
-    delete this.channel;
-
-    this.client.removeAllListeners();
-    delete this.client;
-  }
-
-  private buildUrl(): string {
-    const { url, credentials, socketOptions = {} } = this.options;
-    const parsedUrl = new URL(url);
-
-    if (credentials) {
-      parsedUrl.username = credentials.username;
-      parsedUrl.password = credentials.password;
-    }
-
-    parsedUrl.searchParams.append('frameMax', '0');
-    parsedUrl.searchParams.append(
-      'heartbeat',
-      (
-        socketOptions.heartbeatInterval ?? this.DEFAULT_HEARTBEAT_INTERVAL
-      ).toString()
-    );
-
-    return format(parsedUrl);
   }
 }
