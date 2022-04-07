@@ -15,3 +15,7 @@ export abstract class Event<T> extends Message<T> {
     return dispatcher.publish<T>(this);
   }
 }
+
+export type EventConstructor<T = unknown> = abstract new (
+  ...args: any[]
+) => Event<T>;
