@@ -10,8 +10,9 @@ npm i -s @secbox/bus
 
 ## Usage
 
-####
-You can read about sdk configuration [here](https://github.com/NeuraLegion/secbox-sdk-js/blob/master/packages/core/README.md#configuration).
+#### Configuration
+
+You can read about configuration [here](https://github.com/NeuraLegion/secbox-sdk-js/blob/master/packages/core/README.md#configuration).
 
 ### RMQEventBus
 
@@ -29,4 +30,34 @@ Single handler can handle multiple different events, and events can be handled b
 #### Request-response
 
 How send requests and gets responses you can read [here](https://github.com/NeuraLegion/secbox-sdk-js/blob/master/packages/core/README.md#request-response).
+
+#### EventBusConfig
+
+Bus configurations.
+
+```ts
+const sdkConfig = new Configuration(/*options*/);
+
+sdkConfig.container.register(EventBusConfig, {
+  useValue: {
+    exchange: 'EventBus',
+    clientQueue: 'agent:nnCF9MfHpbvdJVtSbQfKa1',
+    connectTimeout: 10000,
+    heartbeatInterval: 5000,
+  }
+});
+```
+
+|        Option       |  Type  | Description                                                                                |
+|:--------------------|:------:|--------------------------------------------------------------------------------------------|
+| `exchange`          | string | Used to associate message and queue.                                                       |
+| `clientQueue`       | string | The name of the queue which will be received messages.                                     |
+| `connectTimeout`    | number | Specify a timeout on blocking socket operations.                                           |
+| `heartbeatInterval` | number | Defines after what period of time the peer TCP connection should be considered unreachable.|
+
+## License
+
+Copyright © 2022 [NeuraLegion](https://github.com/NeuraLegion).
+
+This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.
 
