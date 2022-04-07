@@ -3,16 +3,16 @@ import { EnvCredentialProvider } from './EnvCredentialProvider';
 import { reset, spy, when } from 'ts-mockito';
 
 describe('EnvCredentialProvider', () => {
+  const spiedEnv = spy(process.env);
+  let provider!: CredentialProvider;
+
+  beforeEach(() => {
+    provider = new EnvCredentialProvider();
+  });
+
+  afterEach(() => reset(spiedEnv));
+
   describe('get', () => {
-    const spiedEnv = spy(process.env);
-    let provider!: CredentialProvider;
-
-    beforeEach(() => {
-      provider = new EnvCredentialProvider();
-    });
-
-    afterEach(() => reset(spiedEnv));
-
     it('should return undefined if credentials in not provided', async () => {
       const result = await provider.get();
 

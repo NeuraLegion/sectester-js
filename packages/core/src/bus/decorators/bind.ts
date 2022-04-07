@@ -1,8 +1,7 @@
-import 'reflect-metadata';
-import { Event } from '../Event';
+import { Event, EventConstructor } from '../Event';
 
 export const bind =
-  (...events: typeof Event[]): ClassDecorator =>
+  (...events: EventConstructor[]): ClassDecorator =>
   target => {
     Reflect.defineMetadata(Event, events, target);
   };

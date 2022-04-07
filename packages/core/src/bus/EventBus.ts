@@ -3,11 +3,12 @@ import { EventDispatcher } from './EventDispatcher';
 import { EventHandlerConstructor } from './EventHandler';
 
 export interface EventBus extends EventDispatcher, CommandDispatcher {
-  register<T, R>(type: EventHandlerConstructor<T, R>): Promise<void>;
+  register(type: EventHandlerConstructor): Promise<void>;
 
-  unregister<T, R>(type: EventHandlerConstructor<T, R>): Promise<void>;
+  unregister(type: EventHandlerConstructor): Promise<void>;
 
   init?(): Promise<void>;
+
   destroy?(): Promise<void>;
 }
 
