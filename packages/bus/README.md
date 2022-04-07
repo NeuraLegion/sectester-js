@@ -18,6 +18,18 @@ You can read about configuration [here](https://github.com/NeuraLegion/secbox-sd
 
 Provide the ability to subscribe to events, execute commands, and  publish and receive events.
 
+```ts
+
+const sdkConfig = new Configuration(/*options*/);
+
+// register all nedded components
+
+sdkConfig.container.register(EventBus, { useClass: RMQEventBus });
+const eventBus = sdkConfig.container.resolve(EventBus);
+
+// event bus usage
+```
+
 #### Publish-subscribe
 
 How publish event and subscribe on it you can read [here](https://github.com/NeuraLegion/secbox-sdk-js/blob/master/packages/core/README.md#publish-subscribe).
