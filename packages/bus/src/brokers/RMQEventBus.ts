@@ -1,3 +1,4 @@
+import { ExponentialBackoffRetryStrategy } from '../retry-strategies';
 import { RMQEventBusConfig } from './RMQEventBusConfig';
 import {
   Command,
@@ -5,6 +6,7 @@ import {
   EventBus,
   EventConstructor,
   EventHandler,
+  RetryStrategy,
   EventHandlerConstructor,
   EventHandlerNotFound,
   IllegalOperation,
@@ -46,7 +48,9 @@ export class RMQEventBus implements EventBus {
 
   constructor(
     private readonly container: DependencyContainer,
-    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig
+    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig,
+    @inject(RetryStrategy)
+    private readonly backOffRetry: ExponentialBackoffRetryStrategy
   ) {
     this.subject.setMaxListeners(Infinity);
   }
@@ -357,10 +361,6 @@ export class RMQEventBus implements EventBus {
       timestamp?: Date;
     }
   ): Promise<void> {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
     const {
       replyTo,
       routingKey,
@@ -370,20 +370,26 @@ export class RMQEventBus implements EventBus {
       timestamp = new Date()
     } = options;
 
-    await this.channel.publish(
-      exchange ?? '',
-      routingKey,
-      Buffer.from(JSON.stringify(payload)),
-      {
-        type,
-        replyTo,
-        correlationId,
-        mandatory: true,
-        persistent: true,
-        contentType: 'application/json',
-        timestamp: timestamp?.getTime()
+    await this.backOffRetry.acquire(() => {
+      if (!this.channel) {
+        throw new IllegalOperation(this);
       }
-    );
+
+      return this.channel.publish(
+        exchange ?? '',
+        routingKey,
+        Buffer.from(JSON.stringify(payload)),
+        {
+          type,
+          replyTo,
+          correlationId,
+          mandatory: true,
+          persistent: true,
+          contentType: 'application/json',
+          timestamp: timestamp?.getTime()
+        }
+      );
+    });
   }
 
   private parseConsumeMessage(

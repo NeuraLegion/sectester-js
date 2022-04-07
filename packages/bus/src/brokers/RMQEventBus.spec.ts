@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { RMQEventBus } from './RMQEventBus';
 import { RMQEventBusConfig } from './RMQEventBusConfig';
+import { ExponentialBackoffRetryStrategy } from '../retry-strategies';
 import { bind, Command, Event, EventHandler, NoResponse } from '@secbox/core';
 import {
   anyFunction,
@@ -73,6 +74,7 @@ describe('RMQEventBus', () => {
   const mockedChannelWrapper = mock<ChannelWrapper>();
   const mockedChannel = mock<Channel>();
   const mockedDependencyContainer = mock<DependencyContainer>();
+  const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 2 });
   const options: RMQEventBusConfig = {
     url: 'amqp://localhost:5672',
     exchange: 'event-bus',
@@ -100,7 +102,11 @@ describe('RMQEventBus', () => {
     when(
       mockedChannel.consume(anyString(), anyFunction(), anything())
     ).thenResolve({ consumerTag: 'tag' } as any);
-    rmq = new RMQEventBus(instance(mockedDependencyContainer), options);
+    rmq = new RMQEventBus(
+      instance(mockedDependencyContainer),
+      options,
+      retryStrategy
+    );
   });
 
   afterEach(() => {
