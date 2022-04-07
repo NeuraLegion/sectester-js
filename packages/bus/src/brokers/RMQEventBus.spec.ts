@@ -29,7 +29,7 @@ const resolvableInstance = <T extends object>(mockInstance: T): T =>
     }
   });
 
-const RandomString = (length: number): string => {
+const randomString = (length: number): string => {
   let result = '';
   const characters =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -68,7 +68,7 @@ describe('RMQEventBus', () => {
   beforeEach(() => {
     when(
       mockedConfirmChannel.consume(anything(), anything(), anything())
-    ).thenResolve({ consumerTag: `agent:${RandomString(22)}` } as any);
+    ).thenResolve({ consumerTag: `agent:${randomString(22)}` } as any);
 
     when(
       mockedConfirmChannel.assertExchange(anything(), anything(), anything())
@@ -95,11 +95,13 @@ describe('RMQEventBus', () => {
     );
   });
 
-  afterEach(() => {
-    reset(mockedConnectionFactory);
-    reset(mockedConnection);
-    reset(mockedConfirmChannel);
-  });
+  afterEach(() =>
+    reset<ConnectionFactory<Connection> | Connection | ConfirmChannel>(
+      mockedConnectionFactory,
+      mockedConnection,
+      mockedConfirmChannel
+    )
+  );
 
   describe('init', () => {
     it('should init event bus', async () => {
