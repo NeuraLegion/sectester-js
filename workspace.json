@@ -2,6 +2,7 @@
   "version": 2,
   "projects": {
     "bus": "packages/bus",
-    "core": "packages/core"
+    "core": "packages/core",
+    "repeater": "packages/repeater"
   }
 }
