@@ -1,22 +1,21 @@
 import { ConnectionFactory } from '../factories';
+import { RMQEventBusConfig } from './RMQEventBusConfig';
 import {
   Command,
+  Configuration,
   Event,
   EventBus,
   EventHandler,
-  NoResponse,
-  Configuration,
-  Credentials,
   EventHandlerConstructor,
-  EventBusConfig,
-  IllegalOperation,
   EventHandlerNotFound,
+  IllegalOperation,
+  NoResponse,
   NoSubscriptionsFound
 } from '@secbox/core';
 import { ConfirmChannel, Connection, ConsumeMessage } from 'amqplib';
 import { DependencyContainer, inject, injectable } from 'tsyringe';
 import { EventEmitter, once } from 'events';
-import { format, parse, UrlWithParsedQuery } from 'url';
+import { format } from 'url';
 
 interface ParsedConsumeMessage<T = unknown> {
   payload: T;
@@ -40,10 +39,11 @@ export class RMQEventBus implements EventBus {
 
   private readonly REPLY_QUEUE_NAME = 'amq.rabbitmq.reply-to';
   private readonly APP_QUEUE_NAME = 'app';
+  private readonly DEFAULT_HEARTBEAT_INTERVAL = 30;
 
   constructor(
-    @inject(Configuration) private readonly sdkConfig: Configuration,
-    @inject(EventBusConfig) private readonly busConfig: EventBusConfig,
+    sdkConfig: Configuration,
+    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig,
     @inject(ConnectionFactory)
     private readonly connectionFactory: ConnectionFactory<Connection>
   ) {
@@ -52,20 +52,12 @@ export class RMQEventBus implements EventBus {
   }
 
   public async init(): Promise<void> {
-    const timeout = this.busConfig.connectTimeout;
-    const heartbeat = this.busConfig.heartbeatInterval;
-    const credentials = this.sdkConfig.credentials;
-    const url = this.sdkConfig.bus;
+    const url = this.buildUrl();
 
-    const buildedUrl = this.buildUrl({
+    this.client = await this.connectionFactory.create(
       url,
-      credentials,
-      heartbeat: heartbeat ?? 5000
-    });
-
-    this.client = await this.connectionFactory.create(buildedUrl, {
-      timeout
-    });
+      this.options.socketOptions
+    );
 
     this.client.on('close', (reason?: Error) =>
       reason ? this.reconnect() : undefined
@@ -83,7 +75,7 @@ export class RMQEventBus implements EventBus {
 
     const handlerInstance = this.getHandlerInstance(type);
 
-    const eventNames: string[] = this.reflectEventsNames(type);
+    const eventNames: string[] = this.reflectEventsNames(type, handlerInstance);
 
     await Promise.all(
       eventNames.map(eventName =>
@@ -101,7 +93,7 @@ export class RMQEventBus implements EventBus {
 
     const handlerInstance = this.getHandlerInstance(type);
 
-    const eventNames: string[] = this.reflectEventsNames(type);
+    const eventNames: string[] = this.reflectEventsNames(type, handlerInstance);
 
     await Promise.all(
       eventNames.map(eventName =>
@@ -118,7 +110,7 @@ export class RMQEventBus implements EventBus {
     const { type, payload, correlationId, createdAt } = event;
 
     await this.channel?.publish(
-      this.busConfig.exchange,
+      this.options.exchange,
       type,
       Buffer.from(JSON.stringify(payload)),
       {
@@ -189,8 +181,8 @@ export class RMQEventBus implements EventBus {
     }
 
     await this.channel.bindQueue(
-      this.busConfig.clientQueue,
-      this.busConfig.exchange,
+      this.options.clientQueue,
+      this.options.exchange,
       eventName
     );
   }
@@ -225,8 +217,8 @@ export class RMQEventBus implements EventBus {
     }
 
     await this.channel.unbindQueue(
-      this.busConfig.clientQueue,
-      this.busConfig.exchange,
+      this.options.clientQueue,
+      this.options.exchange,
       eventName
     );
   }
@@ -282,10 +274,11 @@ export class RMQEventBus implements EventBus {
   }
 
   private reflectEventsNames(
-    handler: EventHandlerConstructor<unknown, unknown>
+    handlerType: EventHandlerConstructor<unknown, unknown>,
+    handler: EventHandler<unknown, unknown>
   ): string[] {
     const types: (new (...args: unknown[]) => Event<unknown>)[] =
-      Reflect.getMetadata(Event, handler) ?? [];
+      Reflect.getMetadata(Event, handlerType) ?? [];
 
     if (!types.length) {
       throw new NoSubscriptionsFound(handler);
@@ -331,7 +324,7 @@ export class RMQEventBus implements EventBus {
     }
 
     const { consumerTag } = await this.channel.consume(
-      this.busConfig.clientQueue,
+      this.options.clientQueue,
       (msg: ConsumeMessage | null) => this.consumeReceived(msg),
       {
         noAck: true
@@ -346,11 +339,11 @@ export class RMQEventBus implements EventBus {
       throw new IllegalOperation(this);
     }
 
-    await this.channel.assertExchange(this.busConfig.exchange, 'direct', {
+    await this.channel.assertExchange(this.options.exchange, 'direct', {
       durable: true
     });
 
-    await this.channel.assertQueue(this.busConfig.clientQueue, {
+    await this.channel.assertQueue(this.options.clientQueue, {
       durable: true,
       exclusive: false,
       autoDelete: true
@@ -446,23 +439,22 @@ export class RMQEventBus implements EventBus {
     delete this.client;
   }
 
-  private buildUrl(options: {
-    url: string;
-    credentials: Credentials | undefined;
-    heartbeat: number;
-  }): string {
-    const parsedUrl: UrlWithParsedQuery = parse(options.url, true);
+  private buildUrl(): string {
+    const { url, credentials, socketOptions = {} } = this.options;
+    const parsedUrl = new URL(url);
 
-    if (options.credentials) {
-      const credentials: Credentials = options.credentials;
-      parsedUrl.auth = `${credentials.username}:${credentials.token}`;
+    if (credentials) {
+      parsedUrl.username = credentials.username;
+      parsedUrl.password = credentials.password;
     }
 
-    parsedUrl.query = {
-      ...parsedUrl.query,
-      frameMax: '0',
-      heartbeat: options.heartbeat.toString()
-    };
+    parsedUrl.searchParams.append('frameMax', '0');
+    parsedUrl.searchParams.append(
+      'heartbeat',
+      (
+        socketOptions.heartbeatInterval ?? this.DEFAULT_HEARTBEAT_INTERVAL
+      ).toString()
+    );
 
     return format(parsedUrl);
   }

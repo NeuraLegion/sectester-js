@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { RMQEventBus } from './RMQEventBus';
-import { RandomString } from '../utils';
 import { ConnectionFactory } from '../factories';
+import { RMQEventBusConfig } from './RMQEventBusConfig';
 import {
   bind,
   Command,
@@ -29,19 +29,41 @@ const resolvableInstance = <T extends object>(mockInstance: T): T =>
     }
   });
 
+const RandomString = (length: number): string => {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+};
+
 describe('RMQEventBus', () => {
-  let eventBus!: RMQEventBus;
-  let sdkConfig!: Configuration;
-  const busConfig = {
+  const sdkConfig = new Configuration({
+    cluster: 'localhost',
+    credentials: {
+      token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
+    }
+  });
+  const busConfig: RMQEventBusConfig = {
+    url: 'amqp://localhost',
     exchange: 'EventBus',
     clientQueue: 'agent:nnCF9MfHpbvdJVtSbQfKa1',
-    connectTimeout: 10000,
-    heartbeatInterval: 5000,
-    reconnectTime: 5000
+    socketOptions: {
+      connectTimeout: 10000,
+      heartbeatInterval: 5000,
+      reconnectTime: 5000
+    }
   };
+
   const mockedConnectionFactory = mock<ConnectionFactory<Connection>>();
   const mockedConnection = mock<Connection>();
   const mockedConfirmChannel = mock<ConfirmChannel>();
+
+  let eventBus!: RMQEventBus;
 
   beforeEach(() => {
     when(
@@ -65,14 +87,6 @@ describe('RMQEventBus', () => {
     when(mockedConnectionFactory.create(anything(), anything())).thenResolve(
       connection
     );
-
-    sdkConfig = new Configuration({
-      cluster: 'amqps://test-url.com:5672',
-      credentials: {
-        username: 'bot',
-        token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
-      }
-    });
 
     eventBus = new RMQEventBus(
       sdkConfig,
