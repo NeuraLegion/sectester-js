@@ -16,10 +16,9 @@ You can read about configuration [here](https://github.com/NeuraLegion/secbox-sd
 
 ### RMQEventBus
 
-Provide the ability to subscribe to events, execute commands, and  publish and receive events.
+Provide the ability to subscribe to events, execute commands, and publish and receive events.
 
 ```ts
-
 const sdkConfig = new Configuration(/*options*/);
 
 // register all nedded components
@@ -55,21 +54,20 @@ sdkConfig.container.register(EventBusConfig, {
     exchange: 'EventBus',
     clientQueue: 'agent:nnCF9MfHpbvdJVtSbQfKa1',
     connectTimeout: 10000,
-    heartbeatInterval: 5000,
+    heartbeatInterval: 5000
   }
 });
 ```
 
-|        Option       |  Type  | Description                                                                                |
-|:--------------------|:------:|--------------------------------------------------------------------------------------------|
-| `exchange`          | string | Used to associate message and queue.                                                       |
-| `clientQueue`       | string | The name of the queue which will be received messages.                                     |
-| `connectTimeout`    | number | Specify a timeout on blocking socket operations.                                           |
-| `heartbeatInterval` | number | Defines after what period of time the peer TCP connection should be considered unreachable.|
+| Option              |  Type  | Description                                                                                 |
+| :------------------ | :----: | ------------------------------------------------------------------------------------------- |
+| `exchange`          | string | Used to associate message and queue.                                                        |
+| `clientQueue`       | string | The name of the queue which will be received messages.                                      |
+| `connectTimeout`    | number | Specify a timeout on blocking socket operations.                                            |
+| `heartbeatInterval` | number | Defines after what period of time the peer TCP connection should be considered unreachable. |
 
 ## License
 
 Copyright © 2022 [NeuraLegion](https://github.com/NeuraLegion).
 
 This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.
-
