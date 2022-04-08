@@ -287,6 +287,7 @@ describe('RMQEventBus', () => {
   });
 
   describe('init', () => {
+    afterEach(() => jest.useRealTimers());
     it('should skip initialization if client is already initialized', async () => {
       // arrange
       await rmq.init();
@@ -385,6 +386,23 @@ describe('RMQEventBus', () => {
         )
       ).once();
       verify(mockedChannel.prefetch(1)).once();
+    });
+
+    it('should call destroy if connect timeout is passed', async () => {
+      // arrange
+      jest.useFakeTimers();
+      when(spiedOptions.socketOptions).thenReturn({ connectTimeout: 1000 });
+      when(amqpConnectionManager.once('connect', anyFunction())).thenCall(
+        jest.fn()
+      );
+      rmq.destroy = jest.fn();
+
+      // act
+      await rmq.init?.();
+      jest.runAllTimers();
+
+      // assert
+      expect(rmq.destroy).toHaveBeenCalledTimes(1);
     });
 
     it.todo('should bind DLXs');
