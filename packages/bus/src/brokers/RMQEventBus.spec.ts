@@ -25,9 +25,8 @@ import {
   when
 } from 'ts-mockito';
 import { AmqpConnectionManager, ChannelWrapper } from 'amqp-connection-manager';
-import { Channel } from 'amqplib';
+import { Channel, ConsumeMessage } from 'amqplib';
 import { DependencyContainer } from 'tsyringe';
-import { ConsumeMessage } from 'amqplib/properties';
 
 class ConcreteCommand extends Command<string, void> {
   constructor(
@@ -76,7 +75,7 @@ class ConcreteThirdHandler implements EventHandler<{ foo: string }> {
 }
 
 describe('RMQEventBus', () => {
-  const amqpConnectionManager = mock<AmqpConnectionManager>();
+  const mockedConnectionManager = mock<AmqpConnectionManager>();
   const mockedChannelWrapper = mock<ChannelWrapper>();
   const mockedChannel = mock<Channel>();
   const mockedConfiguration = mock<Configuration>();
@@ -93,12 +92,9 @@ describe('RMQEventBus', () => {
 
   beforeEach(() => {
     jest.mock('amqp-connection-manager', () => ({
-      connect: jest.fn().mockReturnValue(instance(amqpConnectionManager))
+      connect: jest.fn().mockReturnValue(instance(mockedConnectionManager))
     }));
-    when(amqpConnectionManager.on('connect', anyFunction())).thenCall(
-      (_: string, callback: (...args: unknown[]) => unknown) => callback()
-    );
-    when(amqpConnectionManager.createChannel(anything())).thenReturn(
+    when(mockedConnectionManager.createChannel(anything())).thenReturn(
       instance(mockedChannelWrapper)
     );
     when(mockedChannelWrapper.addSetup(anyFunction())).thenCall(
@@ -124,7 +120,7 @@ describe('RMQEventBus', () => {
       | DependencyContainer
       | Configuration
     >(
-      amqpConnectionManager,
+      mockedConnectionManager,
       mockedChannelWrapper,
       mockedChannel,
       spiedOptions,
@@ -288,6 +284,7 @@ describe('RMQEventBus', () => {
 
   describe('init', () => {
     afterEach(() => jest.useRealTimers());
+
     it('should skip initialization if client is already initialized', async () => {
       // arrange
       await rmq.init();
@@ -297,7 +294,7 @@ describe('RMQEventBus', () => {
 
       // assert
       verify(
-        amqpConnectionManager.createChannel(
+        mockedConnectionManager.createChannel(
           deepEqual({
             json: false
           })
@@ -311,7 +308,7 @@ describe('RMQEventBus', () => {
 
       // assert
       verify(
-        amqpConnectionManager.createChannel(
+        mockedConnectionManager.createChannel(
           deepEqual({
             json: false
           })
@@ -388,21 +385,43 @@ describe('RMQEventBus', () => {
       verify(mockedChannel.prefetch(1)).once();
     });
 
-    it('should call destroy if connect timeout is passed', async () => {
+    it('should be disposed if connect timeout is passed', async () => {
       // arrange
       jest.useFakeTimers();
+      jest
+        .spyOn(global, 'setTimeout')
+        .mockImplementation((callback: (args: void) => void) => {
+          callback();
+
+          return {} as unknown as NodeJS.Timeout;
+        });
       when(spiedOptions.socketOptions).thenReturn({ connectTimeout: 1000 });
-      when(amqpConnectionManager.once('connect', anyFunction())).thenCall(
-        jest.fn()
-      );
-      rmq.destroy = jest.fn();
 
       // act
-      await rmq.init?.();
+      await rmq.init();
       jest.runAllTimers();
 
       // assert
-      expect(rmq.destroy).toHaveBeenCalledTimes(1);
+      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
+      verify(mockedConnectionManager.close()).once();
+    });
+
+    it('should reset connection timeout', async () => {
+      // arrange
+      jest.useFakeTimers();
+      jest.spyOn(global, 'clearTimeout');
+
+      when(mockedConnectionManager.once('connect', anyFunction())).thenCall(
+        (_: string, callback: () => unknown) => callback()
+      );
+      when(spiedOptions.socketOptions).thenReturn({ connectTimeout: 1000 });
+
+      // act
+      await rmq.init();
+
+      // assert
+      expect(clearTimeout).toHaveBeenCalled();
+      verify(mockedConnectionManager.close()).never();
     });
 
     it.todo('should bind DLXs');
@@ -417,14 +436,14 @@ describe('RMQEventBus', () => {
 
     it('should remove channel and client', async () => {
       // arrange
-      when(amqpConnectionManager.close()).thenResolve();
+      when(mockedConnectionManager.close()).thenResolve();
       when(mockedChannelWrapper.close()).thenResolve();
 
       // act
       await rmq.destroy();
 
       // assert
-      verify(amqpConnectionManager.close()).once();
+      verify(mockedConnectionManager.close()).once();
       verify(mockedChannelWrapper.close()).once();
       expect(rmq).not.toMatchObject({
         channel: expect.anything(),
