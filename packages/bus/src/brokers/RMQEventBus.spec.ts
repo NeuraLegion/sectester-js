@@ -27,6 +27,7 @@ import {
 import { AmqpConnectionManager, ChannelWrapper } from 'amqp-connection-manager';
 import { Channel } from 'amqplib';
 import { DependencyContainer } from 'tsyringe';
+import { ConsumeMessage } from 'amqplib/properties';
 
 class ConcreteCommand extends Command<string, void> {
   constructor(
@@ -41,9 +42,9 @@ class ConcreteCommand extends Command<string, void> {
   }
 }
 
-class ConcreteEvent extends Event<string> {
+class ConcreteEvent extends Event<{ foo: string }> {
   constructor(
-    payload: string,
+    payload: { foo: string },
     type?: string,
     correlationId?: string,
     createdAt?: Date
@@ -53,21 +54,23 @@ class ConcreteEvent extends Event<string> {
 }
 
 @bind(ConcreteEvent)
-class ConcreteFirstHandler implements EventHandler<string> {
-  public async handle(_: string): Promise<void> {
-    // noop
+class ConcreteFirstHandler
+  implements EventHandler<{ foo: string }, { bar: string }>
+{
+  public handle(_: { foo: string }): Promise<{ bar: string } | undefined> {
+    return Promise.resolve(undefined);
   }
 }
 
 @bind(ConcreteEvent)
-class ConcreteSecondHandler implements EventHandler<string> {
-  public async handle(_: string): Promise<void> {
+class ConcreteSecondHandler implements EventHandler<{ foo: string }> {
+  public async handle(_: { foo: string }): Promise<void> {
     // noop
   }
 }
 
-class ConcreteThirdHandler implements EventHandler<string> {
-  public async handle(_: string): Promise<void> {
+class ConcreteThirdHandler implements EventHandler<{ foo: string }> {
+  public async handle(_: { foo: string }): Promise<void> {
     // noop
   }
 }
@@ -148,7 +151,7 @@ describe('RMQEventBus', () => {
 
     it('should send a message to queue', async () => {
       // arrange
-      const command = new ConcreteCommand('test');
+      const command = new ConcreteCommand('test', false);
       when(
         mockedChannelWrapper.sendToQueue(
           anyString(),
@@ -158,8 +161,6 @@ describe('RMQEventBus', () => {
       ).thenResolve();
 
       await rmq.init();
-
-      process.nextTick(() => (rmq as any).subject.emit(command.correlationId));
 
       // act
       const result = await rmq.execute(command);
@@ -194,19 +195,42 @@ describe('RMQEventBus', () => {
           anything()
         )
       ).thenResolve();
+      let processMessage!: (msg: ConsumeMessage | null) => Promise<unknown>;
+      when(
+        mockedChannel.consume(
+          'amq.rabbitmq.reply-to',
+          anyFunction(),
+          anything()
+        )
+      ).thenCall(
+        (
+          _: string,
+          callback: (msg: ConsumeMessage | null) => Promise<unknown>
+        ) => (processMessage = callback)
+      );
+
+      const payload = { foo: 'bar' };
+      const message = {
+        content: Buffer.from(JSON.stringify(payload)),
+        fields: {
+          redelivered: false,
+          routingKey: ConcreteEvent.name
+        },
+        properties: {
+          type: ConcreteEvent.name,
+          correlationId: command.correlationId
+        }
+      } as ConsumeMessage;
 
       await rmq.init();
 
-      const expected = { foo: 'bar' };
-      process.nextTick(() =>
-        (rmq as any).subject.emit(command.correlationId, expected)
-      );
+      process.nextTick(() => processMessage(message));
 
       // act
       const result = await rmq.execute(command);
 
       // assert
-      expect(result).toEqual(expected);
+      expect(result).toEqual(payload);
       verify(
         mockedChannelWrapper.publish(
           '',
@@ -394,7 +418,7 @@ describe('RMQEventBus', () => {
   describe('publish', () => {
     it('should throw an error if client is not initialized yet', async () => {
       // arrange
-      const message = new ConcreteEvent('test');
+      const message = new ConcreteEvent({ foo: 'bar' });
 
       // act
       const result = rmq.publish(message);
@@ -407,7 +431,7 @@ describe('RMQEventBus', () => {
 
     it('should publish an message', async () => {
       // arrange
-      const message = new ConcreteEvent('test');
+      const message = new ConcreteEvent({ foo: 'bar' });
 
       when(
         mockedChannelWrapper.publish(
@@ -517,6 +541,133 @@ describe('RMQEventBus', () => {
           ConcreteEvent.name
         )
       ).once();
+    });
+  });
+
+  describe('processMessage', () => {
+    const handler = new ConcreteFirstHandler();
+    let spiedHandler!: ConcreteFirstHandler;
+    let processMessage!: (msg: ConsumeMessage | null) => Promise<unknown>;
+
+    beforeEach(async () => {
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
+      when(
+        mockedDependencyContainer.resolve<ConcreteFirstHandler>(anything())
+      ).thenReturn(handler);
+      when(
+        mockedChannel.consume(options.clientQueue, anyFunction(), anything())
+      ).thenCall(
+        (
+          _: string,
+          callback: (msg: ConsumeMessage | null) => Promise<unknown>
+        ) => (processMessage = callback)
+      );
+      spiedHandler = spy(handler);
+
+      await rmq.init();
+      await rmq.register(ConcreteFirstHandler);
+    });
+
+    afterEach(() => reset(spiedHandler));
+
+    it('should handle a consumed event', async () => {
+      // arrange
+      const payload = { foo: 'bar' };
+      const message = {
+        content: Buffer.from(JSON.stringify(payload)),
+        fields: {
+          redelivered: false,
+          routingKey: ConcreteEvent.name
+        },
+        properties: {
+          type: ConcreteEvent.name,
+          correlationId: '1'
+        }
+      } as ConsumeMessage;
+
+      // act
+      await processMessage(message);
+
+      // assert
+      verify(spiedHandler.handle(deepEqual(payload))).once();
+    });
+
+    it('should send a reply', async () => {
+      // arrange
+      const payload = { foo: 'bar' };
+      const reply = { bar: 'foo' };
+      const replyTo = 'reply-queue';
+      const message = {
+        content: Buffer.from(JSON.stringify(payload)),
+        fields: {
+          redelivered: false,
+          routingKey: ConcreteEvent.name
+        },
+        properties: {
+          replyTo,
+          correlationId: '1',
+          type: ConcreteEvent.name
+        }
+      } as ConsumeMessage;
+      when(spiedHandler.handle(anything())).thenResolve(reply);
+
+      // act
+      await processMessage(message);
+
+      // assert
+      verify(spiedHandler.handle(deepEqual(payload))).once();
+      verify(
+        mockedChannelWrapper.publish(
+          '',
+          replyTo,
+          anyOfClass(Buffer),
+          anything()
+        )
+      ).once();
+    });
+
+    it('should throw an error if no active subscriptions', async () => {
+      // arrange
+      const payload = { foo: 'bar' };
+      const message = {
+        content: Buffer.from(JSON.stringify(payload)),
+        fields: {
+          redelivered: false,
+          routingKey: 'test'
+        },
+        properties: {
+          type: 'test',
+          correlationId: '1'
+        }
+      } as ConsumeMessage;
+
+      // act / assert
+      verify(spiedHandler.handle(anything())).never();
+      await expect(processMessage(message)).rejects.toThrow(
+        'Event handler not found'
+      );
+    });
+
+    it('should skip a redelivered event', async () => {
+      // arrange
+      const payload = { foo: 'bar' };
+      const message = {
+        content: Buffer.from(JSON.stringify(payload)),
+        fields: {
+          redelivered: true,
+          routingKey: ConcreteEvent.name
+        },
+        properties: {
+          type: ConcreteEvent.name,
+          correlationId: '1'
+        }
+      } as ConsumeMessage;
+
+      // act
+      await processMessage(message);
+
+      // assert
+      verify(spiedHandler.handle(anything())).never();
     });
   });
 
