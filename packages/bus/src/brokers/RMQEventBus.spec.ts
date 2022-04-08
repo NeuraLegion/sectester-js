@@ -74,7 +74,7 @@ describe('RMQEventBus', () => {
   const mockedChannelWrapper = mock<ChannelWrapper>();
   const mockedChannel = mock<Channel>();
   const mockedDependencyContainer = mock<DependencyContainer>();
-  const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 2 });
+  const retryStrategyMock = mock<ExponentialBackoffRetryStrategy>();
   const options: RMQEventBusConfig = {
     url: 'amqp://localhost:5672',
     exchange: 'event-bus',
@@ -102,10 +102,13 @@ describe('RMQEventBus', () => {
     when(
       mockedChannel.consume(anyString(), anyFunction(), anything())
     ).thenResolve({ consumerTag: 'tag' } as any);
+    when(retryStrategyMock.acquire(anyFunction())).thenCall(
+      (callback: (...args: unknown[]) => unknown) => callback()
+    );
     rmq = new RMQEventBus(
       instance(mockedDependencyContainer),
       options,
-      retryStrategy
+      instance(retryStrategyMock)
     );
   });
 
