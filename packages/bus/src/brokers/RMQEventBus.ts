@@ -396,7 +396,7 @@ export class RMQEventBus implements EventBus {
   private parseConsumeMessage(
     message: ConsumeMessage | null
   ): ParsedConsumeMessage | undefined {
-    if (message && message.fields.redelivered) {
+    if (message && !message.fields.redelivered) {
       const { content, fields, properties } = message;
       const { type, correlationId, replyTo } = properties;
       const { routingKey } = fields;
