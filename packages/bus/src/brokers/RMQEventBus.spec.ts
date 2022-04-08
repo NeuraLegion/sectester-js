@@ -66,6 +66,12 @@ class ConcreteSecondHandler implements EventHandler<string> {
   }
 }
 
+class ConcreteThirdHandler implements EventHandler<string> {
+  public async handle(_: string): Promise<void> {
+    // noop
+  }
+}
+
 describe('RMQEventBus', () => {
   const amqpConnectionManager = mock<AmqpConnectionManager>();
   const mockedChannelWrapper = mock<ChannelWrapper>();
@@ -443,6 +449,33 @@ describe('RMQEventBus', () => {
       resetCalls(mockedChannelWrapper);
     });
 
+    it('should throw an error if no such handler', async () => {
+      // arrange
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(
+        false
+      );
+
+      // act / assert
+      await expect(rmq.register(ConcreteFirstHandler)).rejects.toThrow(
+        'Event handler not found'
+      );
+      verify(mockedChannelWrapper.addSetup(anyFunction())).never();
+    });
+
+    it('should throw an error if no subscriptions', async () => {
+      // arrange
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
+      when(
+        mockedDependencyContainer.resolve<ConcreteThirdHandler>(anything())
+      ).thenReturn(new ConcreteThirdHandler());
+
+      // act / assert
+      await expect(rmq.register(ConcreteThirdHandler)).rejects.toThrow(
+        'No subscriptions found'
+      );
+      verify(mockedChannelWrapper.addSetup(anyFunction())).never();
+    });
+
     it('should add handler for event', async () => {
       // arrange
       when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
@@ -524,12 +557,40 @@ describe('RMQEventBus', () => {
       ).once();
     });
 
+    it('should throw an error if no such handler', async () => {
+      // arrange
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(
+        false
+      );
+
+      // act / assert
+      await expect(rmq.unregister(ConcreteFirstHandler)).rejects.toThrow(
+        'Event handler not found'
+      );
+      verify(mockedChannelWrapper.removeSetup(anyFunction())).never();
+    });
+
+    it('should throw an error if no subscriptions', async () => {
+      // arrange
+      when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
+      when(
+        mockedDependencyContainer.resolve<ConcreteThirdHandler>(anything())
+      ).thenReturn(new ConcreteThirdHandler());
+
+      // act / assert
+      await expect(rmq.unregister(ConcreteThirdHandler)).rejects.toThrow(
+        'No subscriptions found'
+      );
+      verify(mockedChannelWrapper.addSetup(anyFunction())).never();
+    });
+
     it('should remove multiple handlers for the same event', async () => {
       // arrange
       when(mockedDependencyContainer.isRegistered(anything())).thenReturn(true);
       when(
         mockedDependencyContainer.resolve<ConcreteFirstHandler>(anything())
       ).thenReturn(new ConcreteFirstHandler());
+
       await rmq.register(ConcreteFirstHandler);
       await rmq.register(ConcreteSecondHandler);
 
