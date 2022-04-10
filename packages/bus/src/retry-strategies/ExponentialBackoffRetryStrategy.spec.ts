@@ -1,26 +1,38 @@
 import { ExponentialBackoffRetryStrategy } from './ExponentialBackoffRetryStrategy';
 
 describe('ExponentialBackoffRetryStrategy', () => {
-  const extendSetTimeoutMock = () => {
-    const mockImplamentation = jest
+  const findArg = <R>(
+    args: [unknown, unknown],
+    expected: 'function' | 'number'
+  ): R => (typeof args[0] === expected ? args[0] : args[1]) as R;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+
+    const mockedImplementation = jest
       .spyOn(global, 'setTimeout')
       .getMockImplementation();
 
     jest
       .spyOn(global, 'setTimeout')
-      .mockImplementation((ms: any, callback: any) => {
-        const res = mockImplamentation?.(callback, ms);
+      .mockImplementation((...args: [unknown, unknown]) => {
+        // ADHOC: depending on implementation (promisify vs raw), the method signature will be different
+        const callback = findArg<(..._: unknown[]) => void>(args, 'function');
+        const ms = findArg<number>(args, 'number');
+        const timer = mockedImplementation?.(callback, ms);
+
         jest.runAllTimers();
 
-        return res as any;
+        return timer as NodeJS.Timeout;
       });
-  };
+  });
 
-  afterEach(() => jest.useRealTimers());
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.resetAllMocks();
+  });
 
   it('should not retry if function does not throw error', async () => {
-    jest.useFakeTimers();
-    extendSetTimeoutMock();
     const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 1 });
     const input = jest.fn().mockResolvedValue(undefined);
 
@@ -30,8 +42,6 @@ describe('ExponentialBackoffRetryStrategy', () => {
   });
 
   it('should return a result execution immediately', async () => {
-    jest.useFakeTimers();
-    extendSetTimeoutMock();
     const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 1 });
     const input = jest.fn().mockReturnValue(undefined);
 
@@ -41,8 +51,6 @@ describe('ExponentialBackoffRetryStrategy', () => {
   });
 
   it('should prevent retries if error does not have a correct code', async () => {
-    jest.useFakeTimers();
-    extendSetTimeoutMock();
     const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 1 });
     const input = jest.fn().mockRejectedValue(new Error('Unhandled error'));
 
@@ -53,8 +61,6 @@ describe('ExponentialBackoffRetryStrategy', () => {
   });
 
   it('should retry two times and throw an error', async () => {
-    jest.useFakeTimers();
-    extendSetTimeoutMock();
     const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 2 });
     const error = new Error('Unhandled error');
     (error as any).code = 'ECONNRESET';
@@ -67,8 +73,6 @@ describe('ExponentialBackoffRetryStrategy', () => {
   });
 
   it('should return a result execution after a two retries', async () => {
-    jest.useFakeTimers();
-    extendSetTimeoutMock();
     const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 2 });
     const error = new Error('Unhandled error');
     (error as any).code = 'ECONNRESET';
