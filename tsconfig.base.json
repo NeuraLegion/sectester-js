@@ -29,6 +29,7 @@
     "baseUrl": ".",
     "typeRoots": ["node_modules/@types", "typings"],
     "paths": {
+      "@secbox/bus": ["packages/bus/src/index.ts"],
       "@secbox/core": ["packages/core/src/index.ts"]
     }
   },

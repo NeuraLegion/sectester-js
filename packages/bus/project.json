@@ -1,0 +1,40 @@
+{
+  "root": "packages/bus",
+  "sourceRoot": "packages/bus/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/bus",
+        "tsConfig": "packages/bus/tsconfig.lib.json",
+        "packageJson": "packages/bus/package.json",
+        "main": "packages/bus/src/index.ts",
+        "assets": ["packages/bus/*.md", "LICENSE"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/bus/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/bus"],
+      "options": {
+        "jestConfig": "packages/bus/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "./tools/executors:publish",
+      "options": {
+        "dist": "dist/packages/bus"
+      }
+    }
+  },
+  "tags": []
+}

@@ -74,6 +74,8 @@
   },
   "homepage": "https://github.com/NeuraLegion/secbox-sdk-js#readme",
   "dependencies": {
+    "amqp-connection-manager": "^4.1.1",
+    "amqplib": "^0.8.0",
     "reflect-metadata": "^0.1.13",
     "tslib": "~2.3.1",
     "tsyringe": "^4.6.0",
@@ -92,6 +94,8 @@
     "@nrwl/workspace": "13.9.4",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
+    "@types/amqp-connection-manager": "^2.0.12",
+    "@types/amqplib": "^0.8.2",
     "@types/jest": "^27.4.0",
     "@types/node": "~16.11.25",
     "@types/uuid": "^8.3.4",
