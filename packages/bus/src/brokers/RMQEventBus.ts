@@ -1,4 +1,3 @@
-import { ExponentialBackoffRetryStrategy } from '../retry-strategies';
 import { RMQEventBusConfig } from './RMQEventBusConfig';
 import {
   Command,
@@ -48,9 +47,9 @@ export class RMQEventBus implements EventBus {
 
   constructor(
     private readonly container: DependencyContainer,
-    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig,
     @inject(RetryStrategy)
-    private readonly backOffRetry: ExponentialBackoffRetryStrategy
+    private readonly retryStrategy: RetryStrategy,
+    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig
   ) {
     this.subject.setMaxListeners(Infinity);
   }
@@ -370,7 +369,7 @@ export class RMQEventBus implements EventBus {
       timestamp = new Date()
     } = options;
 
-    await this.backOffRetry.acquire(() => {
+    await this.retryStrategy.acquire(() => {
       if (!this.channel) {
         throw new IllegalOperation(this);
       }

@@ -15,7 +15,7 @@ npm i -s @secbox/bus
 To use the RabbitMQ Event Bus, pass the following options object to the constructor method:
 
 ```ts
-import { RMQEventBus } from '@secbox/bus';
+import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@secbox/bus';
 
 const config = new Configuration({
   cluster: 'app.neuralegion.com'
@@ -24,15 +24,19 @@ const config = new Configuration({
 const repeaterId = 'your Repeater ID';
 const token = 'your API key';
 
-const bus = new RMQEventBus(config.container, {
-  exchange: 'EventBus',
-  clientQueue: `agent:${repeaterId}`,
-  appQueue: 'app',
-  credentials: {
-    username: 'bot',
-    password: token
+const bus = new RMQEventBus(
+  config.container,
+  new ExponentialBackoffRetryStrategy({ maxDepth: 5 }),
+  {
+    exchange: 'EventBus',
+    clientQueue: `agent:${repeaterId}`,
+    appQueue: 'app',
+    credentials: {
+      username: 'bot',
+      password: token
+    }
   }
-});
+);
 ```
 
 The options are specific to the chosen transporter. The `RabbitMQ` implementation exposes the properties described below:
