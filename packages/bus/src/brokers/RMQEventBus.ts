@@ -1,7 +1,6 @@
 import { RMQEventBusConfig } from './RMQEventBusConfig';
 import {
   Command,
-  Configuration,
   Event,
   EventBus,
   EventConstructor,
@@ -13,9 +12,10 @@ import {
   NoSubscriptionsFound
 } from '@secbox/core';
 import type { Channel, ConsumeMessage } from 'amqplib';
-import { DependencyContainer, inject, injectable } from 'tsyringe';
+import { autoInjectable, DependencyContainer, inject } from 'tsyringe';
 import type {
   AmqpConnectionManager,
+  AmqpConnectionManagerOptions,
   ChannelWrapper
 } from 'amqp-connection-manager';
 import { EventEmitter, once } from 'events';
@@ -27,10 +27,13 @@ interface ParsedConsumeMessage<T = unknown> {
   correlationId?: string;
 }
 
-@injectable()
+@autoInjectable()
 export class RMQEventBus implements EventBus {
   private client: AmqpConnectionManager | undefined;
   private channel: ChannelWrapper | undefined;
+
+  private readonly DEFAULT_RECONNECT_TIME = 20;
+  private readonly DEFAULT_HEARTBEAT_INTERVAL = 30;
 
   private readonly subject = new EventEmitter({ captureRejections: true });
   private readonly handlers = new Map<
@@ -38,37 +41,29 @@ export class RMQEventBus implements EventBus {
     EventHandler<unknown, unknown>[]
   >();
   private readonly consumerTags: string[] = [];
-  private readonly container: DependencyContainer;
 
   private readonly REPLY_QUEUE_NAME = 'amq.rabbitmq.reply-to';
 
   constructor(
-    sdkConfig: Configuration,
+    private readonly container: DependencyContainer,
     @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig
   ) {
-    this.container = sdkConfig.container;
     this.subject.setMaxListeners(Infinity);
   }
 
   public async init(): Promise<void> {
     if (!this.client) {
-      const { url, socketOptions = {} } = this.options;
+      const url = this.buildUrl();
+      const options = this.buildOptions();
 
-      this.client = (await import('amqp-connection-manager')).connect(
-        url,
-        socketOptions
-      );
+      this.client = new (
+        await import('amqp-connection-manager')
+      ).AmqpConnectionManagerClass(url, options);
 
-      let connectTimer!: NodeJS.Timeout;
-
-      this.client.once('connect', () => clearTimeout(connectTimer));
-
-      if (typeof socketOptions.connectTimeout === 'number') {
-        connectTimer = setTimeout(
-          () => void this.destroy(),
-          socketOptions.connectTimeout
-        );
-      }
+      await this.client.connect({
+        timeout:
+          (this.options.connectTimeout ?? this.DEFAULT_RECONNECT_TIME) * 1000
+      });
 
       await this.createConsumerChannel();
     }
@@ -263,13 +258,11 @@ export class RMQEventBus implements EventBus {
       this.channel = this.client.createChannel({
         json: false
       });
-      await this.channel.addSetup((channel: Channel) =>
-        Promise.all([
-          this.bindExchangesToQueue(channel),
-          this.startBasicConsume(channel),
-          this.startReplyQueueConsume(channel)
-        ])
-      );
+      await this.channel.addSetup(async (channel: Channel) => {
+        await this.bindExchangesToQueue(channel);
+        await this.startBasicConsume(channel);
+        await this.startReplyQueueConsume(channel);
+      });
     }
   }
 
@@ -407,5 +400,49 @@ export class RMQEventBus implements EventBus {
 
       return { payload, name, correlationId, replyTo };
     }
+  }
+
+  private buildOptions(): AmqpConnectionManagerOptions {
+    const {
+      reconnectTime,
+      heartbeatInterval,
+      credentials: plain
+    } = this.options;
+
+    return {
+      heartbeatIntervalInSeconds:
+        heartbeatInterval ?? this.DEFAULT_HEARTBEAT_INTERVAL,
+      reconnectTimeInSeconds: reconnectTime ?? this.DEFAULT_RECONNECT_TIME,
+      connectionOptions: {
+        ...(plain
+          ? {
+              credentials: {
+                ...plain,
+                mechanism: 'PLAIN',
+                /* istanbul ignore next */
+                response(): Buffer {
+                  return Buffer.from(
+                    ['', plain.username, plain.password].join(
+                      String.fromCharCode(0)
+                    )
+                  );
+                }
+              }
+            }
+          : {})
+      }
+    };
+  }
+
+  private buildUrl(): string {
+    const url = new URL(this.options.url);
+
+    const { frameMax } = this.options;
+
+    if (frameMax !== null && frameMax !== undefined) {
+      url.searchParams.append('frameMax', frameMax.toString(10));
+    }
+
+    return url.toString();
   }
 }

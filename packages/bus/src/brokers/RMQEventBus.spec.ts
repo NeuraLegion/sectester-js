@@ -1,14 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { RMQEventBus } from './RMQEventBus';
 import { RMQEventBusConfig } from './RMQEventBusConfig';
-import {
-  bind,
-  Command,
-  Configuration,
-  Event,
-  EventHandler,
-  NoResponse
-} from '@secbox/core';
+import { bind, Command, Event, EventHandler, NoResponse } from '@secbox/core';
 import {
   anyFunction,
   anyOfClass,
@@ -75,10 +68,10 @@ class ConcreteThirdHandler implements EventHandler<{ foo: string }> {
 }
 
 describe('RMQEventBus', () => {
+  const mockedConnectionManagerConstructor = jest.fn();
   const mockedConnectionManager = mock<AmqpConnectionManager>();
   const mockedChannelWrapper = mock<ChannelWrapper>();
   const mockedChannel = mock<Channel>();
-  const mockedConfiguration = mock<Configuration>();
   const mockedDependencyContainer = mock<DependencyContainer>();
   const options: RMQEventBusConfig = {
     url: 'amqp://localhost:5672',
@@ -92,7 +85,10 @@ describe('RMQEventBus', () => {
 
   beforeEach(() => {
     jest.mock('amqp-connection-manager', () => ({
-      connect: jest.fn().mockReturnValue(instance(mockedConnectionManager))
+      AmqpConnectionManagerClass:
+        mockedConnectionManagerConstructor.mockImplementation(() =>
+          instance(mockedConnectionManager)
+        )
     }));
     when(mockedConnectionManager.createChannel(anything())).thenReturn(
       instance(mockedChannelWrapper)
@@ -104,10 +100,7 @@ describe('RMQEventBus', () => {
     when(
       mockedChannel.consume(anyString(), anyFunction(), anything())
     ).thenResolve({ consumerTag: 'tag' } as any);
-    when(mockedConfiguration.container).thenReturn(
-      instance(mockedDependencyContainer)
-    );
-    rmq = new RMQEventBus(instance(mockedConfiguration), options);
+    rmq = new RMQEventBus(instance(mockedDependencyContainer), options);
   });
 
   afterEach(() => {
@@ -118,13 +111,11 @@ describe('RMQEventBus', () => {
       | Channel
       | RMQEventBusConfig
       | DependencyContainer
-      | Configuration
     >(
       mockedConnectionManager,
       mockedChannelWrapper,
       mockedChannel,
       spiedOptions,
-      mockedConfiguration,
       mockedDependencyContainer
     );
     jest.resetModules();
@@ -316,6 +307,46 @@ describe('RMQEventBus', () => {
       ).once();
     });
 
+    it('should set credentials', async () => {
+      // arrange
+      when(spiedOptions.credentials).thenReturn({
+        username: 'user',
+        password: 'pa$$word'
+      });
+
+      // act
+      await rmq.init();
+
+      // assert
+      expect(mockedConnectionManagerConstructor).toHaveBeenCalledWith(
+        'amqp://localhost:5672',
+        expect.objectContaining({
+          connectionOptions: {
+            credentials: {
+              mechanism: 'PLAIN',
+              username: 'user',
+              password: 'pa$$word',
+              response: expect.any(Function)
+            }
+          }
+        })
+      );
+    });
+
+    it('should set max frame as URL query param', async () => {
+      // arrange
+      when(spiedOptions.frameMax).thenReturn(1);
+
+      // act
+      await rmq.init();
+
+      // assert
+      expect(mockedConnectionManagerConstructor).toHaveBeenCalledWith(
+        'amqp://localhost:5672?frameMax=1',
+        expect.anything()
+      );
+    });
+
     it('should consume regular messages', async () => {
       // arrange
       when(
@@ -387,46 +418,16 @@ describe('RMQEventBus', () => {
 
     it('should be disposed if connect timeout is passed', async () => {
       // arrange
-      jest.useFakeTimers();
-      jest
-        .spyOn(global, 'setTimeout')
-        .mockImplementation((callback: (args: void) => void) => {
-          callback();
-
-          return {} as unknown as NodeJS.Timeout;
-        });
-      when(spiedOptions.socketOptions).thenReturn({ connectTimeout: 1000 });
-
-      // act
-      await rmq.init();
-      jest.runAllTimers();
-
-      // assert
-      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
-      verify(mockedConnectionManager.close()).once();
-    });
-
-    it('should reset connection timeout', async () => {
-      // arrange
-      jest.useFakeTimers();
-      jest.spyOn(global, 'clearTimeout');
-
-      when(mockedConnectionManager.once('connect', anyFunction())).thenCall(
-        (_: string, callback: () => unknown) => callback()
-      );
-      when(spiedOptions.socketOptions).thenReturn({ connectTimeout: 1000 });
+      when(spiedOptions.connectTimeout).thenReturn(10);
 
       // act
       await rmq.init();
 
       // assert
-      expect(clearTimeout).toHaveBeenCalled();
-      verify(mockedConnectionManager.close()).never();
+      verify(
+        mockedConnectionManager.connect(objectContaining({ timeout: 10000 }))
+      ).once();
     });
-
-    it.todo('should bind DLXs');
-
-    it.todo('should skip DLXs binding');
   });
 
   describe('destroy', () => {

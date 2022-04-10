@@ -1,14 +1,13 @@
-import type { AmqpConnectionManagerOptions } from 'amqp-connection-manager';
-
 export interface RMQEventBusConfig {
   url: string;
   exchange: string;
   clientQueue: string;
   appQueue: string;
   prefetchCount?: number;
-  socketOptions?: AmqpConnectionManagerOptions & {
-    connectTimeout?: number;
-  };
+  connectTimeout?: number;
+  heartbeatInterval?: number;
+  reconnectTime?: number;
+  frameMax?: number;
   credentials?: {
     username: string;
     password: string;
