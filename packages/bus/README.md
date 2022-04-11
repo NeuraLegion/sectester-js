@@ -161,8 +161,31 @@ const command = new Record({ version: '0.0.1' });
 
 await bus.execute(command);
 ```
-
 For more information, please see `@secbox/core`.
+
+#### Retry Startegy
+
+In case the RabbitMQ is not ready or the connection is lost the action will be retried by the retry strategy.
+As retyr strategy is implemented [Exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff).
+
+To use retry strategy you should inject it using IoC.
+
+```ts
+class EventBusImplementation extends EventBus {
+  constructor(
+   @inject(RetryStrategy)
+   private readonly retryStrategy: RetryStrategy
+  ) {}
+  
+  publick publish (event: Event): Promise<void> {
+    // event proceed
+    await retryStrategy.acquire(() =>
+      this.sendMessage(/*parameters*/));
+  }
+  
+  // ...
+}
+```
 
 ## License
 
