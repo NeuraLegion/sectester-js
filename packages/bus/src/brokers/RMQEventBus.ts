@@ -28,6 +28,16 @@ interface ParsedConsumeMessage<T = unknown> {
   correlationId?: string;
 }
 
+interface RawMessage<T = unknown> {
+  payload: T;
+  routingKey: string;
+  exchange?: string;
+  type?: string;
+  correlationId?: string;
+  replyTo?: string;
+  timestamp?: Date;
+}
+
 @autoInjectable()
 export class RMQEventBus implements EventBus {
   private client: AmqpConnectionManager | undefined;
@@ -105,8 +115,9 @@ export class RMQEventBus implements EventBus {
   public async publish<T>(event: Event<T>): Promise<void> {
     const { type, payload, correlationId, createdAt } = event;
 
-    await this.sendMessage(payload, {
+    await this.tryToSendMessage({
       type,
+      payload,
       correlationId,
       routingKey: type,
       timestamp: createdAt,
@@ -127,8 +138,9 @@ export class RMQEventBus implements EventBus {
       : Promise.resolve(undefined);
 
     try {
-      await this.sendMessage(payload, {
+      await this.tryToSendMessage({
         type,
+        payload,
         correlationId,
         timestamp: createdAt,
         routingKey: this.options.appQueue,
@@ -339,7 +351,8 @@ export class RMQEventBus implements EventBus {
       const response = await handler.handle(event.payload);
 
       if (response && event.replyTo) {
-        await this.sendMessage(response, {
+        await this.tryToSendMessage({
+          payload: response,
           routingKey: event.replyTo,
           correlationId: event.correlationId
         });
@@ -349,46 +362,39 @@ export class RMQEventBus implements EventBus {
     }
   }
 
-  private async sendMessage(
-    payload: unknown,
-    options: {
-      routingKey: string;
-      exchange?: string;
-      type?: string;
-      correlationId?: string;
-      replyTo?: string;
-      timestamp?: Date;
+  private async tryToSendMessage(options: RawMessage): Promise<void> {
+    await this.retryStrategy.acquire(() => this.sendMessage(options));
+  }
+
+  private sendMessage(options: RawMessage) {
+    if (!this.channel) {
+      throw new IllegalOperation(this);
     }
-  ): Promise<void> {
+
     const {
+      type,
+      payload,
       replyTo,
       routingKey,
       correlationId,
-      type,
       exchange = '',
       timestamp = new Date()
     } = options;
 
-    await this.retryStrategy.acquire(() => {
-      if (!this.channel) {
-        throw new IllegalOperation(this);
+    return this.channel.publish(
+      exchange ?? '',
+      routingKey,
+      Buffer.from(JSON.stringify(payload)),
+      {
+        type,
+        replyTo,
+        correlationId,
+        mandatory: true,
+        persistent: true,
+        contentType: 'application/json',
+        timestamp: timestamp?.getTime()
       }
-
-      return this.channel.publish(
-        exchange ?? '',
-        routingKey,
-        Buffer.from(JSON.stringify(payload)),
-        {
-          type,
-          replyTo,
-          correlationId,
-          mandatory: true,
-          persistent: true,
-          contentType: 'application/json',
-          timestamp: timestamp?.getTime()
-        }
-      );
-    });
+    );
   }
 
   private parseConsumeMessage(
