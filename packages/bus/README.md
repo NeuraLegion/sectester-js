@@ -161,30 +161,46 @@ const command = new Record({ version: '0.0.1' });
 
 await bus.execute(command);
 ```
+
 For more information, please see `@secbox/core`.
 
-#### Retry Startegy
+#### Retry Strategy
 
-In case the RabbitMQ is not ready or the connection is lost the action will be retried by the retry strategy.
-As retyr strategy is implemented [Exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff).
+For some noncritical operations, it is better to fail as soon as possible rather than retry a coupe of times.
+For example, it is better to fail right after a smaller number of retries with only a short delay between retry attempts, and display a message to the user.
 
-To use retry strategy you should inject it using IoC.
+By default, you can use the [Exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff) retry strategy to retry an action when errors like `ETIMEDOUT` appear.
+
+You can implement your own to match the business requirements and the nature of the failure:
 
 ```ts
-class EventBusImplementation extends EventBus {
-  constructor(
-   @inject(RetryStrategy)
-   private readonly retryStrategy: RetryStrategy
-  ) {}
-  
-  publick publish (event: Event): Promise<void> {
-    // event proceed
-    await retryStrategy.acquire(() =>
-      this.sendMessage(/*parameters*/));
+export class CustomRetryStrategy implements RetryStrategy {
+  public async acquire<T extends (...args: unknown[]) => unknown>(
+    task: T
+  ): Promise<ReturnType<T>> {
+    let times = 0;
+
+    for (;;) {
+      try {
+        return await task();
+      } catch {
+        times++;
+
+        if (times === 3) {
+          throw e;
+        }
+      }
+    }
   }
-  
-  // ...
 }
+```
+
+Once a retry strategy is implemented, you can use it like that:
+
+```ts
+const retryStrategy = new CustomRetryStrategy();
+
+const bus = new RMQEventBus(container, retryStrategy, options);
 ```
 
 ## License
