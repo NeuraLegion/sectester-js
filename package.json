@@ -112,6 +112,7 @@
     "is-ci": "~3.0.1",
     "jest": "^27.5.1",
     "lint-staged": "^12.3.4",
+    "nock": "^13.2.4",
     "nx": "13.9.4",
     "prettier": "2.6.0",
     "semantic-release": "~19.0.2",
