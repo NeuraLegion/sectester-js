@@ -1,7 +1,14 @@
 /* eslint-disable max-classes-per-file */
 import { RMQEventBus } from './RMQEventBus';
 import { RMQEventBusConfig } from './RMQEventBusConfig';
-import { bind, Command, Event, EventHandler, NoResponse } from '@secbox/core';
+import {
+  bind,
+  Command,
+  Event,
+  EventHandler,
+  NoResponse,
+  RetryStrategy
+} from '@secbox/core';
 import {
   anyFunction,
   anyOfClass,
@@ -73,6 +80,7 @@ describe('RMQEventBus', () => {
   const mockedChannelWrapper = mock<ChannelWrapper>();
   const mockedChannel = mock<Channel>();
   const mockedDependencyContainer = mock<DependencyContainer>();
+  const mockedRetryStrategy = mock<RetryStrategy>();
   const options: RMQEventBusConfig = {
     url: 'amqp://localhost:5672',
     exchange: 'event-bus',
@@ -100,7 +108,14 @@ describe('RMQEventBus', () => {
     when(
       mockedChannel.consume(anyString(), anyFunction(), anything())
     ).thenResolve({ consumerTag: 'tag' } as any);
-    rmq = new RMQEventBus(instance(mockedDependencyContainer), options);
+    when(mockedRetryStrategy.acquire(anyFunction())).thenCall(
+      (callback: (...args: unknown[]) => unknown) => callback()
+    );
+    rmq = new RMQEventBus(
+      instance(mockedDependencyContainer),
+      instance(mockedRetryStrategy),
+      options
+    );
   });
 
   afterEach(() => {
@@ -111,12 +126,14 @@ describe('RMQEventBus', () => {
       | Channel
       | RMQEventBusConfig
       | DependencyContainer
+      | RetryStrategy
     >(
       mockedConnectionManager,
       mockedChannelWrapper,
       mockedChannel,
       spiedOptions,
-      mockedDependencyContainer
+      mockedDependencyContainer,
+      mockedRetryStrategy
     );
     jest.resetModules();
     jest.resetAllMocks();

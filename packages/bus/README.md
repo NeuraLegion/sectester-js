@@ -15,7 +15,7 @@ npm i -s @secbox/bus
 To use the RabbitMQ Event Bus, pass the following options object to the constructor method:
 
 ```ts
-import { RMQEventBus } from '@secbox/bus';
+import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@secbox/bus';
 
 const config = new Configuration({
   cluster: 'app.neuralegion.com'
@@ -24,15 +24,19 @@ const config = new Configuration({
 const repeaterId = 'your Repeater ID';
 const token = 'your API key';
 
-const bus = new RMQEventBus(config.container, {
-  exchange: 'EventBus',
-  clientQueue: `agent:${repeaterId}`,
-  appQueue: 'app',
-  credentials: {
-    username: 'bot',
-    password: token
+const bus = new RMQEventBus(
+  config.container,
+  new ExponentialBackoffRetryStrategy({ maxDepth: 5 }),
+  {
+    exchange: 'EventBus',
+    clientQueue: `agent:${repeaterId}`,
+    appQueue: 'app',
+    credentials: {
+      username: 'bot',
+      password: token
+    }
   }
-});
+);
 ```
 
 The options are specific to the chosen transporter. The `RabbitMQ` implementation exposes the properties described below:
@@ -159,6 +163,45 @@ await bus.execute(command);
 ```
 
 For more information, please see `@secbox/core`.
+
+#### Retry Strategy
+
+For some noncritical operations, it is better to fail as soon as possible rather than retry a coupe of times.
+For example, it is better to fail right after a smaller number of retries with only a short delay between retry attempts, and display a message to the user.
+
+By default, you can use the [Exponential backoff](https://en.wikipedia.org/wiki/Exponential_backoff) retry strategy to retry an action when errors like `ETIMEDOUT` appear.
+
+You can implement your own to match the business requirements and the nature of the failure:
+
+```ts
+export class CustomRetryStrategy implements RetryStrategy {
+  public async acquire<T extends (...args: unknown[]) => unknown>(
+    task: T
+  ): Promise<ReturnType<T>> {
+    let times = 0;
+
+    for (;;) {
+      try {
+        return await task();
+      } catch {
+        times++;
+
+        if (times === 3) {
+          throw e;
+        }
+      }
+    }
+  }
+}
+```
+
+Once a retry strategy is implemented, you can use it like that:
+
+```ts
+const retryStrategy = new CustomRetryStrategy();
+
+const bus = new RMQEventBus(container, retryStrategy, options);
+```
 
 ## License
 
