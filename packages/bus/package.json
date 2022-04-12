@@ -36,6 +36,6 @@
     "bus"
   ],
   "peerDependencies": {
-    "@secbox/core": "^0.2.0"
+    "@secbox/core": "^0.3.0"
   }
 }
