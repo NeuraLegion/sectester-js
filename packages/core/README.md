@@ -221,6 +221,28 @@ class IssueDetectedHandler implements EventHandler<Issue> {
 
 You can register multiple event handlers for a single event pattern and all of them will be automatically triggered in parallel.
 
+```ts
+@bind(IssueDetected, IssueReopened)
+class IssueDetectedHandler implements EventHandler<Issue> {
+  public handle(payload: Issue): Promise<void> {
+    // implementation
+  }
+}
+```
+
+You can also use a string and symbol to subscribe a handler to events:
+
+```ts
+const IssueReopened = Symbol('IssueReopened');
+
+@bind('IssueDetected', IssueReopened)
+class IssueDetectedHandler implements EventHandler<Issue> {
+  public handle(payload: Issue): Promise<void> {
+    // implementation
+  }
+}
+```
+
 As soon as the `IssueDetected` event appears, the event handler takes a single argument, the data passed from the client (in this case, an event payload which has been sent over the network).
 
 ## License
