@@ -38,6 +38,11 @@ interface RawMessage<T = unknown> {
   timestamp?: Date;
 }
 
+interface Binding<T, R> {
+  handler: EventHandler<T, R>;
+  eventNames: string[];
+}
+
 @autoInjectable()
 export class RMQEventBus implements EventBus {
   private channel: ChannelWrapper | undefined;
@@ -85,12 +90,7 @@ export class RMQEventBus implements EventBus {
   public async register<T, R>(
     type: EventHandlerConstructor<T, R>
   ): Promise<void> {
-    const handler = this.resolveHandler(type);
-    const eventNames = this.reflectEventsNames(type);
-
-    if (!eventNames.length) {
-      throw new NoSubscriptionsFound(handler);
-    }
+    const { handler, eventNames } = this.discoverEventBinding(type);
 
     await Promise.all(
       eventNames.map(eventName => this.subscribe(eventName, handler))
@@ -100,12 +100,7 @@ export class RMQEventBus implements EventBus {
   public async unregister<T, R>(
     type: EventHandlerConstructor<T, R>
   ): Promise<void> {
-    const handler = this.resolveHandler(type);
-    const eventNames = this.reflectEventsNames(type);
-
-    if (!eventNames.length) {
-      throw new NoSubscriptionsFound(handler);
-    }
+    const { handler, eventNames } = this.discoverEventBinding(type);
 
     await Promise.all(
       eventNames.map(eventName => this.unsubscribe(eventName, handler))
@@ -225,6 +220,19 @@ export class RMQEventBus implements EventBus {
         eventName
       )
     );
+  }
+
+  private discoverEventBinding<T, R>(
+    type: EventHandlerConstructor<T, R>
+  ): Binding<T, R> {
+    const handler = this.resolveHandler(type);
+    const eventNames = this.reflectEventsNames(type);
+
+    if (!eventNames.length) {
+      throw new NoSubscriptionsFound(handler);
+    }
+
+    return { handler, eventNames };
   }
 
   private resolveHandler<T, R>(
