@@ -40,8 +40,8 @@ interface RawMessage<T = unknown> {
 
 @autoInjectable()
 export class RMQEventBus implements EventBus {
-  private client: AmqpConnectionManager | undefined;
   private channel: ChannelWrapper | undefined;
+  private client: AmqpConnectionManager | undefined;
 
   private readonly DEFAULT_RECONNECT_TIME = 20;
   private readonly DEFAULT_HEARTBEAT_INTERVAL = 30;
@@ -188,11 +188,7 @@ export class RMQEventBus implements EventBus {
   }
 
   private async bindQueue(eventName: string): Promise<void> {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
-    await this.channel.addSetup((channel: Channel) =>
+    await this.getChannel().addSetup((channel: Channel) =>
       channel.bindQueue(
         this.options.clientQueue,
         this.options.exchange,
@@ -222,11 +218,7 @@ export class RMQEventBus implements EventBus {
   }
 
   private async unbindQueue(eventName: string) {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
-    await this.channel.removeSetup((channel: Channel) =>
+    await this.getChannel().removeSetup((channel: Channel) =>
       channel.unbindQueue(
         this.options.clientQueue,
         this.options.exchange,
@@ -366,11 +358,7 @@ export class RMQEventBus implements EventBus {
     await this.retryStrategy.acquire(() => this.sendMessage(options));
   }
 
-  private sendMessage(options: RawMessage) {
-    if (!this.channel) {
-      throw new IllegalOperation(this);
-    }
-
+  private async sendMessage(options: RawMessage): Promise<void> {
     const {
       type,
       payload,
@@ -381,7 +369,7 @@ export class RMQEventBus implements EventBus {
       timestamp = new Date()
     } = options;
 
-    return this.channel.publish(
+    await this.getChannel().publish(
       exchange ?? '',
       routingKey,
       Buffer.from(JSON.stringify(payload)),
@@ -455,5 +443,13 @@ export class RMQEventBus implements EventBus {
     }
 
     return url.toString();
+  }
+
+  private getChannel(): NonNullable<ChannelWrapper> {
+    if (!this.channel) {
+      throw new IllegalOperation(this);
+    }
+
+    return this.channel;
   }
 }
