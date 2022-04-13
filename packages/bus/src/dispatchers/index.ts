@@ -1,4 +1,4 @@
-export * from './AxiosCommandDispatcher';
-export * from './AxiosCommandDispatcherConfig';
+export * from './HttpCommandDispatcher';
+export * from './HttpCommandDispatcherConfig';
 export * from './RMQEventBus';
 export * from './RMQEventBusConfig';

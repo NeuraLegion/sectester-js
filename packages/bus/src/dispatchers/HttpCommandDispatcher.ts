@@ -1,5 +1,5 @@
-import { AxiosCommandDispatcherConfig } from './AxiosCommandDispatcherConfig';
-import { HttpCommand } from '../commands';
+import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
+import { HttpRequest } from '../commands';
 import { CommandDispatcher } from '@secbox/core';
 import { inject, injectable } from 'tsyringe';
 import axios, { AxiosRequestConfig } from 'axios';
@@ -8,18 +8,18 @@ import { finished, Readable } from 'stream';
 import { promisify } from 'util';
 
 @injectable()
-export class AxiosCommandDispatcher implements CommandDispatcher {
+export class HttpCommandDispatcher implements CommandDispatcher {
   private readonly client: RateLimitedAxiosInstance;
 
   constructor(
-    @inject(AxiosCommandDispatcherConfig)
-    private readonly options: AxiosCommandDispatcherConfig
+    @inject(HttpCommandDispatcherConfig)
+    private readonly options: HttpCommandDispatcherConfig
   ) {
     this.client = this.createHttpClient();
   }
 
   public async execute<T, R>(
-    command: HttpCommand<T, R>
+    command: HttpRequest<T, R>
   ): Promise<R | undefined> {
     const response = await this.client.request(
       this.convertToHttpOptions(command)
@@ -35,7 +35,7 @@ export class AxiosCommandDispatcher implements CommandDispatcher {
   }
 
   private convertToHttpOptions<T, R>(
-    command: HttpCommand<T, R>
+    command: HttpRequest<T, R>
   ): AxiosRequestConfig<T> {
     const {
       url,

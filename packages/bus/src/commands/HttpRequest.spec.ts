@@ -1,7 +1,7 @@
-import { HttpCommand, HttpOptions } from './HttpCommand';
+import { HttpRequest, HttpOptions } from './HttpRequest';
 import { Method } from 'axios';
 
-describe('HttpCommand', () => {
+describe('HttpRequest', () => {
   describe('constructor', () => {
     it('should set default values to props', () => {
       // arrange
@@ -12,13 +12,13 @@ describe('HttpCommand', () => {
       };
 
       // act
-      const command = new HttpCommand(options);
+      const command = new HttpRequest(options);
 
       // assert
       expect(command).toMatchObject({
         ttl: 10000,
         expectReply: true,
-        type: 'HttpCommand',
+        type: 'HttpRequest',
         createdAt: expect.any(Date),
         correlationId: expect.any(String)
       });
@@ -32,7 +32,7 @@ describe('HttpCommand', () => {
       };
 
       // act
-      const command = new HttpCommand(options);
+      const command = new HttpRequest(options);
 
       // assert
       expect(command).toMatchObject({
@@ -49,7 +49,7 @@ describe('HttpCommand', () => {
       };
 
       // act / assert
-      expect(() => new HttpCommand(options)).toThrow('`method` must be string');
+      expect(() => new HttpRequest(options)).toThrow('`method` must be string');
     });
 
     it('should raise an exception if url is not string', () => {
@@ -57,7 +57,7 @@ describe('HttpCommand', () => {
       const options = { payload: 'Test', url: 0 as unknown as string };
 
       // assert
-      expect(() => new HttpCommand(options)).toThrow('`url` must be string');
+      expect(() => new HttpRequest(options)).toThrow('`url` must be string');
     });
   });
 });

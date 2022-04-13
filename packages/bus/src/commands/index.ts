@@ -1,1 +1,1 @@
-export * from './HttpCommand';
+export * from './HttpRequest';

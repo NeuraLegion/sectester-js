@@ -1,17 +1,17 @@
-import { HttpCommand } from '../commands';
-import { AxiosCommandDispatcher } from './AxiosCommandDispatcher';
-import { AxiosCommandDispatcherConfig } from './AxiosCommandDispatcherConfig';
+import { HttpRequest } from '../commands';
+import { HttpCommandDispatcher } from './HttpCommandDispatcher';
+import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { reset, spy } from 'ts-mockito';
 import nock from 'nock';
 
-describe('AxiosCommandDispatcher', () => {
+describe('HttpCommandDispatcher', () => {
   beforeAll(() => {
     nock.disableNetConnect();
     nock.enableNetConnect('127.0.0.1');
   });
 
   afterEach(() => {
-    reset<AxiosCommandDispatcherConfig>(spiedOptions);
+    reset<HttpCommandDispatcherConfig>(spiedOptions);
     nock.cleanAll();
     nock.restore();
   });
@@ -19,26 +19,26 @@ describe('AxiosCommandDispatcher', () => {
   afterAll(() => nock.enableNetConnect());
 
   const baseUrl = 'https://example.com';
-  const options: AxiosCommandDispatcherConfig = {
+  const options: HttpCommandDispatcherConfig = {
     baseUrl,
     token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
   };
 
-  let axiosDispatcher!: AxiosCommandDispatcher;
-  let spiedOptions!: AxiosCommandDispatcherConfig;
+  let axiosDispatcher!: HttpCommandDispatcher;
+  let spiedOptions!: HttpCommandDispatcherConfig;
 
   beforeEach(() => {
     if (!nock.isActive()) {
       nock.activate();
     }
     spiedOptions = spy(options);
-    axiosDispatcher = new AxiosCommandDispatcher(options);
+    axiosDispatcher = new HttpCommandDispatcher(options);
   });
 
   describe('execute', () => {
     it('should send a command', async () => {
       // arrange
-      const command = new HttpCommand({
+      const command = new HttpRequest({
         payload: { foo: 'bar' },
         url: '/api/test',
         method: 'POST',
@@ -55,7 +55,7 @@ describe('AxiosCommandDispatcher', () => {
 
     it('should set an authorization header', async () => {
       // arrange
-      const command = new HttpCommand({
+      const command = new HttpRequest({
         payload: { foo: 'bar' },
         url: '/api/test',
         method: 'POST',
@@ -75,7 +75,7 @@ describe('AxiosCommandDispatcher', () => {
 
     it('should set an correlation ID header', async () => {
       // arrange
-      const command = new HttpCommand({
+      const command = new HttpRequest({
         payload: { foo: 'bar' },
         url: '/api/test',
         method: 'POST',
@@ -95,7 +95,7 @@ describe('AxiosCommandDispatcher', () => {
 
     it('should set an date header', async () => {
       // arrange
-      const command = new HttpCommand({
+      const command = new HttpRequest({
         payload: { foo: 'bar' },
         url: '/api/test',
         method: 'POST',
@@ -116,7 +116,7 @@ describe('AxiosCommandDispatcher', () => {
 
     it('should get a reply', async () => {
       // arrange
-      const command = new HttpCommand({
+      const command = new HttpRequest({
         payload: { foo: 'bar' },
         url: '/api/test',
         method: 'POST'
@@ -139,7 +139,7 @@ describe('AxiosCommandDispatcher', () => {
     });
 
     it('should throw a error if no response', async () => {
-      const command = new HttpCommand({
+      const command = new HttpRequest({
         payload: { foo: 'bar' },
         url: '/api/test',
         method: 'POST',
@@ -165,7 +165,7 @@ describe('AxiosCommandDispatcher', () => {
 
     it('should return undefined immediately if `expectReply` is false', async () => {
       // arrange
-      const command = new HttpCommand({
+      const command = new HttpRequest({
         payload: { foo: 'bar' },
         url: '/api/test',
         method: 'POST',
