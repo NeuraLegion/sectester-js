@@ -67,7 +67,7 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       baseUrl,
       token,
       timeout = 10000,
-      rate = { window: 60, limit: 10 }
+      rate = { limit: 10, window: 60 * 1000 }
     } = this.options;
 
     const options: AxiosRequestConfig = {
