@@ -6,5 +6,6 @@ container.register(RetryStrategy, {
   useFactory: () => new ExponentialBackoffRetryStrategy({ maxDepth: 5 })
 });
 
-export * from './brokers';
+export * from './dispatchers';
+export * from './commands';
 export * from './retry-strategies';
