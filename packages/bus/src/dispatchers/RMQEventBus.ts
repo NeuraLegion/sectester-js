@@ -3,7 +3,6 @@ import {
   Command,
   Event,
   EventBus,
-  EventConstructor,
   EventHandler,
   EventHandlerConstructor,
   EventHandlerNotFound,
@@ -262,10 +261,7 @@ export class RMQEventBus implements EventBus {
   }
 
   private reflectEventsNames(handlerType: EventHandlerConstructor): string[] {
-    const types: EventConstructor[] =
-      Reflect.getMetadata(Event, handlerType) ?? [];
-
-    return types.map((event: EventConstructor) => event.name);
+    return Reflect.getMetadata(Event, handlerType) ?? [];
   }
 
   private async createConsumerChannel(): Promise<void> {
