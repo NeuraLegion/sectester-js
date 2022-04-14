@@ -182,7 +182,7 @@ The command dispatcher can be customized using the following options:
 
 | Option    | Description                                                                                                                                          |
 |-----------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `baseUrl` | Application url                                                                                                                                      |
+| `baseUrl` |  Base URL for your application instance, e.g. `https://app.neuralegion.com`                                                                          |
 | `token`   | Authorization token                                                                                                                                  |
 | `timeout` | If the request takes longer than `timeout`, the request will be aborted. Default 10000                                                               |
 | `rate`    | Contain two options: `window` - amount of time to limit concurrent requests; `limit` - max requests to perform concurrently in given amount of time. |
