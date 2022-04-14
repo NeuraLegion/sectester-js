@@ -162,91 +162,62 @@ const command = new Record({ version: '0.0.1' });
 await bus.execute(command);
 ```
 
-For more information, please see `@secbox/core`.
-
-### HttpComandDispatcher
-
-The `HttpComandDispatcher` is an alternative way to execute RPC command. By default you can use `AxiosCommandDispatcher` to execute command.
+The `HttpCommandDispatcher` is an alternative way to execute the commands over HTTP. To start, you should create an `HttpCommandDispatcher` instance by passing the following options to the constructor:
 
 ```ts
-import { AxiosCommandDispatcher, AxiosCommandDispatcherConfig } from '@secbox/bus';
+import {
+  HttpCommandDispatcher,
+  HttpCommandDispatcherConfig
+} from '@secbox/bus';
 
-const options: AxiosCommandDispatcherConfig = {
-  baseUrl,
+const options: HttpCommandDispatcherConfig = {
+  baseUrl: 'https://app.neuralegion.com',
   token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
 };
-  
-const axiosDispatcher = new AxiosCommandDispatcher(options);
+
+const httpDispatcher = new HttpCommandDispatcher(options);
 ```
-The `AxiosCommandDispatcherConfig` implementation exposes the properties described below:
 
-| Option    | Description                                                                                                                                                         |
-|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `baseUrl` | Application url                                                                                                                                                     |
-| `token`   | Authorization token                                                                                                                                                 |
-| `timeout` | If the request takes longer than `timeout`, the request will be aborted. Default 10000                                                                              |
-| `rate`    | Contain two options: `perMilliseconds` - amount of time to limit concurrent requests; `maxRequests` - max requests to perform concurrently in given amount of time. |
+The command dispatcher can be customized using the following options:
 
-#### Custom HttpComandDispatcher
+| Option    | Description                                                                                                                                                                                                                                                                                                                                |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `baseUrl` | Base URL for your application instance, e.g. `https://app.neuralegion.com`                                                                                                                                                                                                                                                                 |
+| `token`   | API key to access the API. Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens) and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the knowledgebase |
+| `timeout` | Time to wait for a server to send response headers (and start the response body) before aborting the request. Default 10000 ms                                                                                                                                                                                                             |
+| `rate`    | Set how many requests per interval should perform immediately, others will be delayed automatically. By default, 10 requests per 1 minute                                                                                                                                                                                                  |
 
-You can implement your own `HttpComandDispatcher`. To do it you should implement`HttpComandDispatcher` interface.
+Then you have to create an instance of `HttpRequest` instead of a custom command, specifying the `url` and `method` in addition to the `payload` that a command accepts by default:
 
 ```ts
-import { Command } from '@secbox/core';
-import { HttpComandDispatcher } from '@secbox/bus';
-
-export class CustomHttpDispather implements HttpComandDispatcher {
-  constuctor(/*options*/) {
-    // ...
-  }
-  
-  publick execute<T, R>(command: Command<T, R>): Promise<R> {
-    // your implementation
-  }
-}
+const command = new HttpCommand({
+  url: '/api/v1/repeaters',
+  method: 'POST',
+  payload: { name: 'test' }
+});
 ```
 
-#### Executing RPC methods
-
-To execute command `HttpComandDispatcher` exposes a `execute()` method. This method is intended to perform a command to the application and returns an `Promise` with its response.
+Once it is done, you can perform a request using `HttpComandDispatcher` as follows:
 
 ```ts
-interface Payload {
-  version: string;
-}
-
-interface Response {
-  lastVersion: string;
-}
-
-const options: HttpOptions<Payload> = {
-  payload: { version: '0.0.1' },
-  url: '/api/test',
-  method: 'GET'
-};
-      
-const command = new HttpCommand<Payload, Response>(options);
-
-const response = await axiosDispatcher.execute(command);
+const response: { id: string } = await httpDispatcher.execute(command);
 ```
-This method returns a Promise which will eventually be resolved as a response message.
 
-As you can see in example below in case when you use `HttpCommandDispatcher` to execute command you should use `HttpCommand<T, R>`. To ginfigure your command you should pass `HttpOptions<T>` to `HttpCommand<T, R>` constructor.
-
-The `HttpOptions<T>` implementation exposes the properties described below:
+Below you will find a list of parameters that can be used to configure a command:
 
 | Option          | Description                                                                                |
-|-----------------|--------------------------------------------------------------------------------------------|
-| `url`           | Application URL address                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| `url`           | Absolute URL or path that will be used for the request. By default, `/`                    |
+| `method`        | HTTP method that is going to be used when making the request. By default, `GET`            |
+| `params`        | Use to set query parameters.                                                               |
 | `payload`       | Message that we want to transmit to the remote service.                                    |
-| `method`        | HTTP method                                                                                |
-| `expectReply`   | ndicates whether to wait for a reply. By default true.                                     |
+| `expectReply`   | Indicates whether to wait for a reply. By default true.                                    |
 | `ttl`           | Period of time that command should be handled before being discarded. By default 10000 ms. |
 | `type`          | The name of a command. By default, it is the name of specific class.                       |
 | `correlationId` | Used to ensure atomicity while working with EventBus. By default, random UUID.             |
-| `params`        | Query parameters                                                                           |
 | `createdAt`     | The exact date and time the command was created.                                           |
 
+For more information, please see `@secbox/core`.
 
 #### Retry Strategy
 
