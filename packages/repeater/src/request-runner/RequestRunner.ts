@@ -1,10 +1,10 @@
 import { Request } from './Request';
 import { Response } from './Response';
-import { Protocol } from './Protocol';
+import { Protocol } from '../models';
 
-export interface RequestExecutor {
+export interface RequestRunner {
   protocol: Protocol;
   execute(request: Request): Promise<Response>;
 }
 
-export const RequestExecutor: unique symbol = Symbol('RequestExecutor');
+export const RequestRunner: unique symbol = Symbol('RequestRunner');

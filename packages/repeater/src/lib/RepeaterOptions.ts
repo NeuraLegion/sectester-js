@@ -1,4 +1,4 @@
-import { RequestExecutorOptions } from '../request-executor';
+import { RequestRunnerOptions } from '../request-runner';
 
 export interface RepeaterOptions {
   // repeater params
@@ -11,5 +11,5 @@ export interface RepeaterOptions {
   remoteScripts?: boolean;
 
   // request executor settings
-  executor?: RequestExecutorOptions;
+  executor?: RequestRunnerOptions;
 }

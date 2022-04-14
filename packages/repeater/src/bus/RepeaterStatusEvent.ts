@@ -1,4 +1,4 @@
-import { RepeaterStatus } from '../../lib';
+import { RepeaterStatus } from '../lib';
 import { Event } from '@secbox/core';
 
 interface RepeaterStatusEventPayload {

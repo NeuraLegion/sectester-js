@@ -1,4 +1,4 @@
-import { Protocol } from './Protocol';
+import { Protocol } from '../models';
 
 export class Response {
   public readonly protocol: Protocol;

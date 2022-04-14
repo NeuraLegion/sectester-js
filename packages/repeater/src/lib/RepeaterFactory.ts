@@ -1,7 +1,7 @@
-import { RepeatersManager } from '../api';
 import { Repeater } from './Repeater';
 import { RepeaterOptions } from './RepeaterOptions';
-import { EventBusFactory } from './EventBusFactory';
+import { RepeatersManager } from '../api';
+import { EventBusFactory } from '../bus';
 import { Configuration } from '@secbox/core';
 
 /**

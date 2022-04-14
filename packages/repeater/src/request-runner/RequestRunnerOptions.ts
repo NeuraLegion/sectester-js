@@ -1,4 +1,4 @@
-export interface RequestExecutorOptions {
+export interface RequestRunnerOptions {
   timeout?: number;
   proxyUrl?: string;
   headers?: Record<string, string | string[]>;
@@ -7,6 +7,6 @@ export interface RequestExecutorOptions {
   reuseConnection?: boolean;
 }
 
-export const RequestExecutorOptions: unique symbol = Symbol(
-  'RequestExecutorOptions'
+export const RequestRunnerOptions: unique symbol = Symbol(
+  'RequestRunnerOptions'
 );

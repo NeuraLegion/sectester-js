@@ -1,8 +1,8 @@
-import { RequestExecutor } from './RequestExecutor';
-import { Response } from './Response';
-import { Request } from './Request';
-import { Protocol } from './Protocol';
-import { RequestExecutorOptions } from './RequestExecutorOptions';
+import { Request } from '../Request';
+import { RequestRunner } from '../RequestRunner';
+import { RequestRunnerOptions } from '../RequestRunnerOptions';
+import { Response } from '../Response';
+import { Protocol } from '../../models';
 import { logger } from '@secbox/core';
 import request from 'request-promise';
 import { Response as IncomingResponse } from 'request';
@@ -14,7 +14,7 @@ import http, { OutgoingMessage } from 'http';
 import https, { AgentOptions } from 'https';
 
 @injectable()
-export class HttpRequestExecutor implements RequestExecutor {
+export class HttpRequestRunner implements RequestRunner {
   private readonly proxy?: SocksProxyAgent;
   private readonly httpAgent?: http.Agent;
   private readonly httpsAgent?: https.Agent;
@@ -25,8 +25,8 @@ export class HttpRequestExecutor implements RequestExecutor {
   }
 
   constructor(
-    @inject(RequestExecutorOptions)
-    private readonly options: RequestExecutorOptions
+    @inject(RequestRunnerOptions)
+    private readonly options: RequestRunnerOptions
   ) {
     if (this.options.proxyUrl) {
       this.proxy = new SocksProxyAgent({

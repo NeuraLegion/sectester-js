@@ -1,16 +1,16 @@
-import { RequestExecutor } from './RequestExecutor';
-import { Response } from './Response';
-import { Request } from './Request';
-import { Protocol } from './Protocol';
-import { RequestExecutorOptions } from './RequestExecutorOptions';
+import { Request } from '../Request';
+import { RequestRunner } from '../RequestRunner';
+import { RequestRunnerOptions } from '../RequestRunnerOptions';
+import { Response } from '../Response';
+import { Protocol } from '../../models';
 import { logger } from '@secbox/core';
-import { inject, injectable } from 'tsyringe';
 import WebSocket from 'ws';
+import { inject, injectable } from 'tsyringe';
 import { SocksProxyAgent } from 'socks-proxy-agent';
-import { parse } from 'url';
 import { once } from 'events';
-import { promisify } from 'util';
 import { IncomingMessage } from 'http';
+import { parse } from 'url';
+import { promisify } from 'util';
 
 interface WSMessage {
   body: string | undefined;
@@ -18,7 +18,7 @@ interface WSMessage {
 }
 
 @injectable()
-export class WsRequestExecutor implements RequestExecutor {
+export class WsRequestRunner implements RequestRunner {
   public static readonly FORBIDDEN_HEADERS: ReadonlySet<string> = new Set([
     'sec-websocket-version',
     'sec-websocket-key'
@@ -27,8 +27,8 @@ export class WsRequestExecutor implements RequestExecutor {
   private readonly agent?: SocksProxyAgent;
 
   constructor(
-    @inject(RequestExecutorOptions)
-    private readonly options: RequestExecutorOptions
+    @inject(RequestRunnerOptions)
+    private readonly options: RequestRunnerOptions
   ) {
     this.agent = this.options.proxyUrl
       ? new SocksProxyAgent({
@@ -169,7 +169,7 @@ export class WsRequestExecutor implements RequestExecutor {
         [key, value]: [string, string | string[]]
       ) => {
         const headerName = key.trim().toLowerCase();
-        if (!WsRequestExecutor.FORBIDDEN_HEADERS.has(headerName)) {
+        if (!WsRequestRunner.FORBIDDEN_HEADERS.has(headerName)) {
           result[key] = value;
         }
 

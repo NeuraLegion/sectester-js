@@ -1,4 +1,4 @@
-import { Protocol } from '../../request-executor';
+import { Protocol } from '../models';
 import { Event } from '@secbox/core';
 
 interface ExecuteRequestEventPayload {
