@@ -164,8 +164,6 @@ await bus.execute(command);
 
 For more information, please see `@secbox/core`.
 
-### HttpCommandDispatcher
-
 The `HttpCommandDispatcher` is an alternative way to execute the commands over HTTP. To start, you should create an `HttpCommandDispatcher` instance by passing the following options to the constructor:
 
 ```ts
@@ -234,35 +232,14 @@ The `HttpOptions<T>` implementation exposes the properties described below:
 | Option          | Description                                                                                |
 |-----------------|--------------------------------------------------------------------------------------------|
 | `url`           | Application URL address                                                                    |
-| `payload`       | Message that we want to transmit to the remote service.                                    |
 | `method`        | HTTP method                                                                                |
+| `params`        | Query parameters                                                                           |
+| `payload`       | Message that we want to transmit to the remote service.                                    |
 | `expectReply`   | ndicates whether to wait for a reply. By default true.                                     |
 | `ttl`           | Period of time that command should be handled before being discarded. By default 10000 ms. |
 | `type`          | The name of a command. By default, it is the name of specific class.                       |
 | `correlationId` | Used to ensure atomicity while working with EventBus. By default, random UUID.             |
-| `params`        | Query parameters                                                                           |
 | `createdAt`     | The exact date and time the command was created.                                           |
-
-#### Custom HttpComandDispatcher
-
-You can implement your own `HttpCommandDispatcher`. To do it you should implement `ComandDispatcher` interface.
-
-```ts
-import { Command, ComandDispatcher } from '@secbox/core';
-
-export class CustomHttpDispather implements ComandDispatcher {
-  constuctor(/*options*/) {
-    // ...
-  }
-  
-  publick execute<T, R>(command: Command<T, R>): Promise<R> {
-    const { url, method, payload } = command;
-  
-    // implementation based on your http client
-  }
-}
-```
-For more information, please see @secbox/core.
 
 #### Retry Strategy
 
