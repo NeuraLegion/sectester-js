@@ -187,7 +187,24 @@ The command dispatcher can be customized using the following options:
 | `timeout` | Time to wait for a server to send response headers (and start the response body) before aborting the request. Default 10000 ms                                                               |
 | `rate`    | Set how many requests per interval should perform immediately, others will be delayed automatically. By default, 10 requests per 1 minute |
 
-To execute command `HttpComandDispatcher` exposes a `execute()` method. This method is intended to perform a command to the application and returns a `Promise` with its response.
+Then you have to create an instance of `HttpRequest` instead of a custom command, specifying the `url` and `method` in addition to the `payload` that a command accepts by default:
+
+```ts
+const command = new HttpCommand({ 
+  url: '/api/v1/repeaters', 
+  method: 'POST', 
+  payload: { name: 'test' } 
+});
+```
+
+Below you will find a list of parameters that can be used to configure a command:
+
+--- PUT THE TABLE HERE --- 
+
+Once it is done, you can perform a request using `HttpComandDispatcher` as follows:
+```ts
+const response: { id: string } = await httpDispatcher.execute(command);
+```
 
 ```ts
 interface Payload {
