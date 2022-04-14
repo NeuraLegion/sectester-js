@@ -185,7 +185,7 @@ The command dispatcher can be customized using the following options:
 | `baseUrl` |  Base URL for your application instance, e.g. `https://app.neuralegion.com`                                                                          |
 | `token`   | Authorization token                                                                                                                                  |
 | `timeout` | If the request takes longer than `timeout`, the request will be aborted. Default 10000                                                               |
-| `rate`    | Contain two options: `window` - amount of time to limit concurrent requests; `limit` - max requests to perform concurrently in given amount of time. |
+| `rate`    | Set how many requests per interval should perform immediately, others will be delayed automatically. By default, 10 requests per 1 minute |
 
 To execute command `HttpComandDispatcher` exposes a `execute()` method. This method is intended to perform a command to the application and returns a `Promise` with its response.
 
