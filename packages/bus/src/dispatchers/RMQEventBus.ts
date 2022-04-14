@@ -5,12 +5,12 @@ import {
   EventBus,
   EventConstructor,
   EventHandler,
-  RetryStrategy,
   EventHandlerConstructor,
   EventHandlerNotFound,
   IllegalOperation,
   NoResponse,
-  NoSubscriptionsFound
+  NoSubscriptionsFound,
+  RetryStrategy
 } from '@secbox/core';
 import type { Channel, ConsumeMessage } from 'amqplib';
 import { autoInjectable, DependencyContainer, inject } from 'tsyringe';
@@ -402,33 +402,34 @@ export class RMQEventBus implements EventBus {
   }
 
   private buildOptions(): AmqpConnectionManagerOptions {
-    const {
-      reconnectTime,
-      heartbeatInterval,
-      credentials: plain
-    } = this.options;
+    const { reconnectTime, heartbeatInterval, credentials } = this.options;
 
     return {
       heartbeatIntervalInSeconds:
         heartbeatInterval ?? this.DEFAULT_HEARTBEAT_INTERVAL,
       reconnectTimeInSeconds: reconnectTime ?? this.DEFAULT_RECONNECT_TIME,
       connectionOptions: {
-        ...(plain
-          ? {
-              credentials: {
-                ...plain,
-                mechanism: 'PLAIN',
-                /* istanbul ignore next */
-                response(): Buffer {
-                  return Buffer.from(
-                    ['', plain.username, plain.password].join(
-                      String.fromCharCode(0)
-                    )
-                  );
-                }
-              }
-            }
+        ...(credentials
+          ? { credentials: this.createAuthRequest(credentials) }
           : {})
+      }
+    };
+  }
+
+  private createAuthRequest(plain: { username: string; password: string }): {
+    password: string;
+    response(): Buffer;
+    mechanism: 'PLAIN';
+    username: string;
+  } {
+    return {
+      ...plain,
+      mechanism: 'PLAIN',
+      /* istanbul ignore next */
+      response(): Buffer {
+        return Buffer.from(
+          ['', plain.username, plain.password].join(String.fromCharCode(0))
+        );
       }
     };
   }
