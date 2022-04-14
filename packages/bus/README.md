@@ -166,7 +166,7 @@ For more information, please see `@secbox/core`.
 
 ### HttpCommandDispatcher
 
-The `HttpCommandDispatcher` is an alternative way to execute RPC command. To use `HttpCommandDispatcher` pass the following options object to the constructor method:
+The `HttpCommandDispatcher` is an alternative way to execute the commands over HTTP. To start, you should create an `HttpCommandDispatcher` instance by passing the following options to the constructor:
 
 ```ts
 import { HttpCommandDispatcher, HttpCommandDispatcherConfig } from '@secbox/bus';
