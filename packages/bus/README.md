@@ -178,7 +178,7 @@ const options: HttpCommandDispatcherConfig = {
   
 const httpDispatcher = new HttpCommandDispatcher(options);
 ```
-The `HttpCommandDispatcherConfig` implementation exposes the properties described below:
+The command dispatcher can be customized using the following options:
 
 | Option    | Description                                                                                                                                          |
 |-----------|------------------------------------------------------------------------------------------------------------------------------------------------------|
