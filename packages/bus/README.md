@@ -174,11 +174,6 @@ import { HttpCommandDispatcher, HttpCommandDispatcherConfig } from '@secbox/bus'
 const options: HttpCommandDispatcherConfig = {
   baseUrl,
   token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0',
-  timeout: 10000,
-  rate: {
-    limit: 3,
-    window: 2
-  }
 };
   
 const httpDispatcher = new HttpCommandDispatcher(options);
