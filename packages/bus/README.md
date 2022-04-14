@@ -162,84 +162,62 @@ const command = new Record({ version: '0.0.1' });
 await bus.execute(command);
 ```
 
-For more information, please see `@secbox/core`.
-
 The `HttpCommandDispatcher` is an alternative way to execute the commands over HTTP. To start, you should create an `HttpCommandDispatcher` instance by passing the following options to the constructor:
 
 ```ts
-import { HttpCommandDispatcher, HttpCommandDispatcherConfig } from '@secbox/bus';
+import {
+  HttpCommandDispatcher,
+  HttpCommandDispatcherConfig
+} from '@secbox/bus';
 
 const options: HttpCommandDispatcherConfig = {
   baseUrl: 'https://app.neuralegion.com',
-  token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0',
+  token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
 };
-  
+
 const httpDispatcher = new HttpCommandDispatcher(options);
 ```
+
 The command dispatcher can be customized using the following options:
 
-| Option    | Description                                                                                                                                          |
-|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `baseUrl` |  Base URL for your application instance, e.g. `https://app.neuralegion.com`                                                                          |
-| `token`   | API key to access the API. Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens) and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the knowledgebase                                                                                                                                  |
-| `timeout` | Time to wait for a server to send response headers (and start the response body) before aborting the request. Default 10000 ms                                                               |
-| `rate`    | Set how many requests per interval should perform immediately, others will be delayed automatically. By default, 10 requests per 1 minute |
+| Option    | Description                                                                                                                                                                                                                                                                                                                                |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `baseUrl` | Base URL for your application instance, e.g. `https://app.neuralegion.com`                                                                                                                                                                                                                                                                 |
+| `token`   | API key to access the API. Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens) and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the knowledgebase |
+| `timeout` | Time to wait for a server to send response headers (and start the response body) before aborting the request. Default 10000 ms                                                                                                                                                                                                             |
+| `rate`    | Set how many requests per interval should perform immediately, others will be delayed automatically. By default, 10 requests per 1 minute                                                                                                                                                                                                  |
 
 Then you have to create an instance of `HttpRequest` instead of a custom command, specifying the `url` and `method` in addition to the `payload` that a command accepts by default:
 
 ```ts
-const command = new HttpCommand({ 
-  url: '/api/v1/repeaters', 
-  method: 'POST', 
-  payload: { name: 'test' } 
+const command = new HttpCommand({
+  url: '/api/v1/repeaters',
+  method: 'POST',
+  payload: { name: 'test' }
 });
 ```
 
-Below you will find a list of parameters that can be used to configure a command:
-
---- PUT THE TABLE HERE --- 
-
 Once it is done, you can perform a request using `HttpComandDispatcher` as follows:
+
 ```ts
 const response: { id: string } = await httpDispatcher.execute(command);
 ```
 
-```ts
-interface Payload {
-  version: string;
-}
-
-interface Response {
-  lastVersion: string;
-}
-
-const options: HttpOptions<Payload> = {
-  payload: { version: '0.0.1' },
-  url: '/api/test',
-  method: 'GET'
-};
-      
-const command = new HttpRequest<Payload, Response>(options);
-
-const response = await httpDispatcher.execute(command);
-```
-This method returns a Promise which will eventually be resolved as a response message.
-
-As you can see in example above to configure your http command you should pass `HttpOptions<T>` to `HttpCommand<T, R>` constructor.
-
-The `HttpOptions<T>` implementation exposes the properties described below:
+Below you will find a list of parameters that can be used to configure a command:
 
 | Option          | Description                                                                                |
-|-----------------|--------------------------------------------------------------------------------------------|
-| `url`           | Application URL address                                                                    |
-| `method`        | HTTP method                                                                                |
-| `params`        | Query parameters                                                                           |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| `url`           | Absolute URL or path that will be used for the request. By default, `/`                    |
+| `method`        | HTTP method that is going to be used when making the request. By default, `GET`            |
+| `params`        | Use to set query parameters.                                                               |
 | `payload`       | Message that we want to transmit to the remote service.                                    |
-| `expectReply`   | ndicates whether to wait for a reply. By default true.                                     |
+| `expectReply`   | Indicates whether to wait for a reply. By default true.                                    |
 | `ttl`           | Period of time that command should be handled before being discarded. By default 10000 ms. |
 | `type`          | The name of a command. By default, it is the name of specific class.                       |
 | `correlationId` | Used to ensure atomicity while working with EventBus. By default, random UUID.             |
 | `createdAt`     | The exact date and time the command was created.                                           |
+
+For more information, please see `@secbox/core`.
 
 #### Retry Strategy
 
