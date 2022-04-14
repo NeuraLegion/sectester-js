@@ -184,7 +184,7 @@ The command dispatcher can be customized using the following options:
 |-----------|------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `baseUrl` |  Base URL for your application instance, e.g. `https://app.neuralegion.com`                                                                          |
 | `token`   | API key to access the API. Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens) and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the knowledgebase                                                                                                                                  |
-| `timeout` | If the request takes longer than `timeout`, the request will be aborted. Default 10000                                                               |
+| `timeout` | Time to wait for a server to send response headers (and start the response body) before aborting the request. Default 10000 ms                                                               |
 | `rate`    | Set how many requests per interval should perform immediately, others will be delayed automatically. By default, 10 requests per 1 minute |
 
 To execute command `HttpComandDispatcher` exposes a `execute()` method. This method is intended to perform a command to the application and returns a `Promise` with its response.
