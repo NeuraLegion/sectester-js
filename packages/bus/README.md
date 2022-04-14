@@ -172,7 +172,7 @@ The `HttpCommandDispatcher` is an alternative way to execute the commands over H
 import { HttpCommandDispatcher, HttpCommandDispatcherConfig } from '@secbox/bus';
 
 const options: HttpCommandDispatcherConfig = {
-  baseUrl,
+  baseUrl: 'https://app.neuralegion.com',
   token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0',
 };
   
