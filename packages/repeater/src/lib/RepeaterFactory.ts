@@ -19,13 +19,7 @@ export class RepeaterFactory {
   }
 
   public async createRepeater(
-    {
-      name,
-      description,
-      certificates,
-      networkDiagnostic,
-      remoteScripts
-    }: RepeaterOptions = {
+    { name, description }: RepeaterOptions = {
       name: `secbox-sdk repeater ${new Date().toISOString()}`
     }
   ): Promise<Repeater> {
@@ -36,18 +30,6 @@ export class RepeaterFactory {
     const bus = await this.eventBusFactory.create(repeaterId);
 
     await bus.init?.();
-
-    if (certificates) {
-      // do something
-    }
-
-    if (networkDiagnostic) {
-      // do something
-    }
-
-    if (remoteScripts) {
-      // do something
-    }
 
     return new Repeater({
       repeaterId,

@@ -28,15 +28,13 @@ export class ExecuteRequestEventHandler
   ): Promise<ExecuteRequestResult> {
     const { protocol } = event.payload;
 
-    const requestExecutor = this.requestRunners.find(
-      x => x.protocol === protocol
-    );
+    const runner = this.requestRunners.find(x => x.protocol === protocol);
 
-    if (!requestExecutor) {
+    if (!runner) {
       throw new Error(`Unsupported protocol "${protocol}"`);
     }
 
-    const response: Response = await requestExecutor.execute(
+    const response: Response = await runner.run(
       new Request({ ...event.payload })
     );
 

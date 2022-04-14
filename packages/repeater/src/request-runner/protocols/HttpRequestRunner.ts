@@ -51,7 +51,7 @@ export class HttpRequestRunner implements RequestRunner {
     }
   }
 
-  public async execute(options: Request): Promise<Response> {
+  public async run(options: Request): Promise<Response> {
     try {
       if (this.options.headers) {
         options.setHeaders(this.options.headers);

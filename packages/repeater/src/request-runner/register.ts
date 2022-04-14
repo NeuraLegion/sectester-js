@@ -3,10 +3,9 @@ import { RequestRunner } from './RequestRunner';
 import { HttpRequestRunner, WsRequestRunner } from './protocols';
 import { container } from 'tsyringe';
 
-// TODO adjust options
 container.register(RequestRunnerOptions, {
   useValue: {
-    timeout: 10000,
+    timeout: 30000,
     maxContentLength: 100,
     reuseConnection: false,
     whitelistMimes: [

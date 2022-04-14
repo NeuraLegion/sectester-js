@@ -41,7 +41,7 @@ export class WsRequestRunner implements RequestRunner {
     return Protocol.WS;
   }
 
-  public async execute(options: Request): Promise<Response> {
+  public async run(options: Request): Promise<Response> {
     let timeout: NodeJS.Timeout | null = null;
     let client: WebSocket | null = null;
 

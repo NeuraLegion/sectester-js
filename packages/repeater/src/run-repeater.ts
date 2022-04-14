@@ -37,7 +37,7 @@ async function initConfiguration(): Promise<Configuration> {
   });
 
   configuration.container.register(CommandDispatcher, {
-    useToken: HttpCommandDispatcher
+    useClass: HttpCommandDispatcher
   });
 
   return configuration;
