@@ -1,4 +1,4 @@
-export interface Repeaters {
+export interface RepeatersManager {
   createRepeater(options: {
     name: string;
     description?: string;
@@ -7,4 +7,4 @@ export interface Repeaters {
   deleteRepeater(repeaterId: string): Promise<void>;
 }
 
-export const Repeaters: unique symbol = Symbol('Repeaters');
+export const RepeatersManager: unique symbol = Symbol('RepeatersManager');

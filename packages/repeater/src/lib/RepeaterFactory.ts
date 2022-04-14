@@ -1,4 +1,4 @@
-import { Repeaters } from './Repeaters';
+import { RepeatersManager } from '../api';
 import { Repeater } from './Repeater';
 import { RepeaterOptions } from './RepeaterOptions';
 import { EventBusFactory } from './EventBusFactory';
@@ -9,10 +9,11 @@ import { Configuration } from '@secbox/core';
  */
 export class RepeaterFactory {
   private readonly eventBusFactory: EventBusFactory;
-  private readonly repeaters: Repeaters;
+  private readonly repeatersManager: RepeatersManager;
 
   constructor(private readonly configuration: Configuration) {
-    this.repeaters = this.configuration.container.resolve(Repeaters);
+    this.repeatersManager =
+      this.configuration.container.resolve(RepeatersManager);
     this.eventBusFactory =
       this.configuration.container.resolve(EventBusFactory);
   }
@@ -28,7 +29,7 @@ export class RepeaterFactory {
       name: `secbox-sdk repeater ${new Date().toISOString()}`
     }
   ): Promise<Repeater> {
-    const { repeaterId } = await this.repeaters.createRepeater({
+    const { repeaterId } = await this.repeatersManager.createRepeater({
       name,
       description
     });

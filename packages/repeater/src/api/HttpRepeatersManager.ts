@@ -1,11 +1,14 @@
-import { Repeaters } from './Repeaters';
-import { CreateRepeaterRequest, DeleteRepeaterRequest } from '../http-requests';
-import { ListRepeatersRequest } from '../http-requests/ListRepeatersRequest';
+import { RepeatersManager } from './RepeatersManager';
+import {
+  CreateRepeaterRequest,
+  DeleteRepeaterRequest,
+  ListRepeatersRequest
+} from './commands';
 import { inject, injectable } from 'tsyringe';
 import { CommandDispatcher } from '@secbox/core';
 
 @injectable()
-export class HttpRepeaters implements Repeaters {
+export class HttpRepeatersManager implements RepeatersManager {
   constructor(
     @inject(CommandDispatcher)
     private readonly commandDispatcher: CommandDispatcher

@@ -1,6 +1,4 @@
 import 'reflect-metadata';
-import { HttpRepeaters } from './lib/HttpRepeaters';
-import { Repeaters } from './lib/Repeaters';
 import { Repeater, RepeaterFactory } from './lib';
 import {
   HttpCommandDispatcher,
@@ -41,8 +39,6 @@ async function initConfiguration(): Promise<Configuration> {
   configuration.container.register(CommandDispatcher, {
     useToken: HttpCommandDispatcher
   });
-
-  configuration.container.register(Repeaters, { useToken: HttpRepeaters });
 
   return configuration;
 }
