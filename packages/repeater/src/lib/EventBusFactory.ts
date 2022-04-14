@@ -33,7 +33,7 @@ export class EventBusFactory {
       }
     };
 
-    return new (RMQEventBus as any)(
+    return new RMQEventBus(
       this.config.container,
       this.config.container.resolve(RetryStrategy),
       busConfig

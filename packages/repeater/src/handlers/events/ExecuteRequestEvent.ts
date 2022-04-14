@@ -1,13 +1,13 @@
 import { Protocol } from '../../request-executor';
 import { Event } from '@secbox/core';
 
-export interface ExecuteRequestEventPayload {
-  protocol: Protocol;
-  url: string;
-  headers: Record<string, string | string[]>;
-  method?: string;
-  body?: string;
-  correlationIdRegex?: string;
+interface ExecuteRequestEventPayload {
+  readonly protocol: Protocol;
+  readonly url: string;
+  readonly headers: Record<string, string | string[]>;
+  readonly method?: string;
+  readonly body?: string;
+  readonly correlationIdRegex?: string;
 }
 
 export class ExecuteRequestEvent extends Event<ExecuteRequestEventPayload> {

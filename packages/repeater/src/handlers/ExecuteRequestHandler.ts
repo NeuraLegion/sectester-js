@@ -4,7 +4,7 @@ import { bind, EventHandler } from '@secbox/core';
 import { injectable, injectAll } from 'tsyringe';
 
 @injectable()
-@bind(ExecuteRequestEvent)
+@bind('ExecuteScript')
 export class ExecuteRequestHandler
   implements EventHandler<ExecuteRequestEvent, ForwardResponseEvent>
 {

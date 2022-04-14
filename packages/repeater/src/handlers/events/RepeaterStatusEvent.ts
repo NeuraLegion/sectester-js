@@ -1,7 +1,7 @@
 import { RepeaterStatus } from '../../lib';
 import { Event } from '@secbox/core';
 
-export interface RepeaterStatusEventPayload {
+interface RepeaterStatusEventPayload {
   repeaterId: string;
   status: RepeaterStatus;
 }

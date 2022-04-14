@@ -1,2 +1,2 @@
 export * from './events';
-export * from './ExecuteRequestHandler';
+export { ExecuteRequestHandler } from './ExecuteRequestHandler';

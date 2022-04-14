@@ -1,5 +1,5 @@
 import { RegisterRepeaterCommand, RegisterRepeaterResult } from '../commands';
-import { RepeaterStatusEvent } from '../handlers';
+import { ExecuteRequestHandler, RepeaterStatusEvent } from '../handlers';
 import { RepeaterStatus } from './RepeaterStatus';
 import { Configuration, EventBus } from '@secbox/core';
 import Timer = NodeJS.Timer;
@@ -52,8 +52,8 @@ export class Repeater {
   private async subscribeToEvents(): Promise<void> {
     await Promise.all(
       [
-        // TODO
-        /* the list of handlers */
+        ExecuteRequestHandler
+        // TODO repeater scripts
       ].map(type => this.bus.register(type))
     );
   }
