@@ -24,34 +24,10 @@ export class Scan {
     this.state = { status: ScanStatus.PENDING, issuesBySeverity: [] };
   }
 
-  public async *issues(options?: {
-    limit: number;
-    nextId?: string;
-    nextCreatedAt?: Date;
-  }): AsyncGenerator<Issue[]> {
-    let nextId = options?.nextId;
-    let nextCreatedAt = options?.nextCreatedAt;
-    let hasNext = true;
+  public async *issues(): AsyncGenerator<Issue[]> {
+    const issues = await this.scans.listIssues(this.id);
 
-    while (hasNext) {
-      try {
-        const issues = await this.scans.listIssues({
-          nextId,
-          nextCreatedAt,
-          limit: options?.limit,
-          scanId: this.id
-        });
-
-        yield issues;
-        ({ id: nextId, createdAt: nextCreatedAt } =
-          issues[issues.length - 1] ?? {});
-        hasNext = !!nextId && !!nextCreatedAt;
-      } finally {
-        await this.stop();
-      }
-    }
-
-    return undefined;
+    yield issues;
   }
 
   public async *status(): AsyncIterableIterator<ScanState> {
