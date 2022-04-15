@@ -3,7 +3,7 @@ import { RequestRunner } from '../RequestRunner';
 import { RequestRunnerOptions } from '../RequestRunnerOptions';
 import { Response } from '../Response';
 import { Protocol } from '../../models';
-import { logger } from '@secbox/core';
+import { Logger } from '@secbox/core';
 import WebSocket from 'ws';
 import { inject, injectable } from 'tsyringe';
 import { SocksProxyAgent } from 'socks-proxy-agent';
@@ -28,7 +28,9 @@ export class WsRequestRunner implements RequestRunner {
 
   constructor(
     @inject(RequestRunnerOptions)
-    private readonly options: RequestRunnerOptions
+    private readonly options: RequestRunnerOptions,
+    @inject(Logger)
+    private readonly logger?: Logger
   ) {
     this.agent = this.options.proxyUrl
       ? new SocksProxyAgent({
@@ -46,7 +48,10 @@ export class WsRequestRunner implements RequestRunner {
     let client: WebSocket | null = null;
 
     try {
-      logger.debug('Executing HTTP request with following params: %j', options);
+      this.logger?.debug(
+        'Executing HTTP request with following params: %j',
+        options
+      );
 
       client = new WebSocket(options.url, {
         agent: this.agent,
@@ -74,8 +79,8 @@ export class WsRequestRunner implements RequestRunner {
       const message = err.info ?? err.message;
       const errorCode = err.code ?? err.syscall;
 
-      logger.error('Error executing request: %s', options.url);
-      logger.error('Cause: %s', message);
+      this.logger?.error('Error executing request: %s', options.url);
+      this.logger?.error('Cause: %s', message);
 
       return new Response({
         message,

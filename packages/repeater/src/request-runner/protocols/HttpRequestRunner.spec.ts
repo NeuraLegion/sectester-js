@@ -5,6 +5,7 @@ import { Protocol } from '../../models';
 import nock from 'nock';
 import 'reflect-metadata';
 import { anything, reset, spy, verify, when } from 'ts-mockito';
+import { Logger, LogLevel } from '@secbox/core';
 
 const createRequest = (options?: Partial<RequestOptions>) => {
   const requestOptions = { url: 'https://foo.bar', headers: {}, ...options };
@@ -22,7 +23,10 @@ describe('HttpRequestRunner', () => {
   let runner!: HttpRequestRunner;
 
   beforeEach(() => {
-    runner = new HttpRequestRunner(executorOptions);
+    runner = new HttpRequestRunner(
+      executorOptions,
+      new Logger(LogLevel.SILENT)
+    );
   });
 
   afterEach(() => reset<RequestRunnerOptions>(spiedExecutorOptions));

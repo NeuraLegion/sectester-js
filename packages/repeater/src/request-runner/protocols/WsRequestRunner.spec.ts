@@ -5,6 +5,7 @@ import { Protocol } from '../../models';
 import 'reflect-metadata';
 import { reset, spy, when } from 'ts-mockito';
 import { Server } from 'ws';
+import { Logger, LogLevel } from '@secbox/core';
 import { once } from 'events';
 
 describe('WsRequestRunner', () => {
@@ -16,7 +17,7 @@ describe('WsRequestRunner', () => {
   beforeEach(() => {
     // ADHOC: ts-mockito resets object's property descriptor as well
     Object.assign(executorOptions, { timeout: 2000 });
-    runner = new WsRequestRunner(executorOptions);
+    runner = new WsRequestRunner(executorOptions, new Logger(LogLevel.SILENT));
   });
 
   afterEach(() => reset<RequestRunnerOptions>(spiedExecutorOptions));
