@@ -31,40 +31,52 @@ export class Request {
     body,
     correlationIdRegex,
     headers = {}
-  }: RequestOptions) {
+  }: Omit<RequestOptions, 'headers'> & {
+    headers?: Record<string, string | string[]>;
+  }) {
     this._method = method?.toUpperCase() ?? 'GET';
-
-    if (!url) {
-      throw new Error('Url must be declared explicitly.');
-    }
-
-    try {
-      this.url = new URL(url).toString();
-    } catch {
-      throw new Error('Invalid URL.');
-    }
-
-    if (body && typeof body !== 'string') {
-      throw new Error('Body must be string.');
-    }
-
-    this.body = body;
-
-    if (correlationIdRegex) {
-      try {
-        this.correlationIdRegex = new RegExp(correlationIdRegex, 'i');
-      } catch {
-        // noop
-      }
-    }
-
+    this.url = this.getUrl(url);
+    this.body = this.getBody(body);
+    this.correlationIdRegex = this.getCorrelationIdRegex(correlationIdRegex);
     this._headers = headers;
   }
 
   public setHeaders(headers: Record<string, string | string[]>): void {
     this._headers = {
       ...this._headers,
-      ...(headers ?? {})
+      ...headers
     };
+  }
+
+  private getUrl(url: string): string {
+    if (!url) {
+      throw new Error('Url must be declared explicitly.');
+    }
+
+    try {
+      return new URL(url).toString();
+    } catch {
+      throw new Error('Invalid URL.');
+    }
+  }
+
+  private getBody(body: string | undefined): string | undefined {
+    if (body && typeof body !== 'string') {
+      throw new Error('Body must be string.');
+    }
+
+    return body;
+  }
+
+  private getCorrelationIdRegex(
+    correlationIdRegex: RegExp | string | undefined
+  ): RegExp | undefined {
+    if (correlationIdRegex) {
+      try {
+        return new RegExp(correlationIdRegex, 'i');
+      } catch {
+        throw new Error('Correlation id must be regular expression.');
+      }
+    }
   }
 }
