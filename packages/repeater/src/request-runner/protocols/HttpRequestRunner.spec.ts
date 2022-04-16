@@ -6,6 +6,7 @@ import nock from 'nock';
 import 'reflect-metadata';
 import { anything, spy, verify } from 'ts-mockito';
 import { Logger, LogLevel } from '@secbox/core';
+import { SocksProxyAgent } from 'socks-proxy-agent';
 
 const createRequest = (options?: Partial<RequestOptions>) => {
   const requestOptions = {
@@ -33,6 +34,10 @@ describe('HttpRequestRunner', () => {
   });
 
   describe('run', () => {
+    afterEach(() => {
+      nock.cleanAll();
+    });
+
     // eslint-disable-next-line jest/expect-expect
     it('should call setHeaders on the provided request if additional headers were configured globally', async () => {
       const headers = { testHeader: 'test-header-value' };
@@ -141,10 +146,37 @@ describe('HttpRequestRunner', () => {
       const { request, requestOptions } = createRequest();
       const bigBody = 'x'.repeat(1025);
       nock(requestOptions.url).get('/').reply(204, bigBody);
-
       const response = await runner.run(request);
 
       expect(response.body).toBeUndefined();
+    });
+
+    it('should use SocksProxyAgent if socks proxyUrl provided', async () => {
+      setupRunner({
+        proxyUrl: 'socks://proxy.baz'
+      });
+      const { request, requestOptions } = createRequest();
+      const scope = nock(requestOptions.url).get('/').reply(200, 'Dummy');
+
+      scope.on('request', req =>
+        expect(req.options.agent).toBeInstanceOf(SocksProxyAgent)
+      );
+
+      await runner.run(request);
+    });
+
+    it('should use keepAlive agent on if reuseConnection enabled', async () => {
+      setupRunner({
+        reuseConnection: true
+      });
+      const { request, requestOptions } = createRequest();
+      const scope = nock(requestOptions.url).get('/').reply(200, 'Dummy');
+
+      scope.on('request', req => {
+        expect(req.options.agent.options.keepAlive).toBeTruthy();
+      });
+
+      await runner.run(request);
     });
   });
 });
