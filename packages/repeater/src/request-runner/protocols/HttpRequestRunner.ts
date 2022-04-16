@@ -107,6 +107,7 @@ export class HttpRequestRunner implements RequestRunner {
       this.proxy ??
       (options.url.startsWith('https') ? this.httpsAgent : this.httpAgent);
 
+    let processedBody: string;
     const res = await request({
       agent,
       body: options.body,
@@ -120,9 +121,13 @@ export class HttpRequestRunner implements RequestRunner {
       url: options.url
     })
       .on('request', (req: OutgoingMessage) => this.setHeaders(req, options))
-      .on('response', (response: IncomingResponse) =>
-        this.truncateResponse(response)
-      );
+      .on('response', async (response: IncomingResponse) => {
+        await this.truncateResponse(response);
+        processedBody = response.body;
+      });
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    res.body = processedBody!;
 
     return res;
   }
@@ -135,12 +140,9 @@ export class HttpRequestRunner implements RequestRunner {
     const type = this.parseContentType(res);
     const maxBodySize = this.maxContentLength * 1024;
 
-    const requiresTruncating =
-      !type ||
-      (!this.options.whitelistMimes?.some((mime: string) =>
-        type.startsWith(mime)
-      ) ??
-        false);
+    const requiresTruncating = !this.options.whitelistMimes?.some(
+      (mime: string) => type.startsWith(mime)
+    );
 
     const body = await this.parseBody(res, { maxBodySize, requiresTruncating });
 
@@ -148,11 +150,11 @@ export class HttpRequestRunner implements RequestRunner {
     res.headers['content-length'] = String(body.byteLength);
   }
 
-  private parseContentType(res: IncomingResponse): string | undefined {
-    let type = res.headers['content-type'];
+  private parseContentType(res: IncomingResponse): string {
+    let type = res.headers['content-type'] || 'text/plain';
 
     try {
-      ({ type } = contentTypeParse(type || 'text/plain'));
+      ({ type } = contentTypeParse(type));
     } catch {
       // noop
     }
