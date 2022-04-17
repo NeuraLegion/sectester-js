@@ -4,11 +4,11 @@ import { RequestRunnerOptions } from '../RequestRunnerOptions';
 import { Protocol } from '../../models';
 import nock from 'nock';
 import 'reflect-metadata';
-import { anything, spy, verify } from 'ts-mockito';
+import { anything, spy, verify, when } from 'ts-mockito';
 import { Logger, LogLevel } from '@secbox/core';
 import { SocksProxyAgent } from 'socks-proxy-agent';
 
-const createRequest = (options?: Partial<RequestOptions>) => {
+const createRequest = (options: Partial<RequestOptions> = {}) => {
   const requestOptions = {
     url: 'https://foo.bar',
     method: 'GET',
@@ -17,19 +17,19 @@ const createRequest = (options?: Partial<RequestOptions>) => {
   };
   const request = new Request(requestOptions);
   const spiedRequest = spy(request);
+  when(spiedRequest.method).thenReturn('GET');
 
   return { requestOptions, request, spiedRequest };
 };
 
 describe('HttpRequestRunner', () => {
-  let runner!: HttpRequestRunner;
-
-  const setupRunner = (options: RequestRunnerOptions = {}, logger?: Logger) => {
-    runner = new HttpRequestRunner(options, logger);
-  };
+  const setupRunner = (
+    options: RequestRunnerOptions = {},
+    logger?: Logger
+  ): HttpRequestRunner => new HttpRequestRunner(options, logger);
 
   describe('protocol', () => {
-    setupRunner();
+    const runner = setupRunner();
     it('should return HTTP', () => expect(runner.protocol).toBe(Protocol.HTTP));
   });
 
@@ -41,7 +41,7 @@ describe('HttpRequestRunner', () => {
     // eslint-disable-next-line jest/expect-expect
     it('should call setHeaders on the provided request if additional headers were configured globally', async () => {
       const headers = { testHeader: 'test-header-value' };
-      setupRunner({ headers });
+      const runner = setupRunner({ headers });
       const { request, spiedRequest } = createRequest();
 
       await runner.run(request);
@@ -50,7 +50,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should not call setHeaders on the provided request if there were no additional headers configured', async () => {
-      setupRunner();
+      const runner = setupRunner();
       const { request, spiedRequest } = createRequest();
 
       await runner.run(request);
@@ -59,7 +59,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should perform an external http request', async () => {
-      setupRunner();
+      const runner = setupRunner();
       const { request, requestOptions } = createRequest();
       nock(requestOptions.url).get('/').reply(200, {});
 
@@ -70,7 +70,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should handle HTTP errors', async () => {
-      setupRunner();
+      const runner = setupRunner();
       const { request, requestOptions } = createRequest();
       nock(requestOptions.url).get('/').reply(500, {});
 
@@ -81,7 +81,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should handle non-HTTP errors', async () => {
-      setupRunner({}, new Logger(LogLevel.SILENT));
+      const runner = setupRunner({}, new Logger(LogLevel.SILENT));
       const { request } = createRequest();
 
       const response = await runner.run(request);
@@ -90,7 +90,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should truncate response body with not white-listed mime type', async () => {
-      setupRunner({
+      const runner = setupRunner({
         maxContentLength: 1
       });
       const { request, requestOptions } = createRequest();
@@ -106,7 +106,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should not truncate response body if it is in whitelisted mime types', async () => {
-      setupRunner({
+      const runner = setupRunner({
         maxContentLength: 1,
         whitelistMimes: ['application/x-custom']
       });
@@ -123,7 +123,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should not truncate response body if whitelisted mime type starts with actual one', async () => {
-      setupRunner({
+      const runner = setupRunner({
         maxContentLength: 1,
         whitelistMimes: ['application/x-custom']
       });
@@ -140,7 +140,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should skip truncate on 204 response status', async () => {
-      setupRunner({
+      const runner = setupRunner({
         maxContentLength: 1
       });
       const { request, requestOptions } = createRequest();
@@ -152,7 +152,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should use SocksProxyAgent if socks proxyUrl provided', async () => {
-      setupRunner({
+      const runner = setupRunner({
         proxyUrl: 'socks://proxy.baz'
       });
       const { request, requestOptions } = createRequest();
@@ -166,7 +166,7 @@ describe('HttpRequestRunner', () => {
     });
 
     it('should use keepAlive agent on if reuseConnection enabled', async () => {
-      setupRunner({
+      const runner = setupRunner({
         reuseConnection: true
       });
       const { request, requestOptions } = createRequest();
