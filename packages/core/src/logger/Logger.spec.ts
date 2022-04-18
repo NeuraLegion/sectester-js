@@ -1,5 +1,5 @@
+import 'reflect-metadata';
 import { Logger, LogLevel } from './Logger';
-import { anyString, anything, reset, spy, verify, when } from 'ts-mockito';
 
 const logLevels = [
   LogLevel.VERBOSE,
@@ -42,13 +42,17 @@ const getLogLevelName = (logLevel: LogLevel): string => {
 };
 
 describe('Logger', () => {
+  const mockedConsole = jest.spyOn(console, 'log');
+
+  afterEach(() => jest.resetAllMocks());
+
   describe('level config', () => {
     it('default level is NOTICE', () => {
       const logger = new Logger();
       expect(logger.logLevel).toEqual(LogLevel.NOTICE);
     });
 
-    it('level can be set via contructor', () => {
+    it('level can be set via constructor', () => {
       const logger = new Logger(LogLevel.ERROR);
       expect(logger.logLevel).toEqual(LogLevel.ERROR);
     });
@@ -62,22 +66,9 @@ describe('Logger', () => {
 
   describe('logging', () => {
     let logger!: Logger;
-    let mockedConsole!: Console;
-    const loggedMessages: string[] = [];
 
     beforeEach(() => {
       logger = new Logger();
-      mockedConsole = spy(console);
-
-      when(mockedConsole.log(anything())).thenCall((...args: any[]) => {
-        loggedMessages.push(args[0]);
-      });
-    });
-
-    afterEach(() => {
-      reset(mockedConsole);
-      logger = undefined as unknown as Logger;
-      loggedMessages.splice(0);
     });
 
     describe.each(
@@ -100,8 +91,7 @@ describe('Logger', () => {
           ({ methodName }) => {
             logger[methodName](methodName);
 
-            verify(mockedConsole.log(anything())).never();
-            expect(loggedMessages.length).toBe(0);
+            expect(mockedConsole).not.toHaveBeenCalled();
           }
         );
       }
@@ -115,8 +105,9 @@ describe('Logger', () => {
           ({ methodName }) => {
             logger[methodName](methodName);
 
-            verify(mockedConsole.log(anyString())).once();
-            expect(loggedMessages[0]).toMatch(new RegExp(`${methodName}$`));
+            expect(mockedConsole).toHaveBeenCalledWith(
+              expect.stringMatching(new RegExp(`${methodName}$`))
+            );
           }
         );
       }

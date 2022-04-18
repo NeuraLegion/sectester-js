@@ -1,6 +1,6 @@
-import 'reflect-metadata';
+import { Configuration } from '../configuration';
 import chalk from 'chalk';
-import { container } from 'tsyringe';
+import { container, DependencyContainer } from 'tsyringe';
 import { format } from 'util';
 
 export enum LogLevel {
@@ -80,6 +80,8 @@ export class Logger {
   }
 }
 
-export const logger: Logger = new Logger();
-
-container.register(Logger, { useValue: logger });
+container.register(Logger, {
+  useFactory(child: DependencyContainer): Logger {
+    return new Logger(child.resolve(Configuration).logLevel);
+  }
+});
