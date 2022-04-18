@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { container } from 'tsyringe';
 import { format } from 'util';
 
 export enum LogLevel {
@@ -79,3 +80,5 @@ export class Logger {
 }
 
 export const logger: Logger = new Logger();
+
+container.register(Logger, { useValue: logger });
