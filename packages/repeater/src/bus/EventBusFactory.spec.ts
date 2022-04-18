@@ -11,7 +11,9 @@ describe('EventBusFactory', () => {
 
   let mockedConfiguration: Configuration;
 
-  beforeEach(() => (mockedConfiguration = instance(MockedConfiguration)));
+  beforeEach(() => {
+    mockedConfiguration = instance(MockedConfiguration);
+  });
 
   afterEach(() => reset(MockedConfiguration));
 

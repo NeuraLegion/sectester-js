@@ -20,59 +20,61 @@ describe('HttpRepeatersManager', () => {
     manager = new HttpRepeatersManager(instance(MockedCommandDispatcher));
   });
 
-  afterEach(() => {
-    reset(MockedCommandDispatcher);
+  afterEach(() => reset(MockedCommandDispatcher));
+
+  describe('createRepeater', () => {
+    it('should create repeater', async () => {
+      when(
+        MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
+      ).thenResolve();
+
+      when(
+        MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
+      ).thenResolve([
+        { name: 'bar', id: '142' },
+        {
+          name: 'foo',
+          id: '42'
+        }
+      ]);
+
+      const result = await manager.createRepeater({ name: 'foo' });
+
+      verify(
+        MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
+      ).once();
+      verify(
+        MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
+      ).once();
+      expect(result.repeaterId).toBe('42');
+    });
+
+    it('should throw an error if cannot find created repeater', async () => {
+      when(
+        MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
+      ).thenResolve();
+      when(
+        MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
+      ).thenResolve(null);
+
+      const res = manager.createRepeater({ name: 'foo' });
+
+      await expect(res).rejects.toThrow('Cannot find created repeater id');
+    });
   });
 
-  it('should create repeater', async () => {
-    when(
-      MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
-    ).thenResolve();
+  describe('deleteRepeater', () => {
+    it('should remove repeater', async () => {
+      when(
+        MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
+      ).thenResolve();
 
-    when(
-      MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
-    ).thenResolve([
-      { name: 'bar', id: '142' },
-      {
-        name: 'foo',
-        id: '42'
-      }
-    ]);
+      const res = manager.deleteRepeater('fooId');
 
-    const result = await manager.createRepeater({ name: 'foo' });
-
-    verify(
-      MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
-    ).once();
-    verify(
-      MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
-    ).once();
-    expect(result.repeaterId).toBe('42');
-  });
-
-  it('should throw an error if cannot find created repeater', async () => {
-    when(
-      MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
-    ).thenResolve();
-    when(
-      MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
-    ).thenResolve(null);
-
-    const res = manager.createRepeater({ name: 'foo' });
-
-    await expect(res).rejects.toThrow('Cannot find created repeater id');
-  });
-
-  it('should remove repeater', async () => {
-    when(
-      MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
-    ).thenResolve();
-
-    const res = manager.deleteRepeater('fooId');
-
-    verify(
-      MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
-    ).once();
-    await expect(res).resolves.not.toThrow();
+      verify(
+        MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
+      ).once();
+      await expect(res).resolves.not.toThrow();
+    });
   });
 });
