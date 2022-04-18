@@ -54,14 +54,13 @@ describe('HttpRepeatersManager', () => {
     when(
       MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
     ).thenResolve();
-
     when(
       MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
     ).thenResolve(null);
 
-    await expect(manager.createRepeater({ name: 'foo' })).rejects.toThrow(
-      'Cannot find created repeater id'
-    );
+    const res = manager.createRepeater({ name: 'foo' });
+
+    await expect(res).rejects.toThrow('Cannot find created repeater id');
   });
 
   it('should remove repeater', async () => {
@@ -69,10 +68,11 @@ describe('HttpRepeatersManager', () => {
       MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
     ).thenResolve();
 
-    await expect(manager.deleteRepeater('fooId')).resolves.not.toThrow();
+    const res = manager.deleteRepeater('fooId');
 
     verify(
       MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
     ).once();
+    await expect(res).resolves.not.toThrow();
   });
 });
