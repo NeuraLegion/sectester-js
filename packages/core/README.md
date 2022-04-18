@@ -39,6 +39,7 @@ Configuration can be customized using the following options:
 export interface ConfigurationOptions {
   cluster: string;
   credentials?: Credentials;
+  logLevel?: LogLevel;
   credentialProviders?: CredentialProvider[];
 }
 ```
@@ -47,6 +48,7 @@ The default configuration is as follows:
 
 ```js
 {
+  logLevel: LogLevel.NOTICE,
   credentialProviders: [new EnvCredentialProvider()];
 }
 ```
@@ -55,13 +57,28 @@ The default configuration is as follows:
 
 - type: `string`
 
-Set the application name (domain name), that is used to establish connection with. By default, the option is equal to `app.neuralegion.com`.
+Set the application name (domain name), that is used to establish connection with.
 
 ```ts
 import { Configuration } from '@secbox/core';
 
 const config = new Configuration({
   cluster: 'app.neuralegion.com'
+});
+```
+
+#### logLevel
+
+- type: `LogLevel`
+
+What level of logs to report. Any logs of a higher level than the setting are shown.
+
+```ts
+import { Configuration, LogLevel } from '@secbox/core';
+
+const config = new Configuration({
+  cluster: 'app.neuralegion.com',
+  logLevel: LogLevel.ERROR
 });
 ```
 

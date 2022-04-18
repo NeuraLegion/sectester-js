@@ -5,10 +5,12 @@ import {
   EnvCredentialProvider
 } from '../credentials-provider';
 import { first } from '../utils';
+import { LogLevel } from '../logger';
 import { container, injectable } from 'tsyringe';
 
 export interface ConfigurationOptions {
   cluster: string;
+  logLevel?: LogLevel;
   credentials?: Credentials | CredentialsOptions;
   credentialProviders?: CredentialProvider[];
 }
@@ -48,9 +50,16 @@ export class Configuration {
     return this._api;
   }
 
+  private _logLevel?: LogLevel;
+
+  get logLevel() {
+    return this._logLevel;
+  }
+
   constructor({
     cluster,
     credentials,
+    logLevel = LogLevel.NOTICE,
     credentialProviders = [new EnvCredentialProvider()]
   }: ConfigurationOptions) {
     if (!credentials && !credentialProviders?.length) {
@@ -70,6 +79,8 @@ export class Configuration {
     }
 
     this.resolveUrls(cluster);
+
+    this._logLevel = logLevel;
 
     this._container.register(Configuration, { useValue: this });
   }
