@@ -13,9 +13,9 @@ export class EventBusFactory {
       'url' | 'appQueue' | 'clientQueue' | 'exchange' | 'credentials'
     > = {}
   ): Promise<EventBus> {
-    await this.config?.loadCredentials();
+    await this.config.loadCredentials();
 
-    if (!this.config?.credentials) {
+    if (!this.config.credentials) {
       throw new Error(
         'Please provide credentials to establish a connection with the bus.'
       );
