@@ -13,7 +13,7 @@ export interface HttpOptions<T> {
   createdAt?: Date;
 }
 
-export class HttpRequest<T, R> extends Command<T, R> {
+export class HttpRequest<T = undefined, R = void> extends Command<T, R> {
   public readonly method: Method;
   public readonly url: string;
   public readonly params?: Record<string, unknown>;
