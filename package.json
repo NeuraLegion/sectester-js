@@ -1,6 +1,6 @@
 {
   "name": "secbox-sdk-js",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "private": true,
   "repository": {
     "type": "git",
