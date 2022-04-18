@@ -49,6 +49,7 @@
     "test": "nx test",
     "test:coverage": "npm run test -- --coverage",
     "lint": "nx workspace-lint && nx lint",
+    "lint:all": "nx run-many --target=lint --all",
     "e2e": "nx e2e",
     "build:all": "nx run-many --target=build --all",
     "test:all": "nx run-many --target=test --all",
