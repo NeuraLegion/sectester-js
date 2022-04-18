@@ -1,6 +1,6 @@
 {
   "name": "@secbox/bus",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "The package includes a simplified implementation of the `EventBus`, one based on `RabbitMQ`, to establish synchronous and asynchronous communication between services and agents.",
   "repository": {
     "type": "git",

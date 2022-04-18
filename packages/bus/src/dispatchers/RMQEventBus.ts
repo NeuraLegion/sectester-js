@@ -237,11 +237,13 @@ export class RMQEventBus implements EventBus {
   private resolveHandler<T, R>(
     type: EventHandlerConstructor<T, R>
   ): EventHandler<T, R> {
-    if (!this.container.isRegistered(type)) {
+    const eventHandler = this.container.resolve(type);
+
+    if (!eventHandler) {
       throw new EventHandlerNotFound(type.name);
     }
 
-    return this.container.resolve(type);
+    return eventHandler;
   }
 
   private async expectReply<R>(
