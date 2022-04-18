@@ -1,10 +1,18 @@
-import { ExecuteRequestEvent } from './ExecuteRequestEvent';
 import { Protocol } from '../models';
 import { Request, RequestRunner, Response } from '../request-runner';
 import { bind, EventHandler } from '@secbox/core';
 import { injectable, injectAll } from 'tsyringe';
 
-export interface ExecuteRequestResult {
+interface ExecuteRequestPayload {
+  readonly protocol: Protocol;
+  readonly url: string;
+  readonly headers: Record<string, string | string[]>;
+  readonly method?: string;
+  readonly body?: string;
+  readonly correlationIdRegex?: string;
+}
+
+interface ExecuteRequestResult {
   readonly protocol: Protocol;
   readonly body?: string;
   readonly headers?: Record<string, string | string[] | undefined>;
@@ -16,7 +24,7 @@ export interface ExecuteRequestResult {
 @injectable()
 @bind('ExecuteScript')
 export class ExecuteRequestEventHandler
-  implements EventHandler<ExecuteRequestEvent, ExecuteRequestResult>
+  implements EventHandler<ExecuteRequestPayload, ExecuteRequestResult>
 {
   constructor(
     @injectAll(RequestRunner)
@@ -24,9 +32,9 @@ export class ExecuteRequestEventHandler
   ) {}
 
   public async handle(
-    event: ExecuteRequestEvent
+    event: ExecuteRequestPayload
   ): Promise<ExecuteRequestResult> {
-    const { protocol } = event.payload;
+    const { protocol } = event;
 
     const runner = this.requestRunners.find(x => x.protocol === protocol);
 
@@ -34,9 +42,7 @@ export class ExecuteRequestEventHandler
       throw new Error(`Unsupported protocol "${protocol}"`);
     }
 
-    const response: Response = await runner.run(
-      new Request({ ...event.payload })
-    );
+    const response: Response = await runner.run(new Request({ ...event }));
 
     const { statusCode, message, errorCode, body, headers } = response;
 
