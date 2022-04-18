@@ -9,9 +9,11 @@ const logLevels = [
   LogLevel.SILENT
 ];
 
+type LogLevelMethodName = 'debug' | 'log' | 'warn' | 'error';
+
 const getLogLevelMethodName = (
   logLevel: LogLevel
-): 'debug' | 'log' | 'warn' | 'error' | undefined => {
+): LogLevelMethodName | undefined => {
   switch (logLevel) {
     case LogLevel.VERBOSE:
       return 'debug';
@@ -21,96 +23,91 @@ const getLogLevelMethodName = (
       return 'warn';
     case LogLevel.ERROR:
       return 'error';
-  }
-
-  return undefined;
-};
-
-const getLogLevelName = (logLevel: LogLevel): string => {
-  switch (logLevel) {
-    case LogLevel.VERBOSE:
-      return 'VERBOSE';
-    case LogLevel.NOTICE:
-      return 'NOTICE';
-    case LogLevel.WARN:
-      return 'WARN';
-    case LogLevel.ERROR:
-      return 'ERROR';
-    case LogLevel.SILENT:
-      return 'SILENT';
+    default:
+      return undefined;
   }
 };
+
+const getLogLevelName = (logLevel: LogLevel): string => LogLevel[logLevel];
+
+const checkIfMethodExists = (
+  val: [LogLevel, LogLevelMethodName | undefined]
+): val is [LogLevel, LogLevelMethodName] => !!val[1];
+
+const convertToKeyAndValuePairs = (levels: LogLevel[]) =>
+  levels.map(level => ({ level, name: getLogLevelName(level) }));
 
 describe('Logger', () => {
   const mockedConsole = jest.spyOn(console, 'log');
 
   afterEach(() => jest.resetAllMocks());
 
-  describe('level config', () => {
-    it('default level is NOTICE', () => {
+  describe('constructor', () => {
+    it('should set a level to NOTICE by default', () => {
       const logger = new Logger();
+
       expect(logger.logLevel).toEqual(LogLevel.NOTICE);
     });
 
-    it('level can be set via constructor', () => {
+    it('should set a custom level', () => {
       const logger = new Logger(LogLevel.ERROR);
+
       expect(logger.logLevel).toEqual(LogLevel.ERROR);
     });
+  });
 
-    it('level can be changed via setter', () => {
+  describe('logLevel', () => {
+    it('should change a default level', () => {
       const logger = new Logger();
+
       logger.logLevel = LogLevel.WARN;
+
       expect(logger.logLevel).toEqual(LogLevel.WARN);
     });
   });
 
-  describe('logging', () => {
+  const methods = logLevels
+    .map(
+      x =>
+        [x, getLogLevelMethodName(x)] as [
+          LogLevel,
+          LogLevelMethodName | undefined
+        ]
+    )
+    .filter<[LogLevel, LogLevelMethodName]>(checkIfMethodExists)
+    .map(([level, methodName]: [LogLevel, LogLevelMethodName]) => ({
+      methodName,
+      displayWhen: logLevels.filter(x => x >= level)
+    }));
+
+  describe.each(methods)('$methodName', ({ methodName, displayWhen }) => {
     let logger!: Logger;
 
     beforeEach(() => {
       logger = new Logger();
     });
 
-    describe.each(
-      logLevels.map(item => ({ level: item, levelName: getLogLevelName(item) }))
-    )('$levelName level', ({ level }) => {
-      beforeEach(() => {
+    it.each(convertToKeyAndValuePairs(displayWhen))(
+      'should log a message if level is $name',
+      ({ level }) => {
         logger.logLevel = level;
-      });
 
-      const loggerMethods = logLevels
-        .map(item => ({ level: item, methodName: getLogLevelMethodName(item) }))
-        .filter(item => item.methodName);
+        logger[methodName](methodName);
 
-      const inactiveMethods = loggerMethods.filter(
-        item => logLevels.indexOf(item.level) < logLevels.indexOf(level)
-      ) as { methodName: string }[];
-      if (inactiveMethods.length) {
-        it.each(inactiveMethods)(
-          'should not log .$methodName() messages',
-          ({ methodName }) => {
-            logger[methodName](methodName);
-
-            expect(mockedConsole).not.toHaveBeenCalled();
-          }
+        expect(mockedConsole).toHaveBeenCalledWith(
+          expect.stringMatching(new RegExp(`${methodName}$`))
         );
       }
+    );
 
-      const activeMethods = loggerMethods.filter(
-        item => logLevels.indexOf(item.level) >= logLevels.indexOf(level)
-      ) as { methodName: string }[];
-      if (activeMethods.length) {
-        it.each(activeMethods)(
-          'should log .$methodName() messages',
-          ({ methodName }) => {
-            logger[methodName](methodName);
+    it.each(
+      convertToKeyAndValuePairs(logLevels.filter(x => !displayWhen.includes(x)))
+    )('should not log a message if level is $name', ({ level }) => {
+      logger.logLevel = level;
 
-            expect(mockedConsole).toHaveBeenCalledWith(
-              expect.stringMatching(new RegExp(`${methodName}$`))
-            );
-          }
-        );
-      }
+      logger[methodName](methodName);
+
+      expect(mockedConsole).not.toHaveBeenCalled();
     });
   });
 });
