@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import chalk from 'chalk';
 import { container } from 'tsyringe';
 import { format } from 'util';
