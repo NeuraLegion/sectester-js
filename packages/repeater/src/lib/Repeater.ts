@@ -42,15 +42,17 @@ export class Repeater {
       clearInterval(this.timer);
     }
 
-    await this.ping('disconnected');
+    await this.sendStatus('disconnected');
     await this.bus.destroy?.();
   }
 
   private register(): Promise<RegisterRepeaterResult | undefined> {
-    return new RegisterRepeaterCommand({
-      version: this.configuration.version,
-      repeaterId: this.repeaterId
-    }).execute(this.bus);
+    return this.bus.execute(
+      new RegisterRepeaterCommand({
+        version: this.configuration.version,
+        repeaterId: this.repeaterId
+      })
+    );
   }
 
   private async subscribeToEvents(): Promise<void> {
@@ -63,15 +65,17 @@ export class Repeater {
   }
 
   private async schedulePing(): Promise<void> {
-    await this.ping('connected');
-    this.timer = setInterval(() => this.ping('connected'), 10000);
+    await this.sendStatus('connected');
+    this.timer = setInterval(() => this.sendStatus('connected'), 10000);
     this.timer.unref();
   }
 
-  private async ping(status: RepeaterStatus): Promise<void> {
-    await new RepeaterStatusEvent({
-      repeaterId: this.repeaterId,
-      status
-    }).publish(this.bus);
+  private async sendStatus(status: RepeaterStatus): Promise<void> {
+    await this.bus.publish(
+      new RepeaterStatusEvent({
+        repeaterId: this.repeaterId,
+        status
+      })
+    );
   }
 }
