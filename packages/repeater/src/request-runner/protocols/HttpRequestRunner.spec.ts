@@ -148,7 +148,7 @@ describe('HttpRequestRunner', () => {
       nock(requestOptions.url).get('/').reply(204, bigBody);
       const response = await runner.run(request);
 
-      expect(response.body).toBeUndefined();
+      expect(response.body).toEqual(bigBody);
     });
 
     it('should use SocksProxyAgent if socks proxyUrl provided', async () => {

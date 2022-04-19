@@ -107,13 +107,10 @@ export class HttpRequestRunner implements RequestRunner {
   }
 
   private async request(options: Request): Promise<IncomingResponse> {
-    const agent =
-      this.proxy ??
-      (options.url.startsWith('https') ? this.httpsAgent : this.httpAgent);
+    let responseTruncatePromise: Promise<Buffer | undefined>;
 
-    let processedBody: string;
     const res = await request({
-      agent,
+      agent: this.getRequestAgent(options),
       body: options.body,
       followRedirect: false,
       gzip: true,
@@ -125,18 +122,33 @@ export class HttpRequestRunner implements RequestRunner {
       url: options.url
     })
       .on('request', (req: OutgoingMessage) => this.setHeaders(req, options))
-      .on('response', async (response: IncomingResponse) => {
-        await this.truncateResponse(response);
-        processedBody = response.body;
-      });
+      .on(
+        'response',
+        (response: IncomingResponse) =>
+          (responseTruncatePromise = this.truncateResponse(response))
+      );
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    res.body = processedBody!;
+    const body = await responseTruncatePromise!;
+
+    if (body) {
+      res.body = body.toString();
+      res.headers['content-length'] = String(body.byteLength);
+    }
 
     return res;
   }
 
-  private async truncateResponse(res: IncomingResponse): Promise<void> {
+  private getRequestAgent(options: Request) {
+    return (
+      this.proxy ??
+      (options.url.startsWith('https') ? this.httpsAgent : this.httpAgent)
+    );
+  }
+
+  private async truncateResponse(
+    res: IncomingResponse
+  ): Promise<Buffer | undefined> {
     if (res.statusCode === 204 || res.method === 'HEAD') {
       return;
     }
@@ -150,8 +162,7 @@ export class HttpRequestRunner implements RequestRunner {
 
     const body = await this.parseBody(res, { maxBodySize, requiresTruncating });
 
-    res.body = body.toString();
-    res.headers['content-length'] = String(body.byteLength);
+    return body;
   }
 
   private parseContentType(res: IncomingResponse): string {
