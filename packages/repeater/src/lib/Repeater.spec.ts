@@ -32,11 +32,15 @@ describe('Repeater', () => {
       MockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
     ).thenResolve({ version });
     when(MockedEventBus.publish(anyOfClass(RepeaterStatusEvent))).thenResolve();
+
+    jest.useFakeTimers();
   });
 
-  afterEach(() =>
-    reset<Configuration | EventBus>(MockedConfiguration, MockedEventBus)
-  );
+  afterEach(() => {
+    jest.useRealTimers();
+
+    reset<Configuration | EventBus>(MockedConfiguration, MockedEventBus);
+  });
 
   describe('start', () => {
     it('should start', async () => {
@@ -66,10 +70,29 @@ describe('Repeater', () => {
         )
       ).once();
     });
+
+    it('should send ping periodically', async () => {
+      await repeater.start();
+      jest.advanceTimersByTime(15000);
+      jest.runOnlyPendingTimers();
+
+      verify(
+        MockedEventBus.publish(
+          objectContaining({
+            type: 'RepeaterStatusUpdated',
+            payload: {
+              repeaterId,
+              status: 'connected'
+            }
+          })
+        )
+      ).thrice();
+    });
   });
 
   describe('stop', () => {
     it('should stop', async () => {
+      await repeater.start();
       await repeater.stop();
 
       verify(
@@ -81,6 +104,15 @@ describe('Repeater', () => {
               status: 'disconnected'
             }
           })
+        )
+      ).once();
+
+      jest.advanceTimersByTime(25000);
+      jest.runOnlyPendingTimers();
+
+      verify(
+        MockedEventBus.publish(
+          objectContaining({ payload: { status: 'connected' } })
         )
       ).once();
     });
