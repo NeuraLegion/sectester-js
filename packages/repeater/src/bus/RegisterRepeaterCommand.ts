@@ -15,7 +15,6 @@ export class RegisterRepeaterCommand extends Command<
   RegisterRepeaterResult
 > {
   constructor(payload: RegisterRepeaterCommandPayload) {
-    // TODO rework Command ctor
-    super(payload, true, 10000, 'RepeaterRegistering');
+    super(payload, { type: 'RepeaterRegistering' });
   }
 }
