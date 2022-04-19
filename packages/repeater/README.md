@@ -13,48 +13,11 @@ npm i -s @secbox/repeater
 
 ## Usage
 
-### Entities
+`RepeaterFactory` exported by this package can be constructed with [`Configuration` instance](https://github.com/NeuraLegion/secbox-sdk-js/tree/master/packages/core#configuration) as constructor argument.
 
-`RepeaterFactory` is responsible for creating instances of the repeater,
-encapsulating a bus and other dependencies.
+It has a method `createRepeater()` which returns a `Repeater` instance.
 
-```ts
-class RepeaterFactory {
-  public async createRepeater({
-    name,
-    description
-  }?: RepeaterOptions): Promise<Repeater> {
-    /* */
-  }
-}
-```
-
-Created `Repeater` instance has `start()` and `stop()` methods
-
-```ts
-class Repeater {
-  public readonly repeaterId: string;
-
-  public async start(): Promise<void> {
-    /* */
-  }
-  public async stop(): Promise<void> {
-    /* */
-  }
-}
-```
-
-Under the hood `Repeater` register `ExecuteRequestEventHandler` in bus,
-which in turn uses `RequestRunner` to proceed with request.
-
-```ts
-export interface RequestRunner {
-  protocol: Protocol;
-  run(request: Request): Promise<Response>;
-}
-```
-
-Package contains implementation for HTTP and WebSocket runners:`HttpRequestRunner` and `WsRequestRunner`.
+`Repeater` instance has two methods (`start()` and `stop()`) and a `repeaterId` field, that is required in scan config for local targets.
 
 ### Usage in unit tests
 
@@ -81,6 +44,29 @@ describe('Scan', () => {
   it('should be not vulnerable', () => {
     /* run scan of local target passing `repeater.repeaterId` to scan config */
   });
+});
+```
+
+### Implementation details
+
+Under the hood `Repeater` register `ExecuteRequestEventHandler` in bus,
+which in turn uses `RequestRunner` to proceed with request.
+
+```ts
+export interface RequestRunner {
+  protocol: Protocol;
+  run(request: Request): Promise<Response>;
+}
+```
+
+Package contains `RequestRunner` implementations for HTTP and WS protocols.
+To support other protocol new class implementation of `RequestRunner` should be registered in global IoC contatiner:
+
+```ts
+import { container } from 'tsyringe';
+
+container.register(RequestRunner, {
+  useClass: CustomProtocolRequestRunner
 });
 ```
 
