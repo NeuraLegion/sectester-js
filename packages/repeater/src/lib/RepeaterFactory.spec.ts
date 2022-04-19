@@ -4,7 +4,7 @@ import { Repeater } from './Repeater';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
 import { Configuration, EventBus } from '@secbox/core';
-import { anything, instance, mock, when } from 'ts-mockito';
+import { anything, instance, mock, reset, when } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
 
 describe('RepeaterFactory', () => {
@@ -15,24 +15,37 @@ describe('RepeaterFactory', () => {
   const MockedRepeaterManager = mock<RepeatersManager>();
   const MockedEventBusFactory = mock<EventBusFactory>();
 
-  when(MockedContainer.resolve<EventBusFactory>(EventBusFactory)).thenReturn(
-    instance(MockedEventBusFactory)
-  );
-  when(MockedContainer.resolve<RepeatersManager>(RepeatersManager)).thenReturn(
-    instance(MockedRepeaterManager)
-  );
+  const mockedConfiguration = instance(MockedConfiguration);
 
-  when(MockedEventBusFactory.create(anything())).thenResolve(
-    {} as unknown as EventBus
-  );
+  beforeEach(() => {
+    when(MockedContainer.resolve<EventBusFactory>(EventBusFactory)).thenReturn(
+      instance(MockedEventBusFactory)
+    );
+    when(
+      MockedContainer.resolve<RepeatersManager>(RepeatersManager)
+    ).thenReturn(instance(MockedRepeaterManager));
 
-  when(MockedRepeaterManager.createRepeater(anything())).thenResolve({
-    repeaterId
+    when(MockedEventBusFactory.create(anything())).thenResolve(
+      {} as unknown as EventBus
+    );
+
+    when(MockedRepeaterManager.createRepeater(anything())).thenResolve({
+      repeaterId
+    });
+
+    when(MockedConfiguration.container).thenReturn(instance(MockedContainer));
   });
 
-  when(MockedConfiguration.container).thenReturn(instance(MockedContainer));
-
-  const mockedConfiguration = instance(MockedConfiguration);
+  afterEach(() =>
+    reset<
+      DependencyContainer | Configuration | RepeatersManager | EventBusFactory
+    >(
+      MockedContainer,
+      MockedConfiguration,
+      MockedRepeaterManager,
+      MockedEventBusFactory
+    )
+  );
 
   describe('createRepeater', () => {
     it('should create repeater', async () => {

@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { ExecuteRequestEventHandler } from './ExecuteRequestEventHandler';
 import { Protocol } from '../models';
 import { RequestRunner } from '../request-runner';
-import { anything, instance, mock, when } from 'ts-mockito';
+import { anything, instance, mock, reset, when } from 'ts-mockito';
 
 describe('ExecuteRequestEventHandler', () => {
   const responsePayload = {
@@ -13,8 +13,12 @@ describe('ExecuteRequestEventHandler', () => {
 
   const MockedRequestRunner = mock<RequestRunner>();
 
-  when(MockedRequestRunner.protocol).thenReturn(Protocol.HTTP);
-  when(MockedRequestRunner.run(anything())).thenResolve(responsePayload);
+  beforeEach(() => {
+    when(MockedRequestRunner.protocol).thenReturn(Protocol.HTTP);
+    when(MockedRequestRunner.run(anything())).thenResolve(responsePayload);
+  });
+
+  afterEach(() => reset(MockedRequestRunner));
 
   describe('handle', () => {
     it('should run request having corresponding runner', async () => {

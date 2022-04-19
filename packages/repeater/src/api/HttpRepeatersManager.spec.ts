@@ -8,12 +8,9 @@ import { HttpRepeatersManager } from './HttpRepeatersManager';
 import { RepeatersManager } from './RepeatersManager';
 import { CommandDispatcher } from '@secbox/core';
 import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
-import { HttpCommandDispatcher } from '@secbox/bus';
 
 describe('HttpRepeatersManager', () => {
-  const MockedCommandDispatcher = mock<CommandDispatcher>(
-    HttpCommandDispatcher
-  );
+  const MockedCommandDispatcher = mock<CommandDispatcher>();
   let manager!: RepeatersManager;
 
   beforeEach(() => {

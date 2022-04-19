@@ -37,9 +37,9 @@ describe('Repeater', () => {
   });
 
   afterEach(() => {
-    jest.useRealTimers();
-
     reset<Configuration | EventBus>(MockedConfiguration, MockedEventBus);
+
+    jest.useRealTimers();
   });
 
   describe('start', () => {
