@@ -55,16 +55,11 @@ export class WsRequestRunner implements RequestRunner {
 
       client = this.createWebSocketClient(options);
       const connectRes: IncomingMessage = await this.connect(client);
-      const res = await this.sendMessage(client, options);
 
-      timeout = res.timeout;
+      timeout = this.setTimeout(client);
+      const msg = await this.sendMessage(client, options);
 
-      return new Response({
-        protocol: this.protocol,
-        statusCode: res.msg?.code ?? connectRes.statusCode,
-        headers: connectRes.headers,
-        body: res.msg?.body
-      });
+      return this.createWsResponse(msg, connectRes);
     } catch (err) {
       return this.handleRequestError(err, options);
     } finally {
@@ -78,26 +73,36 @@ export class WsRequestRunner implements RequestRunner {
     }
   }
 
-  private async sendMessage(
-    client: WebSocket,
-    options: Request
-  ): Promise<{ msg: WSMessage | undefined; timeout: NodeJS.Timeout }> {
-    // @ts-expect-error TS infers a wrong type here
-    await promisify(client.send.bind(client))(options.body);
-
-    const timeout = this.setTimeout(client);
-
-    const msg = await this.consume(client, options.correlationIdRegex);
-
-    return { timeout, msg };
-  }
-
   private createWebSocketClient(options: Request): WebSocket {
     return new WebSocket(options.url, {
       agent: this.agent,
       rejectUnauthorized: false,
       timeout: this.options.timeout,
       headers: this.normalizeHeaders(options.headers)
+    });
+  }
+
+  private async sendMessage(
+    client: WebSocket,
+    options: Request
+  ): Promise<WSMessage | undefined> {
+    // @ts-expect-error TS infers a wrong type here
+    await promisify(client.send.bind(client))(options.body);
+
+    const message = await this.consume(client, options.correlationIdRegex);
+
+    return message;
+  }
+
+  private createWsResponse(
+    msg: WSMessage | undefined,
+    connectRes: IncomingMessage
+  ): Response {
+    return new Response({
+      protocol: this.protocol,
+      statusCode: msg?.code ?? connectRes.statusCode,
+      headers: connectRes.headers,
+      body: msg?.body
     });
   }
 
