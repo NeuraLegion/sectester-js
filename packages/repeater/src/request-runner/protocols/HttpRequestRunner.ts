@@ -77,7 +77,7 @@ export class HttpRequestRunner implements RequestRunner {
     }
   }
 
-  private handleRequestError(err: any, options: Request) {
+  private handleRequestError(err: any, options: Request): Response {
     if (err.response) {
       const { response } = err;
 

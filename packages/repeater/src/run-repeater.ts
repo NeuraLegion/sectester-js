@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import 'reflect-metadata';
 import { Repeater, RepeaterFactory } from './lib';
 import {

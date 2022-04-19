@@ -44,31 +44,26 @@ export class WsRequestRunner implements RequestRunner {
   }
 
   public async run(options: Request): Promise<Response> {
-    let timeout: NodeJS.Timeout | null = null;
-    let client: WebSocket | null = null;
+    let timeout: NodeJS.Timeout | undefined;
+    let client: WebSocket | undefined;
 
     try {
       this.logger?.debug(
-        'Executing HTTP request with following params: %j',
+        'Executing WS request with following params: %j',
         options
       );
 
       client = this.createWebSocketClient(options);
+      const connectRes: IncomingMessage = await this.connect(client);
+      const res = await this.sendMessage(client, options);
 
-      const res: IncomingMessage = await this.connect(client);
-
-      // @ts-expect-error TS infers a wrong type here
-      await promisify(client.send.bind(client))(options.body);
-
-      timeout = this.setTimeout(client);
-
-      const msg = await this.consume(client, options.correlationIdRegex);
+      timeout = res.timeout;
 
       return new Response({
         protocol: this.protocol,
-        statusCode: msg?.code ?? res.statusCode,
-        headers: res.headers,
-        body: msg?.body
+        statusCode: res.msg?.code ?? connectRes.statusCode,
+        headers: connectRes.headers,
+        body: res.msg?.body
       });
     } catch (err) {
       return this.handleRequestError(err, options);
@@ -77,13 +72,27 @@ export class WsRequestRunner implements RequestRunner {
         clearTimeout(timeout);
       }
 
-      if (client && client.readyState === WebSocket.OPEN) {
+      if (client?.readyState === WebSocket.OPEN) {
         client.close(1000);
       }
     }
   }
 
-  private createWebSocketClient(options: Request) {
+  private async sendMessage(
+    client: WebSocket,
+    options: Request
+  ): Promise<{ msg: WSMessage | undefined; timeout: NodeJS.Timeout }> {
+    // @ts-expect-error TS infers a wrong type here
+    await promisify(client.send.bind(client))(options.body);
+
+    const timeout = this.setTimeout(client);
+
+    const msg = await this.consume(client, options.correlationIdRegex);
+
+    return { timeout, msg };
+  }
+
+  private createWebSocketClient(options: Request): WebSocket {
     return new WebSocket(options.url, {
       agent: this.agent,
       rejectUnauthorized: false,
@@ -92,7 +101,7 @@ export class WsRequestRunner implements RequestRunner {
     });
   }
 
-  private handleRequestError(err: any, options: Request) {
+  private handleRequestError(err: any, options: Request): Response {
     const message = err.info ?? err.message;
     const errorCode = err.code ?? err.syscall;
 
