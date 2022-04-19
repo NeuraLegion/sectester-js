@@ -1,4 +1,4 @@
 export interface RepeaterOptions {
-  name: string;
+  namePrefix?: string;
   description?: string;
 }

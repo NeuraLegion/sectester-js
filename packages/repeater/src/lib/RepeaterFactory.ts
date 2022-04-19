@@ -3,6 +3,7 @@ import { RepeaterOptions } from './RepeaterOptions';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
 import { Configuration } from '@secbox/core';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  *  A factory that is able to create a dedicated instance of the repeater with a bus and other dependencies.
@@ -19,12 +20,12 @@ export class RepeaterFactory {
   }
 
   public async createRepeater(
-    { name, description }: RepeaterOptions = {
-      name: `secbox-sdk repeater ${new Date().toISOString()}`
+    { namePrefix, description }: RepeaterOptions = {
+      namePrefix: `secbox-sdk`
     }
   ): Promise<Repeater> {
     const { repeaterId } = await this.repeatersManager.createRepeater({
-      name,
+      name: `${namePrefix}-${uuidv4()}`,
       description
     });
     const bus = await this.eventBusFactory.create(repeaterId);
