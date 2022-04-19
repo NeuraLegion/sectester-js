@@ -73,33 +73,37 @@ export class HttpRequestRunner implements RequestRunner {
         body: response.body
       });
     } catch (err) {
-      if (err.response) {
-        const { response } = err;
+      return this.handleRequestError(err, options);
+    }
+  }
 
-        return new Response({
-          protocol: this.protocol,
-          statusCode: response.statusCode,
-          headers: response.headers,
-          body: response.body
-        });
-      }
-
-      const message = err.cause?.message ?? err.message;
-      const errorCode = err.cause?.code ?? err.error?.syscall ?? err.name;
-
-      this.logger?.error(
-        'Error executing request: "%s %s HTTP/1.1"',
-        options.method,
-        options.url
-      );
-      this.logger?.error('Cause: %s', message);
+  private handleRequestError(err: any, options: Request) {
+    if (err.response) {
+      const { response } = err;
 
       return new Response({
         protocol: this.protocol,
-        message,
-        errorCode
+        statusCode: response.statusCode,
+        headers: response.headers,
+        body: response.body
       });
     }
+
+    const message = err.cause?.message ?? err.message;
+    const errorCode = err.cause?.code ?? err.error?.syscall ?? err.name;
+
+    this.logger?.error(
+      'Error executing request: "%s %s HTTP/1.1"',
+      options.method,
+      options.url
+    );
+    this.logger?.error('Cause: %s', message);
+
+    return new Response({
+      protocol: this.protocol,
+      message,
+      errorCode
+    });
   }
 
   private async request(options: Request): Promise<IncomingResponse> {

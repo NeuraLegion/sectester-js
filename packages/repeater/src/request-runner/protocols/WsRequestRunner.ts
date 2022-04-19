@@ -53,12 +53,7 @@ export class WsRequestRunner implements RequestRunner {
         options
       );
 
-      client = new WebSocket(options.url, {
-        agent: this.agent,
-        rejectUnauthorized: false,
-        timeout: this.options.timeout,
-        headers: this.normalizeHeaders(options.headers)
-      });
+      client = this.createWebSocketClient(options);
 
       const res: IncomingMessage = await this.connect(client);
 
@@ -76,17 +71,7 @@ export class WsRequestRunner implements RequestRunner {
         body: msg?.body
       });
     } catch (err) {
-      const message = err.info ?? err.message;
-      const errorCode = err.code ?? err.syscall;
-
-      this.logger?.error('Error executing request: %s', options.url);
-      this.logger?.error('Cause: %s', message);
-
-      return new Response({
-        message,
-        errorCode,
-        protocol: this.protocol
-      });
+      return this.handleRequestError(err, options);
     } finally {
       if (timeout) {
         clearTimeout(timeout);
@@ -96,6 +81,29 @@ export class WsRequestRunner implements RequestRunner {
         client.close(1000);
       }
     }
+  }
+
+  private createWebSocketClient(options: Request) {
+    return new WebSocket(options.url, {
+      agent: this.agent,
+      rejectUnauthorized: false,
+      timeout: this.options.timeout,
+      headers: this.normalizeHeaders(options.headers)
+    });
+  }
+
+  private handleRequestError(err: any, options: Request) {
+    const message = err.info ?? err.message;
+    const errorCode = err.code ?? err.syscall;
+
+    this.logger?.error('Error executing request: %s', options.url);
+    this.logger?.error('Cause: %s', message);
+
+    return new Response({
+      message,
+      errorCode,
+      protocol: this.protocol
+    });
   }
 
   private setTimeout(client: WebSocket): NodeJS.Timeout {
