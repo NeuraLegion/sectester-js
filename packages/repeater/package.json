@@ -1,6 +1,6 @@
 {
   "name": "@secbox/repeater",
-  "version": "0.5.0",
+  "version": "0.0.0",
   "description": "Package for managing repeaters, which are mandatory for scanning targets on a local network.",
   "repository": {
     "type": "git",
@@ -30,10 +30,12 @@
     "appsec",
     "pentesting",
     "qa",
-    "brightsec"
+    "brightsec",
+    "repeater",
+    "onprem"
   ],
   "peerDependencies": {
-    "@secbox/bus": ">=0.7.0",
-    "@secbox/core": ">=0.7.0"
+    "@secbox/bus": ">=0.7.0 <1.0.0",
+    "@secbox/core": ">=0.7.0 <1.0.0"
   }
 }
