@@ -33,7 +33,7 @@
     "brightsec"
   ],
   "peerDependencies": {
-    "@secbox/bus": ">=0.5.0",
-    "@secbox/core": ">=0.5.0"
+    "@secbox/bus": ">=0.7.0",
+    "@secbox/core": ">=0.7.0"
   }
 }

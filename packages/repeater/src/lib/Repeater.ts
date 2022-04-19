@@ -9,7 +9,7 @@ import { Configuration, EventBus } from '@secbox/core';
 import Timer = NodeJS.Timer;
 
 export class Repeater {
-  public readonly repeaterId;
+  public readonly repeaterId: string;
   private readonly bus: EventBus;
   private readonly configuration: Configuration;
 
