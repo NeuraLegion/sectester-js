@@ -1,31 +1,93 @@
 import 'reflect-metadata';
 import { Scans } from './Scans';
 import { ScanFactory } from './ScanFactory ';
-import { TestType } from './enums';
-import { anything, instance, mock, reset, when } from 'ts-mockito';
+import { Module, TestType } from './enums';
+import {
+  anything,
+  instance,
+  mock,
+  objectContaining,
+  reset,
+  verify,
+  when
+} from 'ts-mockito';
+import { Configuration } from '@secbox/core';
 
 describe('ScanFactory', () => {
   const mockedScans = mock<Scans>();
+  const mockedConfiguration = mock<Configuration>();
   let scanFactory!: ScanFactory;
 
   beforeEach(() => {
-    scanFactory = new ScanFactory(instance(mockedScans));
+    when(mockedConfiguration.name).thenReturn('test');
+    when(mockedConfiguration.version).thenReturn('1.0');
+
+    scanFactory = new ScanFactory(
+      instance(mockedScans),
+      instance(mockedConfiguration)
+    );
   });
 
-  afterEach(() => reset<Scans>(mockedScans));
+  afterEach(() =>
+    reset<Scans | Configuration>(mockedScans, mockedConfiguration)
+  );
 
   describe('createScan', () => {
     it('should create Scan', async () => {
-      const id = '123e4567-e89b-12d3-a456-426614174000';
-      when(mockedScans.create(anything())).thenResolve({ id });
-
-      const result = await scanFactory.createScan({
+      const scanId = 'roMq1UVuhPKkndLERNKnA8';
+      const harId = 'upmVm5iPkddvzY6RisT7Cr';
+      const scanSettings = {
         name: 'test',
         target: { url: 'https://example.com' },
-        tests: [TestType.ANGULAR_CSTI]
-      });
+        tests: [TestType.DOM_XSS]
+      };
+      when(mockedScans.uploadHar(anything())).thenResolve({ id: harId });
+      when(mockedScans.create(anything())).thenResolve({ id: scanId });
 
-      expect(result).toMatchObject({ id });
+      const result = await scanFactory.createScan(scanSettings);
+
+      verify(mockedScans.uploadHar(anything())).once();
+      verify(
+        mockedScans.create(
+          objectContaining({
+            fileId: harId,
+            module: Module.DAST,
+            name: scanSettings.name,
+            tests: scanSettings.tests,
+            crawlerUrls: 'https://example.com'
+          })
+        )
+      ).once();
+
+      expect(result).toMatchObject({ id: scanId });
+    });
+
+    it('should throw if har uploading failed', async () => {
+      const scanId = 'roMq1UVuhPKkndLERNKnA8';
+      const harId = 'upmVm5iPkddvzY6RisT7Cr';
+      const scanSettings = {
+        name: 'test',
+        target: { url: 'https://example.com' },
+        tests: [TestType.DOM_XSS]
+      };
+      when(mockedScans.uploadHar(anything())).thenThrow();
+      when(mockedScans.create(anything())).thenResolve({ id: scanId });
+
+      const result = scanFactory.createScan(scanSettings);
+
+      await expect(result).rejects.toThrow();
+      verify(mockedScans.uploadHar(anything())).once();
+      verify(
+        mockedScans.create(
+          objectContaining({
+            fileId: harId,
+            module: Module.DAST,
+            name: scanSettings.name,
+            tests: scanSettings.tests,
+            crawlerUrls: 'https://example.com'
+          })
+        )
+      ).never();
     });
   });
 });
