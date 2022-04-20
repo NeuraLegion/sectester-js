@@ -114,7 +114,7 @@ describe('HttpScans', () => {
       const result = httpScans.getScan(id);
 
       await expect(result).rejects.toThrow(
-        `Failed to get status of scan fith id ${id}`
+        `Failed to get status of scan with id ${id}`
       );
     });
   });
