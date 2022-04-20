@@ -42,8 +42,8 @@ describe('Scan', () => {
   describe('issues', () => {
     it('should call listIssues', async () => {
       when(mosckedScans.listIssues(id)).thenResolve([]);
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      for await (const _ of scan.issues());
+
+      await scan.issues();
 
       verify(mosckedScans.listIssues(id)).once();
     });

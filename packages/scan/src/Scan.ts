@@ -24,10 +24,10 @@ export class Scan {
     this.state = { status: ScanStatus.PENDING, issuesBySeverity: [] };
   }
 
-  public async *issues(): AsyncGenerator<Issue[]> {
+  public async issues(): Promise<Issue[]> {
     const issues = await this.scans.listIssues(this.id);
 
-    yield issues;
+    return issues;
   }
 
   public async *status(): AsyncIterableIterator<ScanState> {
