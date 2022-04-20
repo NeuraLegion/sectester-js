@@ -5,7 +5,7 @@ import {
   RepeaterStatusEvent
 } from '../bus';
 import { RepeaterStatus } from '../models';
-import { Configuration, EventBus } from '@secbox/core';
+import { Configuration, EventBus, Logger } from '@secbox/core';
 import Timer = NodeJS.Timer;
 
 export enum RunningStatus {
@@ -20,6 +20,7 @@ export class Repeater {
 
   private readonly bus: EventBus;
   private readonly configuration: Configuration;
+  private readonly logger: Logger | undefined;
 
   private timer?: Timer;
 
@@ -35,6 +36,13 @@ export class Repeater {
     this.repeaterId = repeaterId;
     this.bus = bus;
     this.configuration = configuration;
+
+    const { container } = this.configuration;
+    if (container.isRegistered(Logger, true)) {
+      this.logger = container.resolve(Logger);
+    }
+
+    this.setupShutdown();
   }
 
   public async start(): Promise<void> {
@@ -106,6 +114,22 @@ export class Repeater {
       new RepeaterStatusEvent({
         status,
         repeaterId: this.repeaterId
+      })
+    );
+  }
+
+  private setupShutdown(): void {
+    ['SIGTERM', 'SIGINT', 'SIGHUP'].forEach(event =>
+      process.on(event, async () => {
+        if (this.runningStatus !== RunningStatus.OFF) {
+          try {
+            await this.stop();
+            process.exit(0);
+          } catch (e) {
+            this.logger?.error(e.message);
+            process.exit(1);
+          }
+        }
       })
     );
   }
