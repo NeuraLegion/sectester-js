@@ -1,16 +1,19 @@
 import 'reflect-metadata';
 import { Repeater, RunningStatus } from './Repeater';
 import { RegisterRepeaterCommand, RepeaterStatusEvent } from '../bus';
-import { Configuration, EventBus } from '@secbox/core';
+import { Configuration, EventBus, Logger, LogLevel } from '@secbox/core';
 import {
   anyOfClass,
+  between,
   instance,
   mock,
   objectContaining,
   reset,
+  spy,
   verify,
   when
 } from 'ts-mockito';
+import { container } from 'tsyringe';
 
 describe('Repeater', () => {
   const version = '42.0.1';
@@ -19,21 +22,29 @@ describe('Repeater', () => {
   let repeater!: Repeater;
   const mockedConfiguration = mock<Configuration>();
   const mockedEventBus = mock<EventBus>();
+  const spiedContainer = spy(container);
 
-  beforeEach(() => {
-    repeater = new Repeater({
+  const createRepeater = () =>
+    new Repeater({
       repeaterId,
       bus: instance(mockedEventBus),
       configuration: instance(mockedConfiguration)
     });
 
+  beforeEach(() => {
+    when(spiedContainer.resolve(Logger)).thenReturn(
+      new Logger(LogLevel.SILENT)
+    );
     when(mockedConfiguration.version).thenReturn(version);
+    when(mockedConfiguration.container).thenReturn(container);
     when(
       mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
     ).thenResolve({ version });
     when(mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))).thenResolve();
 
     jest.useFakeTimers();
+
+    repeater = createRepeater();
   });
 
   afterEach(() => {
@@ -41,6 +52,10 @@ describe('Repeater', () => {
 
     jest.useRealTimers();
   });
+
+  const maxListeners = process.getMaxListeners();
+  beforeAll(() => process.setMaxListeners(100));
+  afterAll(() => process.setMaxListeners(maxListeners));
 
   describe('start', () => {
     it('should start', async () => {
@@ -158,7 +173,7 @@ describe('Repeater', () => {
     });
 
     it('should be possible to start() after start() error', async () => {
-      when(MockedEventBus.execute(anyOfClass(RegisterRepeaterCommand)))
+      when(mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand)))
         .thenReject()
         .thenResolve();
 
@@ -179,6 +194,52 @@ describe('Repeater', () => {
       const res = repeater.stop();
 
       await expect(res).rejects.toThrow('Cannot stop non-running repeater.');
+    });
+  });
+
+  describe('process termination', () => {
+    let exitCodePromise: Promise<number>;
+
+    const spiedProcess = spy(process);
+
+    beforeEach(() => {
+      exitCodePromise = new Promise(resolve => {
+        when(spiedProcess.exit(between(0, 1))).thenCall(resolve);
+      });
+    });
+
+    it('should stop()', async () => {
+      repeater = createRepeater();
+
+      await repeater.start();
+      process.emit('SIGTERM' as any);
+
+      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
+      await expect(exitCodePromise).resolves.toBe(0);
+    });
+
+    it('should return error code on stop() error', async () => {
+      repeater = createRepeater();
+
+      await repeater.start();
+
+      when(
+        mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))
+      ).thenReject();
+
+      process.emit('SIGTERM' as any);
+
+      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
+      await expect(exitCodePromise).resolves.toBe(1);
+    });
+
+    it('should not stop() repeater which is not running', () => {
+      repeater = createRepeater();
+      const spiedRepeater = spy(repeater);
+
+      process.emit('SIGTERM' as any);
+
+      verify(spiedRepeater.stop()).never();
     });
   });
 });

@@ -121,7 +121,7 @@ export class Repeater {
   private setupShutdown(): void {
     ['SIGTERM', 'SIGINT', 'SIGHUP'].forEach(event =>
       process.on(event, async () => {
-        if (this.runningStatus !== RunningStatus.OFF) {
+        if (this.runningStatus === RunningStatus.RUNNING) {
           try {
             await this.stop();
             process.exit(0);
