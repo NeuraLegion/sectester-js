@@ -41,6 +41,7 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       url,
       params,
       method,
+      headers,
       expectReply,
       correlationId,
       createdAt,
@@ -56,8 +57,10 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       params,
       headers: {
         'x-correlation-id': correlationId,
-        'date': createdAt.toISOString()
+        'date': createdAt.toISOString(),
+        ...headers
       },
+      responseType: 'text',
       ...(!expectReply ? { responseType: 'stream' } : {})
     };
   }
