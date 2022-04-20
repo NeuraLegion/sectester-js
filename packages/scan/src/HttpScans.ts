@@ -46,7 +46,7 @@ export class HttpScans implements Scans {
     const result = await this.commandDispatcher.execute(new GetScan(id));
 
     if (!result) {
-      throw new Error(`Failed to get status of scan fith id ${id}`);
+      throw new Error(`Failed to get status of scan with id ${id}`);
     }
 
     return result;
