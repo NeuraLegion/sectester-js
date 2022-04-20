@@ -60,7 +60,6 @@ export class HttpCommandDispatcher implements CommandDispatcher {
         'date': createdAt.toISOString(),
         ...headers
       },
-      responseType: 'text',
       ...(!expectReply ? { responseType: 'stream' } : {})
     };
   }
