@@ -5,9 +5,15 @@ import { RequestRunner } from '../request-runner';
 import { anything, instance, mock, reset, when } from 'ts-mockito';
 
 describe('ExecuteRequestEventHandler', () => {
-  const responsePayload = {
+  const requestRunnerResponse = {
     protocol: Protocol.HTTP,
     statusCode: 200,
+    body: 'text'
+  };
+
+  const responsePayload = {
+    protocol: Protocol.HTTP,
+    status_code: 200,
     body: 'text'
   };
 
@@ -15,7 +21,9 @@ describe('ExecuteRequestEventHandler', () => {
 
   beforeEach(() => {
     when(MockedRequestRunner.protocol).thenReturn(Protocol.HTTP);
-    when(MockedRequestRunner.run(anything())).thenResolve(responsePayload);
+    when(MockedRequestRunner.run(anything())).thenResolve(
+      requestRunnerResponse
+    );
   });
 
   afterEach(() => reset(MockedRequestRunner));

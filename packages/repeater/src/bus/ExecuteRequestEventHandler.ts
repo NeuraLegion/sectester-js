@@ -9,15 +9,15 @@ interface ExecuteRequestPayload {
   readonly headers: Record<string, string | string[]>;
   readonly method?: string;
   readonly body?: string;
-  readonly correlationIdRegex?: string;
+  readonly correlation_id_regex?: string;
 }
 
 interface ExecuteRequestResult {
   readonly protocol: Protocol;
   readonly body?: string;
   readonly headers?: Record<string, string | string[] | undefined>;
-  readonly statusCode?: number;
-  readonly errorCode?: string;
+  readonly status_code?: number;
+  readonly error_code?: string;
   readonly message?: string;
 }
 
@@ -42,7 +42,9 @@ export class ExecuteRequestEventHandler
       throw new Error(`Unsupported protocol "${protocol}"`);
     }
 
-    const response: Response = await runner.run(new Request({ ...event }));
+    const response: Response = await runner.run(
+      new Request({ ...event, correlationIdRegex: event.correlation_id_regex })
+    );
 
     const { statusCode, message, errorCode, body, headers } = response;
 
@@ -50,8 +52,8 @@ export class ExecuteRequestEventHandler
       protocol,
       body,
       headers,
-      statusCode,
-      errorCode,
+      status_code: statusCode,
+      error_code: errorCode,
       message
     };
   }
