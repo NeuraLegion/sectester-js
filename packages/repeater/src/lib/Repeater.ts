@@ -8,8 +8,16 @@ import { RepeaterStatus } from '../models';
 import { Configuration, EventBus } from '@secbox/core';
 import Timer = NodeJS.Timer;
 
+export enum RunningStatus {
+  OFF,
+  STARTING,
+  RUNNING
+}
+
 export class Repeater {
   public readonly repeaterId: string;
+  public runningStatus = RunningStatus.OFF;
+
   private readonly bus: EventBus;
   private readonly configuration: Configuration;
 
@@ -34,13 +42,33 @@ export class Repeater {
     if (!res) {
       throw new Error('Error registering repeater.');
     }
+    if (this.runningStatus !== RunningStatus.OFF) {
+      throw new Error('Repeater is already active.');
+    }
+
+    this.runningStatus = RunningStatus.STARTING;
+
+    try {
+      await this.register();
 
     await this.subscribeToEvents();
 
     await this.schedulePing();
+
+      this.runningStatus = RunningStatus.RUNNING;
+    } catch (e) {
+      this.runningStatus = RunningStatus.OFF;
+      throw e;
+  }
   }
 
   public async stop(): Promise<void> {
+    if (this.runningStatus !== RunningStatus.RUNNING) {
+      throw new Error('Cannot stop non-running repeater.');
+    }
+
+    this.runningStatus = RunningStatus.OFF;
+
     if (this.timer) {
       clearInterval(this.timer);
     }
