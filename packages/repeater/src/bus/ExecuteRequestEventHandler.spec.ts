@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { ExecuteRequestEventHandler } from './ExecuteRequestEventHandler';
 import { Protocol } from '../models';
-import { RequestRunner } from '../request-runner';
-import { anything, instance, mock, reset, when } from 'ts-mockito';
+import { Request, RequestRunner } from '../request-runner';
+import { anything, capture, instance, mock, reset, when } from 'ts-mockito';
 
 describe('ExecuteRequestEventHandler', () => {
   const requestRunnerResponse = {
@@ -12,14 +12,20 @@ describe('ExecuteRequestEventHandler', () => {
     body: 'text'
   };
 
-  const responsePayload = Object.fromEntries(
-    Object.entries(requestRunnerResponse).map(
-      ([key, value]: [string, unknown]) => [
-        key.replace(/([a-z])([A-Z])/g, `$1_$2`).toLowerCase(),
-        value
-      ]
-    )
+  const objectKeysTransformer =
+    (transform: (x: string) => string) => (obj: Record<string, unknown>) =>
+      Object.fromEntries(
+        Object.entries(obj).map(([key, value]: [string, unknown]) => [
+          transform(key),
+          value
+        ])
+      );
+
+  const toSnakeCaseKeys = objectKeysTransformer(key =>
+    key.replace(/([a-z])([A-Z])/g, `$1_$2`).toLowerCase()
   );
+
+  const responsePayload = toSnakeCaseKeys(requestRunnerResponse);
 
   const mockedRequestRunner = mock<RequestRunner>();
 
@@ -58,6 +64,25 @@ describe('ExecuteRequestEventHandler', () => {
       });
 
       await expect(res).rejects.toThrow(`Unsupported protocol "http"`);
+    });
+
+    it('`correlation_id_regex` should become `correlationIdRegex` in runner input', async () => {
+      const payload = {
+        protocol: Protocol.HTTP,
+        url: 'http://foo.bar/',
+        headers: {},
+        correlation_id_regex: 'baz'
+      };
+      const handler = new ExecuteRequestEventHandler([
+        instance(mockedRequestRunner)
+      ]);
+
+      await handler.handle(payload);
+
+      const [request]: [Request] = capture<Request>(
+        mockedRequestRunner.run
+      ).first();
+      expect(request.correlationIdRegex).toBeInstanceOf(RegExp);
     });
   });
 });
