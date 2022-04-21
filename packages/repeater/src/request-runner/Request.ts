@@ -35,10 +35,13 @@ export class Request {
     headers?: Record<string, string | string[]>;
   }) {
     this._method = method?.toUpperCase() ?? 'GET';
-    this.url = this.getUrl(url);
-    this.body = this.getBody(body);
-    this.correlationIdRegex = this.getCorrelationIdRegex(correlationIdRegex);
+    this.url = this.normalizeUrl(url);
+    this.correlationIdRegex =
+      this.normalizeCorrelationIdRegex(correlationIdRegex);
     this._headers = headers;
+
+    this.precheckBody(body);
+    this.body = body;
   }
 
   public setHeaders(headers: Record<string, string | string[]>): void {
@@ -48,7 +51,7 @@ export class Request {
     };
   }
 
-  private getUrl(url: string): string {
+  private normalizeUrl(url: string): string {
     if (!url) {
       throw new Error('Url must be declared explicitly.');
     }
@@ -60,15 +63,13 @@ export class Request {
     }
   }
 
-  private getBody(body: string | undefined): string | undefined {
+  private precheckBody(body: string | undefined): void {
     if (body && typeof body !== 'string') {
       throw new Error('Body must be string.');
     }
-
-    return body;
   }
 
-  private getCorrelationIdRegex(
+  private normalizeCorrelationIdRegex(
     correlationIdRegex: RegExp | string | undefined
   ): RegExp | undefined {
     if (correlationIdRegex) {
