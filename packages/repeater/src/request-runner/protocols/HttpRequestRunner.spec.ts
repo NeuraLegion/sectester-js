@@ -65,8 +65,10 @@ describe('HttpRequestRunner', () => {
 
       const response = await runner.run(request);
 
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toBe('{}');
+      expect(response).toMatchObject({
+        statusCode: 200,
+        body: {}
+      });
     });
 
     it('should handle HTTP errors', async () => {
@@ -76,8 +78,10 @@ describe('HttpRequestRunner', () => {
 
       const response = await runner.run(request);
 
-      expect(response.statusCode).toBe(500);
-      expect(response.body).toBe('{}');
+      expect(response).toMatchObject({
+        statusCode: 500,
+        body: {}
+      });
     });
 
     it('should handle non-HTTP errors', async () => {
@@ -86,7 +90,7 @@ describe('HttpRequestRunner', () => {
 
       const response = await runner.run(request);
 
-      expect(typeof response.statusCode).toBe('undefined');
+      expect(response.statusCode).toBeUndefined();
     });
 
     it('should truncate response body with not white-listed mime type', async () => {
@@ -118,7 +122,6 @@ describe('HttpRequestRunner', () => {
 
       const response = await runner.run(request);
 
-      expect(response.body?.length).toEqual(1025);
       expect(response.body).toEqual(bigBody);
     });
 
@@ -135,7 +138,6 @@ describe('HttpRequestRunner', () => {
 
       const response = await runner.run(request);
 
-      expect(response.body?.length).toEqual(1025);
       expect(response.body).toEqual(bigBody);
     });
 
