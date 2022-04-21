@@ -17,16 +17,16 @@ describe('ExecuteRequestEventHandler', () => {
     body: 'text'
   };
 
-  const MockedRequestRunner = mock<RequestRunner>();
+  const mockedRequestRunner = mock<RequestRunner>();
 
   beforeEach(() => {
-    when(MockedRequestRunner.protocol).thenReturn(Protocol.HTTP);
-    when(MockedRequestRunner.run(anything())).thenResolve(
+    when(mockedRequestRunner.protocol).thenReturn(Protocol.HTTP);
+    when(mockedRequestRunner.run(anything())).thenResolve(
       requestRunnerResponse
     );
   });
 
-  afterEach(() => reset(MockedRequestRunner));
+  afterEach(() => reset(mockedRequestRunner));
 
   describe('handle', () => {
     it('should run request having corresponding runner', async () => {
@@ -36,7 +36,7 @@ describe('ExecuteRequestEventHandler', () => {
         headers: {}
       };
       const handler = new ExecuteRequestEventHandler([
-        instance(MockedRequestRunner)
+        instance(mockedRequestRunner)
       ]);
 
       const res = handler.handle(requestPayload);

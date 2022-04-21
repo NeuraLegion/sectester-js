@@ -17,27 +17,27 @@ describe('Repeater', () => {
   const repeaterId = 'fooId';
 
   let repeater!: Repeater;
-  const MockedConfiguration = mock<Configuration>();
-  const MockedEventBus = mock<EventBus>();
+  const mockedConfiguration = mock<Configuration>();
+  const mockedEventBus = mock<EventBus>();
 
   beforeEach(() => {
     repeater = new Repeater({
       repeaterId,
-      bus: instance(MockedEventBus),
-      configuration: instance(MockedConfiguration)
+      bus: instance(mockedEventBus),
+      configuration: instance(mockedConfiguration)
     });
 
-    when(MockedConfiguration.version).thenReturn(version);
+    when(mockedConfiguration.version).thenReturn(version);
     when(
-      MockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
+      mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
     ).thenResolve({ version });
-    when(MockedEventBus.publish(anyOfClass(RepeaterStatusEvent))).thenResolve();
+    when(mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))).thenResolve();
 
     jest.useFakeTimers();
   });
 
   afterEach(() => {
-    reset<Configuration | EventBus>(MockedConfiguration, MockedEventBus);
+    reset<Configuration | EventBus>(mockedConfiguration, mockedEventBus);
 
     jest.useRealTimers();
   });
@@ -47,7 +47,7 @@ describe('Repeater', () => {
       await repeater.start();
 
       verify(
-        MockedEventBus.execute(
+        mockedEventBus.execute(
           objectContaining({
             type: 'RepeaterRegistering',
             payload: {
@@ -59,7 +59,7 @@ describe('Repeater', () => {
       ).once();
 
       verify(
-        MockedEventBus.publish(
+        mockedEventBus.publish(
           objectContaining({
             type: 'RepeaterStatusUpdated',
             payload: {
@@ -77,7 +77,7 @@ describe('Repeater', () => {
       jest.runOnlyPendingTimers();
 
       verify(
-        MockedEventBus.publish(
+        mockedEventBus.publish(
           objectContaining({
             type: 'RepeaterStatusUpdated',
             payload: {
@@ -96,7 +96,7 @@ describe('Repeater', () => {
       await repeater.stop();
 
       verify(
-        MockedEventBus.publish(
+        mockedEventBus.publish(
           objectContaining({
             type: 'RepeaterStatusUpdated',
             payload: {
@@ -111,7 +111,7 @@ describe('Repeater', () => {
       jest.runOnlyPendingTimers();
 
       verify(
-        MockedEventBus.publish(
+        mockedEventBus.publish(
           objectContaining({ payload: { status: 'connected' } })
         )
       ).once();

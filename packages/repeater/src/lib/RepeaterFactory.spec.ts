@@ -10,46 +10,46 @@ import { DependencyContainer } from 'tsyringe';
 describe('RepeaterFactory', () => {
   const repeaterId = 'fooId';
 
-  const MockedContainer = mock<DependencyContainer>();
-  const MockedConfiguration = mock<Configuration>();
-  const MockedRepeaterManager = mock<RepeatersManager>();
-  const MockedEventBusFactory = mock<EventBusFactory>();
+  const mockedContainer = mock<DependencyContainer>();
+  const mockedConfiguration = mock<Configuration>();
+  const mockedRepeaterManager = mock<RepeatersManager>();
+  const mockedEventBusFactory = mock<EventBusFactory>();
 
-  const mockedConfiguration = instance(MockedConfiguration);
+  const configuration = instance(mockedConfiguration);
 
   beforeEach(() => {
-    when(MockedContainer.resolve<EventBusFactory>(EventBusFactory)).thenReturn(
-      instance(MockedEventBusFactory)
+    when(mockedContainer.resolve<EventBusFactory>(EventBusFactory)).thenReturn(
+      instance(mockedEventBusFactory)
     );
     when(
-      MockedContainer.resolve<RepeatersManager>(RepeatersManager)
-    ).thenReturn(instance(MockedRepeaterManager));
+      mockedContainer.resolve<RepeatersManager>(RepeatersManager)
+    ).thenReturn(instance(mockedRepeaterManager));
 
-    when(MockedEventBusFactory.create(anything())).thenResolve(
+    when(mockedEventBusFactory.create(anything())).thenResolve(
       {} as unknown as EventBus
     );
 
-    when(MockedRepeaterManager.createRepeater(anything())).thenResolve({
+    when(mockedRepeaterManager.createRepeater(anything())).thenResolve({
       repeaterId
     });
 
-    when(MockedConfiguration.container).thenReturn(instance(MockedContainer));
+    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
   });
 
   afterEach(() =>
     reset<
       DependencyContainer | Configuration | RepeatersManager | EventBusFactory
     >(
-      MockedContainer,
-      MockedConfiguration,
-      MockedRepeaterManager,
-      MockedEventBusFactory
+      mockedContainer,
+      mockedConfiguration,
+      mockedRepeaterManager,
+      mockedEventBusFactory
     )
   );
 
   describe('createRepeater', () => {
     it('should create repeater', async () => {
-      const factory = new RepeaterFactory(mockedConfiguration);
+      const factory = new RepeaterFactory(configuration);
 
       const res = await factory.createRepeater();
 

@@ -10,23 +10,23 @@ import { CommandDispatcher } from '@secbox/core';
 import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
 
 describe('DefaultRepeatersManager', () => {
-  const MockedCommandDispatcher = mock<CommandDispatcher>();
+  const mockedCommandDispatcher = mock<CommandDispatcher>();
   let manager!: RepeatersManager;
 
   beforeEach(() => {
-    manager = new DefaultRepeatersManager(instance(MockedCommandDispatcher));
+    manager = new DefaultRepeatersManager(instance(mockedCommandDispatcher));
   });
 
-  afterEach(() => reset(MockedCommandDispatcher));
+  afterEach(() => reset(mockedCommandDispatcher));
 
   describe('createRepeater', () => {
     it('should create repeater', async () => {
       when(
-        MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
+        mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
       ).thenResolve();
 
       when(
-        MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
+        mockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
       ).thenResolve([
         { name: 'bar', id: '142' },
         {
@@ -38,17 +38,17 @@ describe('DefaultRepeatersManager', () => {
       const result = await manager.createRepeater({ name: 'foo' });
 
       verify(
-        MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
+        mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
       ).once();
       expect(result).toMatchObject({ repeaterId: '42' });
     });
 
     it('should throw an error if cannot find created repeater', async () => {
       when(
-        MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
+        mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
       ).thenResolve();
       when(
-        MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
+        mockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
       ).thenResolve(null);
 
       const res = manager.createRepeater({ name: 'foo' });
@@ -60,13 +60,13 @@ describe('DefaultRepeatersManager', () => {
   describe('deleteRepeater', () => {
     it('should remove repeater', async () => {
       when(
-        MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
+        mockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
       ).thenResolve();
 
       await manager.deleteRepeater('fooId');
 
       verify(
-        MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
+        mockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
       ).once();
     });
   });
