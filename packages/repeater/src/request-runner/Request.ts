@@ -21,7 +21,7 @@ export class Request {
 
   private _headers: Record<string, string | string[]>;
 
-  get headers(): Record<string, string | string[]> {
+  get headers(): Readonly<Record<string, string | string[]>> {
     return this._headers;
   }
 
