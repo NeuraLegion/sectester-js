@@ -1,3 +1,5 @@
+import { Scan } from '../models';
+
 export interface Reporter {
-  report(scan: unknown): Promise<void>;
+  report(scan: Scan): Promise<void>;
 }
