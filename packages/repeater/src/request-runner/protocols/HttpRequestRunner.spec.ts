@@ -25,8 +25,13 @@ const createRequest = (options: Partial<RequestOptions> = {}) => {
 describe('HttpRequestRunner', () => {
   const setupRunner = (
     options: RequestRunnerOptions = {},
-    logger: Logger = new Logger(LogLevel.SILENT)
+    logger: Logger = new Logger()
   ): HttpRequestRunner => new HttpRequestRunner(options, logger);
+
+  beforeAll(() => nock.disableNetConnect());
+  afterAll(() => nock.enableNetConnect());
+
+  beforeEach(() => nock.cleanAll());
 
   describe('protocol', () => {
     const runner = setupRunner();
@@ -34,15 +39,12 @@ describe('HttpRequestRunner', () => {
   });
 
   describe('run', () => {
-    afterEach(() => {
-      nock.cleanAll();
-    });
-
     // eslint-disable-next-line jest/expect-expect
     it('should call setHeaders on the provided request if additional headers were configured globally', async () => {
       const headers = { testHeader: 'test-header-value' };
       const runner = setupRunner({ headers });
       const { request, spiedRequest } = createRequest();
+      nock('https://foo.bar').get('/').reply(200, {});
 
       await runner.run(request);
 
@@ -52,6 +54,7 @@ describe('HttpRequestRunner', () => {
     it('should not call setHeaders on the provided request if there were no additional headers configured', async () => {
       const runner = setupRunner();
       const { request, spiedRequest } = createRequest();
+      nock('https://foo.bar').get('/').reply(200, {});
 
       await runner.run(request);
 
