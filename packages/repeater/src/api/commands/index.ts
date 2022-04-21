@@ -1,3 +1,6 @@
 export { CreateRepeaterRequest } from './CreateRepeaterRequest';
 export { DeleteRepeaterRequest } from './DeleteRepeaterRequest';
-export { ListRepeatersRequest } from './ListRepeatersRequest';
+export {
+  ListRepeatersRequest,
+  ListRepeatersResponsePayload
+} from './ListRepeatersRequest';

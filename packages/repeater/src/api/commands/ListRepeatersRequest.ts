@@ -1,6 +1,6 @@
 import { HttpRequest } from '@secbox/bus';
 
-type ListRepeatersResponsePayload = { id: string; name: string }[];
+export type ListRepeatersResponsePayload = { id: string; name: string }[];
 
 export class ListRepeatersRequest extends HttpRequest<
   undefined,
