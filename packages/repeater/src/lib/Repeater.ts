@@ -30,7 +30,10 @@ export class Repeater {
   }
 
   public async start(): Promise<void> {
-    await this.register();
+    const res = await this.register();
+    if (!res) {
+      throw new Error('Error registering repeater.');
+    }
 
     await this.subscribeToEvents();
 
@@ -73,8 +76,8 @@ export class Repeater {
   private async sendStatus(status: RepeaterStatus): Promise<void> {
     await this.bus.publish(
       new RepeaterStatusEvent({
-        repeaterId: this.repeaterId,
-        status
+        status,
+        repeaterId: this.repeaterId
       })
     );
   }

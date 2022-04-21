@@ -71,6 +71,16 @@ describe('Repeater', () => {
       ).once();
     });
 
+    it('should throw Error on failed registration', async () => {
+      when(
+        mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
+      ).thenResolve();
+
+      await expect(repeater.start()).rejects.toThrow(
+        'Error registering repeater.'
+      );
+    });
+
     it('should send ping periodically', async () => {
       await repeater.start();
       jest.advanceTimersByTime(15000);
