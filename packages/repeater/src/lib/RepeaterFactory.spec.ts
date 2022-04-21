@@ -17,6 +17,10 @@ describe('RepeaterFactory', () => {
 
   const configuration = instance(mockedConfiguration);
 
+  const eventBus = {
+    init: jest.fn()
+  } as unknown as EventBus;
+
   beforeEach(() => {
     when(mockedContainer.resolve<EventBusFactory>(EventBusFactory)).thenReturn(
       instance(mockedEventBusFactory)
@@ -25,9 +29,7 @@ describe('RepeaterFactory', () => {
       mockedContainer.resolve<RepeatersManager>(RepeatersManager)
     ).thenReturn(instance(mockedRepeaterManager));
 
-    when(mockedEventBusFactory.create(anything())).thenResolve(
-      {} as unknown as EventBus
-    );
+    when(mockedEventBusFactory.create(anything())).thenResolve(eventBus);
 
     when(mockedRepeaterManager.createRepeater(anything())).thenResolve({
       repeaterId
@@ -36,7 +38,7 @@ describe('RepeaterFactory', () => {
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
   });
 
-  afterEach(() =>
+  afterEach(() => {
     reset<
       DependencyContainer | Configuration | RepeatersManager | EventBusFactory
     >(
@@ -44,8 +46,10 @@ describe('RepeaterFactory', () => {
       mockedConfiguration,
       mockedRepeaterManager,
       mockedEventBusFactory
-    )
-  );
+    );
+
+    jest.resetAllMocks();
+  });
 
   describe('createRepeater', () => {
     it('should create repeater', async () => {
@@ -53,6 +57,7 @@ describe('RepeaterFactory', () => {
 
       const res = await factory.createRepeater();
 
+      expect(eventBus.init).toHaveBeenCalled();
       expect(res).toBeInstanceOf(Repeater);
       expect(res).toMatchObject({
         repeaterId
