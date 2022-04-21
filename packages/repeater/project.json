@@ -11,7 +11,14 @@
         "tsConfig": "packages/repeater/tsconfig.lib.json",
         "packageJson": "packages/repeater/package.json",
         "main": "packages/repeater/src/index.ts",
-        "assets": ["packages/repeater/*.md"]
+        "assets": [
+          "packages/repeater/*.md",
+          {
+            "glob": "LICENSE",
+            "input": "",
+            "output": ""
+          }
+        ]
       }
     },
     "lint": {
@@ -27,6 +34,12 @@
       "options": {
         "jestConfig": "packages/repeater/jest.config.js",
         "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "./tools/executors:publish",
+      "options": {
+        "dist": "dist/packages/repeater"
       }
     }
   },
