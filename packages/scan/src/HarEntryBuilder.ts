@@ -91,18 +91,30 @@ export class HarEntryBuilder {
 
     return {
       startedDateTime: new Date().toISOString(),
-      time: -1,
       request: {
         url,
+        httpVersion: 'HTTP/1.1',
         method: this.method,
         headers: this.headers,
-        body: this.body
+        body: this.body,
+        headersSize: -1,
+        bodySize: -1,
+        cookies: [],
+        queryString: []
       },
       response: {
+        httpVersion: 'HTTP/1.1',
         status: 200,
-        statusText: 'Ok'
+        statusText: 'Ok',
+        headersSize: -1,
+        bodySize: -1,
+        content: '',
+        redirectURL: '',
+        cookies: [],
+        headers: []
       },
       cache: {},
+      time: 0,
       timings: {
         send: 0,
         receive: 0,

@@ -144,15 +144,32 @@ describe('HarEntityBuilder', () => {
       expect(entry).toMatchObject({
         request: {
           url: `${url}?${query}`,
+          httpVersion: 'HTTP/1.1',
           method: 'GET',
-          headers: [{ name: 'Content-Type', value: 'application/json' }],
-          body: JSON.stringify(data)
+          headers: [
+            {
+              name: 'Content-Type',
+              value: 'application/json'
+            }
+          ],
+          headersSize: -1,
+          bodySize: -1,
+          cookies: [],
+          queryString: []
         },
         response: {
+          httpVersion: 'HTTP/1.1',
           status: 200,
-          statusText: 'Ok'
+          statusText: 'Ok',
+          headersSize: -1,
+          bodySize: -1,
+          content: '',
+          redirectURL: '',
+          cookies: [],
+          headers: []
         },
         cache: {},
+        time: 0,
         timings: {
           send: 0,
           receive: 0,
