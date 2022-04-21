@@ -4,7 +4,7 @@ import { Repeater } from './Repeater';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
 import { Configuration, EventBus } from '@secbox/core';
-import { anything, instance, mock, reset, when } from 'ts-mockito';
+import { anything, capture, instance, mock, reset, when } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
 
 describe('RepeaterFactory', () => {
@@ -57,6 +57,29 @@ describe('RepeaterFactory', () => {
       expect(res).toMatchObject({
         repeaterId
       });
+    });
+
+    it('should create repeater with given name prefix and description', async () => {
+      const factory = new RepeaterFactory(configuration);
+
+      const res = await factory.createRepeater({
+        namePrefix: 'foo',
+        description: 'description'
+      });
+
+      const [arg]: [
+        {
+          name: string;
+          description?: string;
+        }
+      ] = capture<{
+        name: string;
+        description?: string;
+      }>(mockedRepeaterManager.createRepeater).first();
+
+      expect(arg?.name).toMatch(/^foo/);
+      expect(arg?.description).toBe('description');
+      expect(res).toBeInstanceOf(Repeater);
     });
   });
 });
