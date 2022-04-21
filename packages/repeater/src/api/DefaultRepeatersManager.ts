@@ -8,7 +8,7 @@ import { inject, injectable } from 'tsyringe';
 import { CommandDispatcher } from '@secbox/core';
 
 @injectable()
-export class HttpRepeatersManager implements RepeatersManager {
+export class DefaultRepeatersManager implements RepeatersManager {
   constructor(
     @inject(CommandDispatcher)
     private readonly commandDispatcher: CommandDispatcher

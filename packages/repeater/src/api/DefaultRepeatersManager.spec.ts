@@ -4,17 +4,17 @@ import {
   DeleteRepeaterRequest,
   ListRepeatersRequest
 } from './commands';
-import { HttpRepeatersManager } from './HttpRepeatersManager';
+import { DefaultRepeatersManager } from './DefaultRepeatersManager';
 import { RepeatersManager } from './RepeatersManager';
 import { CommandDispatcher } from '@secbox/core';
 import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
 
-describe('HttpRepeatersManager', () => {
+describe('DefaultRepeatersManager', () => {
   const MockedCommandDispatcher = mock<CommandDispatcher>();
   let manager!: RepeatersManager;
 
   beforeEach(() => {
-    manager = new HttpRepeatersManager(instance(MockedCommandDispatcher));
+    manager = new DefaultRepeatersManager(instance(MockedCommandDispatcher));
   });
 
   afterEach(() => reset(MockedCommandDispatcher));
