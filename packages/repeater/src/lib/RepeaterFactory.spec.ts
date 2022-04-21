@@ -4,22 +4,42 @@ import { Repeater } from './Repeater';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
 import { Configuration, EventBus } from '@secbox/core';
-import { anything, capture, instance, mock, reset, when } from 'ts-mockito';
+import {
+  anything,
+  capture,
+  instance,
+  mock,
+  reset,
+  verify,
+  when
+} from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
+
+const resolvableInstance = <T extends object>(m: T): T =>
+  new Proxy<T>(instance(m), {
+    get(target, prop, receiver) {
+      if (
+        ['Symbol(Symbol.toPrimitive)', 'then', 'catch'].includes(
+          prop.toString()
+        )
+      ) {
+        return undefined;
+      }
+
+      return Reflect.get(target, prop, receiver);
+    }
+  });
 
 describe('RepeaterFactory', () => {
   const repeaterId = 'fooId';
 
   const mockedContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();
-  const mockedRepeaterManager = mock<RepeatersManager>();
+  const mockedEventBus = mock<EventBus>();
   const mockedEventBusFactory = mock<EventBusFactory>();
+  const mockedRepeaterManager = mock<RepeatersManager>();
 
   const configuration = instance(mockedConfiguration);
-
-  const eventBus = {
-    init: jest.fn()
-  } as unknown as EventBus;
 
   beforeEach(() => {
     when(mockedContainer.resolve<EventBusFactory>(EventBusFactory)).thenReturn(
@@ -29,26 +49,34 @@ describe('RepeaterFactory', () => {
       mockedContainer.resolve<RepeatersManager>(RepeatersManager)
     ).thenReturn(instance(mockedRepeaterManager));
 
-    when(mockedEventBusFactory.create(anything())).thenResolve(eventBus);
+    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    when(mockedEventBus.init!()).thenResolve();
+
+    when(mockedEventBusFactory.create(anything())).thenResolve(
+      resolvableInstance(mockedEventBus)
+    );
 
     when(mockedRepeaterManager.createRepeater(anything())).thenResolve({
       repeaterId
     });
-
-    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
   });
 
   afterEach(() => {
     reset<
-      DependencyContainer | Configuration | RepeatersManager | EventBusFactory
+      | DependencyContainer
+      | Configuration
+      | EventBus
+      | EventBusFactory
+      | RepeatersManager
     >(
       mockedContainer,
       mockedConfiguration,
-      mockedRepeaterManager,
-      mockedEventBusFactory
+      mockedEventBus,
+      mockedEventBusFactory,
+      mockedRepeaterManager
     );
-
-    jest.resetAllMocks();
   });
 
   describe('createRepeater', () => {
@@ -57,7 +85,8 @@ describe('RepeaterFactory', () => {
 
       const res = await factory.createRepeater();
 
-      expect(eventBus.init).toHaveBeenCalled();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      verify(mockedEventBus.init!()).once();
       expect(res).toBeInstanceOf(Repeater);
       expect(res).toMatchObject({
         repeaterId
