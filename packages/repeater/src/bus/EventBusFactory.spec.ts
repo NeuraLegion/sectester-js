@@ -7,21 +7,25 @@ import { container } from 'tsyringe';
 
 describe('EventBusFactory', () => {
   const token = 'dummmmy.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0';
-  const MockedConfiguration = mock<Configuration>(Configuration);
+  const mockedConfiguration = mock<Configuration>();
 
-  let mockedConfiguration: Configuration;
+  let configuration!: Configuration;
 
   beforeEach(() => {
-    mockedConfiguration = instance(MockedConfiguration);
+    configuration = instance(mockedConfiguration);
+
+    when(mockedConfiguration.container).thenReturn(container);
   });
 
-  afterEach(() => reset(MockedConfiguration));
+  afterEach(() => reset(mockedConfiguration));
 
   describe('create', () => {
     it('should throw an error on missing credentials', async () => {
-      const factory = new EventBusFactory(mockedConfiguration);
+      when(mockedConfiguration.credentials).thenReturn();
 
-      const res = factory.create('id');
+      const factory = new EventBusFactory(configuration);
+
+      const res = factory.create('fooId');
 
       await expect(res).rejects.toThrow(
         'Please provide credentials to establish a connection with the bus.'
@@ -29,12 +33,11 @@ describe('EventBusFactory', () => {
     });
 
     it('should create event bus', async () => {
-      when(MockedConfiguration.loadCredentials()).thenResolve();
-      when(MockedConfiguration.credentials).thenReturn(
+      when(mockedConfiguration.loadCredentials()).thenResolve();
+      when(mockedConfiguration.credentials).thenReturn(
         new Credentials({ token })
       );
-      when(MockedConfiguration.container).thenReturn(container);
-      const factory = new EventBusFactory(mockedConfiguration);
+      const factory = new EventBusFactory(configuration);
 
       const res = factory.create('id');
 
