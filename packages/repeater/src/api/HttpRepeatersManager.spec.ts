@@ -40,10 +40,7 @@ describe('HttpRepeatersManager', () => {
       verify(
         MockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
       ).once();
-      verify(
-        MockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
-      ).once();
-      expect(result.repeaterId).toBe('42');
+      expect(result).toMatchObject({ repeaterId: '42' });
     });
 
     it('should throw an error if cannot find created repeater', async () => {
@@ -66,12 +63,11 @@ describe('HttpRepeatersManager', () => {
         MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
       ).thenResolve();
 
-      const res = manager.deleteRepeater('fooId');
+      await manager.deleteRepeater('fooId');
 
       verify(
         MockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
       ).once();
-      await expect(res).resolves.not.toThrow();
     });
   });
 });
