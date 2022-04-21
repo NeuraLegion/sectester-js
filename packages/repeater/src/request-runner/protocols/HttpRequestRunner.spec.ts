@@ -25,7 +25,7 @@ const createRequest = (options: Partial<RequestOptions> = {}) => {
 describe('HttpRequestRunner', () => {
   const setupRunner = (
     options: RequestRunnerOptions = {},
-    logger?: Logger
+    logger: Logger = new Logger()
   ): HttpRequestRunner => new HttpRequestRunner(options, logger);
 
   describe('protocol', () => {

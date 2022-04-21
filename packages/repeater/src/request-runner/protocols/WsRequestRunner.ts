@@ -30,7 +30,7 @@ export class WsRequestRunner implements RequestRunner {
     @inject(RequestRunnerOptions)
     private readonly options: RequestRunnerOptions,
     @inject(Logger)
-    private readonly logger?: Logger
+    private readonly logger: Logger
   ) {
     this.agent = this.options.proxyUrl
       ? new SocksProxyAgent({
@@ -48,7 +48,7 @@ export class WsRequestRunner implements RequestRunner {
     let client: WebSocket | undefined;
 
     try {
-      this.logger?.debug(
+      this.logger.debug(
         'Executing WS request with following params: %j',
         options
       );
@@ -110,8 +110,8 @@ export class WsRequestRunner implements RequestRunner {
     const message = err.info ?? err.message;
     const errorCode = err.code ?? err.syscall;
 
-    this.logger?.error('Error executing request: %s', options.url);
-    this.logger?.error('Cause: %s', message);
+    this.logger.error('Error executing request: %s', options.url);
+    this.logger.error('Cause: %s', message);
 
     return new Response({
       message,

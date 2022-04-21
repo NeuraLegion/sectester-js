@@ -28,7 +28,7 @@ export class HttpRequestRunner implements RequestRunner {
     @inject(RequestRunnerOptions)
     private readonly options: RequestRunnerOptions,
     @inject(Logger)
-    private readonly logger?: Logger
+    private readonly logger: Logger
   ) {
     if (this.options.proxyUrl) {
       this.proxy = new SocksProxyAgent({
@@ -59,7 +59,7 @@ export class HttpRequestRunner implements RequestRunner {
         options.setHeaders(this.options.headers);
       }
 
-      this.logger?.debug(
+      this.logger.debug(
         'Executing HTTP request with following params: %j',
         options
       );
@@ -92,12 +92,12 @@ export class HttpRequestRunner implements RequestRunner {
     const message = err.cause?.message ?? err.message;
     const errorCode = err.cause?.code ?? err.error?.syscall ?? err.name;
 
-    this.logger?.error(
+    this.logger.error(
       'Error executing request: "%s %s HTTP/1.1"',
       options.method,
       options.url
     );
-    this.logger?.error('Cause: %s', message);
+    this.logger.error('Cause: %s', message);
 
     return new Response({
       protocol: this.protocol,
@@ -160,9 +160,7 @@ export class HttpRequestRunner implements RequestRunner {
       (mime: string) => type.startsWith(mime)
     );
 
-    const body = await this.parseBody(res, { maxBodySize, requiresTruncating });
-
-    return body;
+    return this.parseBody(res, { maxBodySize, requiresTruncating });
   }
 
   private parseContentType(res: IncomingResponse): string {
@@ -201,16 +199,18 @@ export class HttpRequestRunner implements RequestRunner {
       }
     }
 
+    const body = Buffer.concat(chunks);
+
     if (truncated) {
-      this.logger?.debug(
+      this.logger.debug(
         'Truncate original response body to %i bytes',
         options.maxBodySize
       );
 
-      return Buffer.concat(chunks).slice(0, options.maxBodySize);
+      return body.slice(0, options.maxBodySize);
     }
 
-    return Buffer.concat(chunks);
+    return body;
   }
 
   /**
