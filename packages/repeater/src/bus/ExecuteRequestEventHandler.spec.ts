@@ -8,14 +8,18 @@ describe('ExecuteRequestEventHandler', () => {
   const requestRunnerResponse = {
     protocol: Protocol.HTTP,
     statusCode: 200,
+    errorCode: '',
     body: 'text'
   };
 
-  const responsePayload = {
-    protocol: Protocol.HTTP,
-    status_code: 200,
-    body: 'text'
-  };
+  const responsePayload = Object.fromEntries(
+    Object.entries(requestRunnerResponse).map(
+      ([key, value]: [string, unknown]) => [
+        key.replace(/([a-z])([A-Z])/g, `$1_$2`).toLowerCase(),
+        value
+      ]
+    )
+  );
 
   const mockedRequestRunner = mock<RequestRunner>();
 
@@ -39,9 +43,9 @@ describe('ExecuteRequestEventHandler', () => {
         instance(mockedRequestRunner)
       ]);
 
-      const res = handler.handle(requestPayload);
+      const res = await handler.handle(requestPayload);
 
-      await expect(res).resolves.toEqual(responsePayload);
+      expect(res).toEqual(responsePayload);
     });
 
     it('should throw an error if cannot find corresponding runner', async () => {

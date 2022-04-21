@@ -52,9 +52,9 @@ export class ExecuteRequestEventHandler
       protocol,
       body,
       headers,
+      message,
       status_code: statusCode,
-      error_code: errorCode,
-      message
+      error_code: errorCode
     };
   }
 }
