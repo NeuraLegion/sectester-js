@@ -1,0 +1,48 @@
+{
+  "root": "packages/reporter",
+  "sourceRoot": "packages/reporter/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/reporter",
+        "tsConfig": "packages/reporter/tsconfig.lib.json",
+        "packageJson": "packages/reporter/package.json",
+        "main": "packages/reporter/src/index.ts",
+        "assets": [
+          "packages/reporter/*.md",
+          {
+            "glob": "LICENSE",
+            "input": "",
+            "output": ""
+          }
+        ],
+        "buildableProjectDepsInPackageJsonType": "dependencies"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/reporter/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/reporter"],
+      "options": {
+        "jestConfig": "packages/reporter/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "./tools/executors:publish",
+      "options": {
+        "dist": "dist/packages/reporter"
+      }
+    }
+  },
+  "tags": []
+}
