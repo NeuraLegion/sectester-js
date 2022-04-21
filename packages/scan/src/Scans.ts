@@ -104,7 +104,7 @@ export interface ScanConfig {
   smart?: boolean;
   extraHosts?: Record<string, string>;
   headers?: Record<string, string> | Header[];
-  crawlerUrls?: string;
+  crawlerUrls?: string[];
   hostsFilter?: string[];
   repeaters?: string[];
   boards?: Map<IntegrationType, string[]>;

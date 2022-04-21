@@ -1,17 +1,16 @@
-import { Module } from './enums';
+import { Discovery, Module } from './enums';
 import { ScanConfig, Scans, ScanSettings, Target } from './Scans';
 import { Scan } from './Scan';
 import { Har, HarEntryBuilder } from './HarEntryBuilder';
-import { autoInjectable, inject } from 'tsyringe';
 import { Configuration } from '@secbox/core';
 import { v4 } from 'uuid';
 
-@autoInjectable()
 export class ScanFactory {
-  constructor(
-    @inject(Scans) private readonly scans: Scans,
-    @inject(Configuration) private readonly sdkConfig: Configuration
-  ) {}
+  private readonly scans: Scans;
+
+  constructor(private readonly sdkConfig: Configuration) {
+    this.scans = sdkConfig.container.resolve(Scans);
+  }
 
   public async createScan(settings: ScanSettings): Promise<Scan> {
     const scanConfig: ScanConfig = await this.buildScanConfig(settings);
@@ -31,13 +30,15 @@ export class ScanFactory {
       smart: settings.smart,
       tests: settings.tests,
       poolSize: settings.poolSize,
+      discoveryTypes: [Discovery.CRAWLER],
       skipStaticParams: settings.skipStaticParams,
       attackParamLocations: settings.attackParamLocations,
-      crawlerUrls: this.getCrawlerUrl(settings.target)
+      crawlerUrls: [this.getCrawlerUrl(settings.target)]
     };
   }
 
-  private async createFile(target: Target): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  public async createFile(target: Target): Promise<string> {
     const filename = this.generateFilename();
     const har = this.createHar(target);
     const { id } = await this.scans.uploadHar({
@@ -49,7 +50,7 @@ export class ScanFactory {
   }
 
   private generateFilename(): string {
-    return `${this.sdkConfig.name}-${v4()}.json`;
+    return `${this.sdkConfig.name}-${v4()}.har`;
   }
 
   private createHar(target: Target): Har {

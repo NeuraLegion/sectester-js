@@ -12,20 +12,25 @@ import {
   when
 } from 'ts-mockito';
 import { Configuration } from '@secbox/core';
+import { DependencyContainer } from 'tsyringe';
 
 describe('ScanFactory', () => {
   const mockedScans = mock<Scans>();
   const mockedConfiguration = mock<Configuration>();
+  const mockedDependencyContainer = mock<DependencyContainer>();
   let scanFactory!: ScanFactory;
 
   beforeEach(() => {
+    when(mockedConfiguration.container).thenReturn(
+      instance(mockedDependencyContainer)
+    );
     when(mockedConfiguration.name).thenReturn('test');
     when(mockedConfiguration.version).thenReturn('1.0');
-
-    scanFactory = new ScanFactory(
-      instance(mockedScans),
-      instance(mockedConfiguration)
+    when(mockedDependencyContainer.resolve<Scans>(Scans)).thenReturn(
+      instance(mockedScans)
     );
+
+    scanFactory = new ScanFactory(instance(mockedConfiguration));
   });
 
   afterEach(() =>
