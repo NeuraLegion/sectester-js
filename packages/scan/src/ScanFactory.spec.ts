@@ -59,7 +59,7 @@ describe('ScanFactory', () => {
             module: Module.DAST,
             name: scanSettings.name,
             tests: scanSettings.tests,
-            crawlerUrls: 'https://example.com'
+            crawlerUrls: ['https://example.com']
           })
         )
       ).once();
