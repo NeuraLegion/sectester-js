@@ -15,7 +15,7 @@ import { CommandDispatcher } from '@secbox/core';
 export class DefaultScans implements Scans {
   constructor(
     @inject(CommandDispatcher)
-    private readonly commandDispatcher: HttpCommandDispatcher
+    private readonly commandDispatcher: CommandDispatcher
   ) {}
 
   public async create(config: ScanConfig): Promise<{ id: string }> {
