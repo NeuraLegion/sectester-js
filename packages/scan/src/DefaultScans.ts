@@ -7,7 +7,6 @@ import {
   UploadFileOptions,
   UploadHar
 } from './commands';
-import { HttpCommandDispatcher } from '@secbox/bus';
 import { inject, injectable } from 'tsyringe';
 import { CommandDispatcher } from '@secbox/core';
 
