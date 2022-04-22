@@ -11,7 +11,7 @@
         "tsConfig": "packages/scan/tsconfig.lib.json",
         "packageJson": "packages/scan/package.json",
         "main": "packages/scan/src/index.ts",
-        "assets": ["packages/scan/*.md"]
+        "assets": ["packages/scan/*.md", "LICENSE"]
       }
     },
     "lint": {
