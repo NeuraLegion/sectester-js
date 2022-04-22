@@ -72,8 +72,8 @@ export class HarEntryBuilder {
   public setHeaders(headers: Record<string, string> | undefined): this {
     if (headers) {
       this.headers.push(
-        ...Object.entries(headers).map(([key, value]: [string, string]) => ({
-          name: key,
+        ...Object.entries(headers).map(([name, value]: [string, string]) => ({
+          name,
           value
         }))
       );
