@@ -100,9 +100,9 @@ export class HttpRequestRunner implements RequestRunner {
     this.logger.error('Cause: %s', message);
 
     return new Response({
-      protocol: this.protocol,
       message,
-      errorCode
+      errorCode,
+      protocol: this.protocol
     });
   }
 
