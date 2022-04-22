@@ -105,7 +105,7 @@ export class HarEntryBuilder {
       response: {
         httpVersion: 'HTTP/1.1',
         status: 200,
-        statusText: 'Ok',
+        statusText: 'OK',
         headersSize: -1,
         bodySize: -1,
         content: '',
