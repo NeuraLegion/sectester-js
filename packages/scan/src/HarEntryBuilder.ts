@@ -35,7 +35,7 @@ export class HarEntryBuilder {
     this.url = url;
 
     if (typeof method === 'string') {
-      this.method = method;
+      this.method = method.toUpperCase();
     }
   }
 
