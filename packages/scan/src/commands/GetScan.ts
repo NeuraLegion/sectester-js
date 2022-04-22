@@ -1,13 +1,11 @@
 import { ScanState } from '../Scans';
-import { HttpOptions, HttpRequest } from '@secbox/bus';
+import { HttpRequest } from '@secbox/bus';
 
-export class GetScan extends HttpRequest<void, ScanState> {
+export class GetScan extends HttpRequest<undefined, ScanState> {
   constructor(id: string) {
-    const options: HttpOptions<void> = {
+    super({
       url: `/api/v1/scans/${id}`,
       payload: undefined
-    };
-
-    super(options);
+    });
   }
 }

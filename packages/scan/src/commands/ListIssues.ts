@@ -1,13 +1,11 @@
 import { Issue } from '../Scans';
-import { HttpOptions, HttpRequest } from '@secbox/bus';
+import { HttpRequest } from '@secbox/bus';
 
-export class ListIssues extends HttpRequest<void, Issue[]> {
+export class ListIssues extends HttpRequest<undefined, Issue[]> {
   constructor(id: string) {
-    const options: HttpOptions<void> = {
+    super({
       url: `/api/v1/scans/${id}/issues`,
       payload: undefined
-    };
-
-    super(options);
+    });
   }
 }

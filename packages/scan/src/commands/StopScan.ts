@@ -1,12 +1,10 @@
-import { HttpOptions, HttpRequest } from '@secbox/bus';
+import { HttpRequest } from '@secbox/bus';
 
-export class StopScan extends HttpRequest<void, void> {
+export class StopScan extends HttpRequest<undefined, void> {
   constructor(id: string) {
-    const options: HttpOptions<void> = {
+    super({
       url: `/api/v1/scans/${id}/stop`,
       payload: undefined
-    };
-
-    super(options);
+    });
   }
 }
