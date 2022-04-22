@@ -61,7 +61,7 @@ export class HarEntryBuilder {
       | string
       | URLSearchParams
       | Record<string, string>
-      | string[][]
+      | [string, string][]
       | undefined
   ): this {
     this.query = new URLSearchParams(query).toString();

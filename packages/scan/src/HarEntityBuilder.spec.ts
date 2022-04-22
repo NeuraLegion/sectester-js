@@ -44,7 +44,7 @@ describe('HarEntityBuilder', () => {
     });
 
     it('should set query if passed array', () => {
-      const testQuery = [['parameter', 'value']];
+      const testQuery: [string, string][] = [['parameter', 'value']];
       const entryBuilder = new HarEntryBuilder('https://example.com');
 
       entryBuilder.setQuery(testQuery);

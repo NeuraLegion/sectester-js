@@ -8,6 +8,7 @@ import {
   TestType
 } from './enums';
 import { UploadFileOptions } from './requests';
+import FormData from 'form-data';
 
 export interface Issue {
   id: string;
