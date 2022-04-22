@@ -40,13 +40,15 @@ export enum Module {
 }
 
 export enum ScanStatus {
-  RUNNING = 'running',
-  PENDING = 'pending',
-  STOPPED = 'stopped',
   FAILED = 'failed',
-  DONE = 'done',
+  DISRUPTED = 'disrupted',
+  RUNNING = 'running',
+  STOPPED = 'stopped',
+  QUEUED = 'queued',
   SCHEDULED = 'scheduled',
-  QUEUED = 'queued'
+  PENDING = 'pending',
+  DONE = 'done',
+  PAUSED = 'paused'
 }
 
 export enum TestType {
