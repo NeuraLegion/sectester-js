@@ -108,7 +108,7 @@ export class HarEntryBuilder {
         statusText: 'OK',
         headersSize: -1,
         bodySize: -1,
-        content: '',
+        content: {},
         redirectURL: '',
         cookies: [],
         headers: []
