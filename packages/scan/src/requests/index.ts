@@ -1,5 +1,5 @@
 export * from './GetScan';
 export * from './StopScan';
-export * from './UploadFile';
+export * from './UploadHar';
 export * from './ListIssues';
 export * from './CreateScan';

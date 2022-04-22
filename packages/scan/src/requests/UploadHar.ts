@@ -6,7 +6,7 @@ export interface UploadFileOptions {
   content: string;
 }
 
-export class UploadFile extends HttpRequest<FormData, { id: string }> {
+export class UploadHar extends HttpRequest<FormData, { id: string }> {
   constructor(fileOptions: UploadFileOptions, query: Record<string, unknown>) {
     const payload = new FormData();
     payload.append('file', fileOptions.content, fileOptions.filename);
