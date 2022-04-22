@@ -22,10 +22,10 @@ export interface Har {
 }
 
 export class HarEntryBuilder {
-  private headers: Header[] = [];
+  private url: string;
   private body?: string;
   private query?: string;
-  private url: string;
+  private headers: Header[] = [];
   private method: string = 'GET';
 
   constructor(url: string, method?: string) {
