@@ -1,5 +1,11 @@
-import { Discovery, Module } from './enums';
-import { ScanConfig, Scans, ScanSettings, Target } from './Scans';
+import {
+  Discovery,
+  Module,
+  ScanConfig,
+  Scans,
+  ScanSettings,
+  Target
+} from './Scans';
 import { Scan } from './Scan';
 import { Har, HarEntryBuilder } from './HarEntryBuilder';
 import { Configuration } from '@secbox/core';

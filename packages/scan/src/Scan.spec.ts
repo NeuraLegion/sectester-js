@@ -1,6 +1,6 @@
 import { Scan } from './Scan';
-import { IssueCategory, ScanStatus } from './enums';
-import { HttpScans } from './HttpScans';
+import { DefaultScans } from './DefaultScans';
+import { IssueCategory, ScanStatus } from './Scans';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
 
 describe('Scan', () => {
@@ -31,14 +31,14 @@ describe('Scan', () => {
   };
 
   const id = 'roMq1UVuhPKkndLERNKnA8';
-  const mosckedScans = mock<HttpScans>();
+  const mosckedScans = mock<DefaultScans>();
   let scan!: Scan;
 
   beforeEach(() => {
     scan = new Scan(id, instance(mosckedScans));
   });
 
-  afterEach(() => reset<HttpScans>(mosckedScans));
+  afterEach(() => reset<DefaultScans>(mosckedScans));
   describe('issues', () => {
     it('should call listIssues', async () => {
       when(mosckedScans.listIssues(id)).thenResolve([]);

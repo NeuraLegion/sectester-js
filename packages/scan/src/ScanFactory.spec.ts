@@ -1,7 +1,6 @@
 import 'reflect-metadata';
-import { Scans } from './Scans';
+import { Module, Scans, TestType } from './Scans';
 import { ScanFactory } from './ScanFactory ';
-import { Module, TestType } from './enums';
 import {
   anything,
   instance,

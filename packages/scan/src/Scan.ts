@@ -1,5 +1,11 @@
-import { IssueCategory, ScanStatus } from './enums';
-import { CountIssuesBySeverity, Issue, Scans, ScanState } from './Scans';
+import {
+  CountIssuesBySeverity,
+  Issue,
+  IssueCategory,
+  Scans,
+  ScanState,
+  ScanStatus
+} from './Scans';
 import { delay } from '@secbox/bus';
 
 export class Scan {

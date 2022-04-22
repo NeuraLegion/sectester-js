@@ -6,9 +6,8 @@ import {
   StopScan,
   UploadHar
 } from './commands';
-import { Module, ScanStatus, TestType } from './enums';
-import { ScanState } from './Scans';
-import { HttpScans } from './HttpScans';
+import { Module, ScanState, ScanStatus, TestType } from './Scans';
+import { DefaultScans } from './DefaultScans';
 import { HttpCommandDispatcher } from '@secbox/bus';
 import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
 
@@ -17,10 +16,10 @@ describe('HttpScans', () => {
     '{"log":{"version":"1.2","creator":{"name":"test","version":"1.0"},"entries":[{"startedDateTime":"2022-04-18T09:09:35.585Z","time":-1,"request":{"url":"https://example.com","method":"GET","headers":[]},"response":{"status":200,"statusText":"Ok"},"cache":{},"timings":{"send":0,"receive":0,"wait":0}}]}}';
 
   const mockedCommandDispatcher = mock<HttpCommandDispatcher>();
-  let httpScans!: HttpScans;
+  let httpScans!: DefaultScans;
 
   beforeEach(() => {
-    httpScans = new HttpScans(instance(mockedCommandDispatcher));
+    httpScans = new DefaultScans(instance(mockedCommandDispatcher));
   });
 
   afterEach(() => reset(mockedCommandDispatcher));
