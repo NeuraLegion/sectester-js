@@ -4,8 +4,8 @@ import {
   GetScan,
   ListIssues,
   StopScan,
-  UploadFile
-} from './requests';
+  UploadHar
+} from './commands';
 import { Module, ScanStatus, TestType } from './enums';
 import { ScanState } from './Scans';
 import { HttpScans } from './HttpScans';
@@ -122,16 +122,16 @@ describe('HttpScans', () => {
   describe('uploadHar', () => {
     it('should execute file upload command', async () => {
       const id = 'roMq1UVuhPKkndLERNKnA8';
-      when(mockedCommandDispatcher.execute(anyOfClass(UploadFile))).thenResolve(
-        { id }
-      );
+      when(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).thenResolve({
+        id
+      });
 
       await httpScans.uploadHar({
         filename: 'test.json',
         content: harFileContent
       });
 
-      verify(mockedCommandDispatcher.execute(anyOfClass(UploadFile))).once();
+      verify(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).once();
     });
 
     it('should throw if result is not defined', async () => {
@@ -139,7 +139,7 @@ describe('HttpScans', () => {
         filename: 'test.json',
         content: harFileContent
       };
-      when(mockedCommandDispatcher.execute(anyOfClass(UploadFile))).thenResolve(
+      when(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).thenResolve(
         undefined
       );
 

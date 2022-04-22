@@ -7,7 +7,7 @@ import {
   ScanStatus,
   TestType
 } from './enums';
-import { UploadFileOptions } from './requests';
+import { UploadFileOptions } from './commands';
 import FormData from 'form-data';
 
 export interface Issue {

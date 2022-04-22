@@ -4,9 +4,9 @@ import {
   GetScan,
   ListIssues,
   StopScan,
-  UploadFile,
-  UploadFileOptions
-} from './requests';
+  UploadFileOptions,
+  UploadHar
+} from './commands';
 import { HttpCommandDispatcher } from '@secbox/bus';
 import { inject, injectable } from 'tsyringe';
 import { CommandDispatcher } from '@secbox/core';
@@ -57,7 +57,7 @@ export class HttpScans implements Scans {
     discard: boolean = true
   ): Promise<{ id: string }> {
     const result = await this.commandDispatcher.execute(
-      new UploadFile(options, { discard })
+      new UploadHar(options, { discard })
     );
 
     if (!result) {
