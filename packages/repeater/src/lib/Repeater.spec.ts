@@ -175,7 +175,7 @@ describe('Repeater', () => {
     it('should be possible to start() after start() error', async () => {
       when(mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand)))
         .thenReject()
-        .thenResolve();
+        .thenResolve({ version });
 
       await expect(repeater.start()).rejects.toThrow();
       await expect(repeater.start()).resolves.not.toThrow();

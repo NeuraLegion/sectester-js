@@ -46,10 +46,6 @@ export class Repeater {
   }
 
   public async start(): Promise<void> {
-    const res = await this.register();
-    if (!res) {
-      throw new Error('Error registering repeater.');
-    }
     if (this.runningStatus !== RunningStatus.OFF) {
       throw new Error('Repeater is already active.');
     }
@@ -57,17 +53,20 @@ export class Repeater {
     this.runningStatus = RunningStatus.STARTING;
 
     try {
-      await this.register();
+      const res = await this.register();
+      if (!res) {
+        throw new Error('Error registering repeater.');
+      }
 
-    await this.subscribeToEvents();
+      await this.subscribeToEvents();
 
-    await this.schedulePing();
+      await this.schedulePing();
 
       this.runningStatus = RunningStatus.RUNNING;
     } catch (e) {
       this.runningStatus = RunningStatus.OFF;
       throw e;
-  }
+    }
   }
 
   public async stop(): Promise<void> {
