@@ -37,7 +37,7 @@ class ConcreteCommand extends Command<string, void> {
     correlationId?: string,
     createdAt?: Date
   ) {
-    super(payload, expectReply, ttl, type, correlationId, createdAt);
+    super(payload, { expectReply, ttl, type, correlationId, createdAt });
   }
 }
 

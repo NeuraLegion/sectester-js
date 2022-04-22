@@ -7,14 +7,17 @@ export abstract class Command<T, R> extends Message<T> {
 
   protected constructor(
     payload: T,
-    expectReply?: boolean,
-    ttl?: number,
-    type?: string,
-    correlationId?: string,
-    createdAt?: Date
+    options: {
+      expectReply?: boolean;
+      ttl?: number;
+      type?: string;
+      correlationId?: string;
+      createdAt?: Date;
+    } = {}
   ) {
-    super(payload, type, correlationId, createdAt);
+    super(payload, options.type, options.correlationId, options.createdAt);
 
+    const { expectReply, ttl } = options;
     if (typeof expectReply === 'boolean') {
       this.expectReply = expectReply;
     }

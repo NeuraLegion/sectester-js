@@ -1,7 +1,7 @@
 {
-  "name": "@secbox/core",
-  "version": "0.7.0",
-  "description": "The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.",
+  "name": "@secbox/repeater",
+  "version": "0.0.0",
+  "description": "Package for managing repeaters, which are mandatory for scanning targets on a local network.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
@@ -30,9 +30,12 @@
     "appsec",
     "pentesting",
     "qa",
-    "brightsec"
+    "brightsec",
+    "repeater",
+    "onprem"
   ],
-  "secbox": {
-    "repeaterVersion": "8.7.1"
+  "peerDependencies": {
+    "@secbox/bus": ">=0.7.0 <1.0.0",
+    "@secbox/core": ">=0.7.0 <1.0.0"
   }
 }

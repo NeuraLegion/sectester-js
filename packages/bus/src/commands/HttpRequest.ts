@@ -29,7 +29,7 @@ export class HttpRequest<T = undefined, R = void> extends Command<T, R> {
     url = '/',
     method = 'GET'
   }: HttpOptions<T>) {
-    super(payload, expectReply, ttl, type, correlationId, createdAt);
+    super(payload, { expectReply, ttl, type, correlationId, createdAt });
 
     if (typeof url !== 'string') {
       throw new TypeError(

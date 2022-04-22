@@ -12,7 +12,7 @@ class TestCommand extends Command<string, string | undefined> {
     expectReply?: boolean;
     ttl?: number;
   }) {
-    super(payload, expectReply, ttl);
+    super(payload, { expectReply, ttl });
   }
 }
 
