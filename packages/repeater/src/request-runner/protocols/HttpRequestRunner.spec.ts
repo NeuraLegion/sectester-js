@@ -35,12 +35,12 @@ describe('HttpRequestRunner', () => {
     nock.cleanAll();
     nock.restore();
   });
-  
+
   beforeEach(() => {
     if (!nock.isActive()) {
       nock.activate();
     }
-  })
+  });
 
   describe('protocol', () => {
     const runner = setupRunner();
