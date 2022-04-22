@@ -7,7 +7,7 @@ export class Scan {
 
   private readonly DELAY_TIME = 1000;
 
-  private ACTIVITY_STATUSES: ScanStatus[] = [
+  private readonly ACTIVITY_STATUSES: readonly ScanStatus[] = [
     ScanStatus.PENDING,
     ScanStatus.RUNNING
   ];
