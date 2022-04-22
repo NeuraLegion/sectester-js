@@ -10,16 +10,7 @@ describe('Response', () => {
 
       const response = new Response(responseOptions);
 
-      const { protocol, statusCode, headers, body, message, errorCode } =
-        response;
-      expect({
-        protocol,
-        statusCode,
-        headers,
-        body,
-        message,
-        errorCode
-      }).toEqual(responseOptions);
+      expect(response).toMatchObject(responseOptions);
     });
 
     it('should create an instance with full fieldset', () => {
@@ -34,16 +25,7 @@ describe('Response', () => {
 
       const response = new Response(responseOptions);
 
-      const { protocol, statusCode, headers, body, message, errorCode } =
-        response;
-      expect({
-        protocol,
-        statusCode,
-        headers,
-        body,
-        message,
-        errorCode
-      }).toEqual(responseOptions);
+      expect(response).toMatchObject(responseOptions);
     });
   });
 });
