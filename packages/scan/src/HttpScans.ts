@@ -19,13 +19,7 @@ export class HttpScans implements Scans {
   ) {}
 
   public async create(config: ScanConfig): Promise<{ id: string }> {
-    const result = await this.commandDispatcher.execute(new CreateScan(config));
-
-    if (!result) {
-      throw new Error(`Failed to create scan ${config.name}`);
-    }
-
-    return result;
+    return this.commandDispatcher.execute(new CreateScan(config));
   }
 
   public async listIssues(id: string): Promise<Issue[]> {
