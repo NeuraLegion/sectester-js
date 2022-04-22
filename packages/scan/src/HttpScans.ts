@@ -12,7 +12,7 @@ import { inject, injectable } from 'tsyringe';
 import { CommandDispatcher } from '@secbox/core';
 
 @injectable()
-export class HttpScans implements Scans {
+export class DefaultScans implements Scans {
   constructor(
     @inject(CommandDispatcher)
     private readonly commandDispatcher: HttpCommandDispatcher
