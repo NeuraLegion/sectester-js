@@ -1,6 +1,6 @@
 import { IssueCategory, ScanStatus } from './enums';
 import { CountIssuesBySeverity, Issue, Scans, ScanState } from './Scans';
-import { delay } from './utils';
+import { delay } from '@secbox/bus';
 
 export class Scan {
   private state?: ScanState;
@@ -32,7 +32,7 @@ export class Scan {
 
   public async *status(): AsyncIterableIterator<ScanState> {
     while (this.active) {
-      await this.delay();
+      await delay(this.DELAY_TIME);
       try {
         const state = await this.scans.getScan(this.id);
 
@@ -83,9 +83,5 @@ export class Scan {
     return issuesBySeverity.some((x: CountIssuesBySeverity) =>
       expectation !== 'any' ? x.type === expectation : !!x.number
     );
-  }
-
-  private async delay(): Promise<void> {
-    return delay(this.DELAY_TIME);
   }
 }
