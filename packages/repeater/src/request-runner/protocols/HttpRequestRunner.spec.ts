@@ -31,7 +31,16 @@ describe('HttpRequestRunner', () => {
   beforeAll(() => nock.disableNetConnect());
   afterAll(() => nock.enableNetConnect());
 
-  beforeEach(() => nock.cleanAll());
+  afterEach(() => {
+    nock.cleanAll();
+    nock.restore();
+  });
+  
+  beforeEach(() => {
+    if (!nock.isActive()) {
+      nock.activate();
+    }
+  })
 
   describe('protocol', () => {
     const runner = setupRunner();
