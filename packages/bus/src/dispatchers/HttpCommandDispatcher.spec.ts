@@ -114,6 +114,70 @@ describe('HttpCommandDispatcher', () => {
       expect(scope.isDone()).toBe(true);
     });
 
+    it('should not override an authorization header', async () => {
+      // arrange
+      const command = new HttpRequest({
+        payload: { foo: 'bar' },
+        url: '/api/test',
+        method: 'POST',
+        expectReply: false,
+        headers: { authorization: 'overridden header' }
+      });
+      const scope = nock(baseUrl)
+        .post('/api/test')
+        .matchHeader('authorization', `api-key ${options.token}`)
+        .reply(204);
+
+      // act
+      await axiosDispatcher.execute(command);
+
+      // assert
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('should not override an correlation ID header', async () => {
+      // arrange
+      const command = new HttpRequest({
+        payload: { foo: 'bar' },
+        url: '/api/test',
+        method: 'POST',
+        expectReply: false,
+        headers: { 'x-correlation-id': 'overridden correlation ID' }
+      });
+      const scope = nock(baseUrl)
+        .post('/api/test')
+        .matchHeader('x-correlation-id', command.correlationId)
+        .reply(204);
+
+      // act
+      await axiosDispatcher.execute(command);
+
+      // assert
+      expect(scope.isDone()).toBe(true);
+    });
+
+    it('should not override an date header', async () => {
+      // arrange
+      const command = new HttpRequest({
+        payload: { foo: 'bar' },
+        url: '/api/test',
+        method: 'POST',
+        expectReply: false,
+        createdAt: new Date(0),
+        headers: { date: 'overridden date' }
+      });
+      const scope = nock(baseUrl)
+        .post('/api/test')
+        .matchHeader('date', command.createdAt.toISOString())
+        .reply(204);
+
+      // act
+      await axiosDispatcher.execute(command);
+
+      // assert
+      expect(scope.isDone()).toBe(true);
+    });
+
     it('should get a reply', async () => {
       // arrange
       const command = new HttpRequest({

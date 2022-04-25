@@ -49,16 +49,19 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       ttl: timeout
     } = command;
 
+    delete headers?.authorization;
+
     return {
       url,
       method,
       data,
       timeout,
       params,
+      responseType: 'text',
       headers: {
+        ...headers,
         'x-correlation-id': correlationId,
-        'date': createdAt.toISOString(),
-        ...headers
+        'date': createdAt.toISOString()
       },
       ...(!expectReply ? { responseType: 'stream' } : {})
     };
