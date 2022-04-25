@@ -104,8 +104,6 @@ export class HarEntryBuilder {
         queryString.push({ name, value });
       }
     }
-    const a = Buffer.from(JSON.stringify(this.headers)).byteLength;
-    a;
 
     return {
       startedDateTime: new Date().toISOString(),

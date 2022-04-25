@@ -46,8 +46,9 @@ export class ScanFactory {
     const filename = this.generateFilename(target.url);
     const har = this.createHar(target);
     const { id } = await this.scans.uploadHar({
+      har,
       filename,
-      content: JSON.stringify(har)
+      discard: true
     });
 
     return id;
@@ -61,8 +62,8 @@ export class ScanFactory {
 
   private createHar(target: Target): Har {
     const entry = new HarEntryBuilder(target.url, target.method)
-      .setHeaders(target.headers)
-      .setQuery(target.query)
+      .setHeaders(target.headers ?? {})
+      .setQuery(target.query ?? {})
       .postData(target.body)
       .build();
 

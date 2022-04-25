@@ -1,4 +1,4 @@
-import { UploadFileOptions } from './commands';
+import { UploadHarPayload } from './commands';
 import FormData from 'form-data';
 
 export enum AttackParamLocation {
@@ -208,10 +208,7 @@ export interface Scans {
   listIssues(id: string): Promise<Issue[]>;
   stopScan(id: string): Promise<void>;
   getScan(id: string): Promise<ScanState>;
-  uploadHar(
-    options: UploadFileOptions,
-    discard?: boolean
-  ): Promise<{ id: string }>;
+  uploadHar(options: UploadHarPayload): Promise<{ id: string }>;
 }
 
 export const Scans: unique symbol = Symbol('Scans');

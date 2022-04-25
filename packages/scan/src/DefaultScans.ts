@@ -4,8 +4,8 @@ import {
   GetScan,
   ListIssues,
   StopScan,
-  UploadFileOptions,
-  UploadHar
+  UploadHar,
+  UploadHarPayload
 } from './commands';
 import { inject, injectable } from 'tsyringe';
 import { CommandDispatcher } from '@secbox/core';
@@ -51,13 +51,8 @@ export class DefaultScans implements Scans {
     return result;
   }
 
-  public async uploadHar(
-    options: UploadFileOptions,
-    discard: boolean = true
-  ): Promise<{ id: string }> {
-    const result = await this.commandDispatcher.execute(
-      new UploadHar(options, { discard })
-    );
+  public async uploadHar(options: UploadHarPayload): Promise<{ id: string }> {
+    const result = await this.commandDispatcher.execute(new UploadHar(options));
 
     if (!result) {
       throw new Error(`Failet to uplad Har file ${options.filename}.`);
