@@ -61,9 +61,14 @@ export class ScanFactory {
   }
 
   private createHar(target: Target): Har {
+    let query: string | URLSearchParams | Record<string, string> =
+      target.query ?? {};
+    if (target.serializeQuery) {
+      query = target.serializeQuery(query);
+    }
     const entry = new HarEntryBuilder(target.url, target.method)
       .setHeaders(target.headers ?? {})
-      .setQuery(target.query ?? {})
+      .setQuery(query)
       .postData(target.body)
       .build();
 
