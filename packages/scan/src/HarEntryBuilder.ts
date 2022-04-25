@@ -45,7 +45,7 @@ export class HarEntryBuilder {
         this.body = body;
       } else if (body instanceof FormData) {
         this.setHeaders(body.getHeaders());
-        this.body = JSON.stringify(body);
+        this.body = body.getBuffer().toString();
       } else if (body instanceof URLSearchParams) {
         this.body = body.toString();
       } else {

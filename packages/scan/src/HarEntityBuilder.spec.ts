@@ -86,7 +86,7 @@ describe('HarEntityBuilder', () => {
 
       entryBuilder.postData(data);
 
-      const body = JSON.stringify(data);
+      const body = data.getBuffer().toString();
       const headers = Object.entries(data.getHeaders()).map(
         ([key, value]: [string, string]) => ({
           name: key,
