@@ -70,7 +70,12 @@ export class HarEntryBuilder {
   public setQuery(
     query: URLSearchParams | Record<string, string> | string
   ): this {
-    this.query = new URLSearchParams(query).toString();
+    const queryToAdd = new URLSearchParams(query).toString();
+    if (this.query) {
+      this.query += `&${queryToAdd}`;
+    } else {
+      this.query = queryToAdd;
+    }
 
     return this;
   }
@@ -90,9 +95,10 @@ export class HarEntryBuilder {
 
   public build(): Entry {
     let url = this.url;
+    const separator = url.includes('?') ? '&' : '?';
 
     if (this.query) {
-      url += `?${this.query}`;
+      url += `${separator}${this.query}`;
     }
 
     return {
@@ -135,8 +141,12 @@ export class HarEntryBuilder {
     }
 
     try {
-      const { hostname, protocol } = new URL(url);
+      const { hostname, protocol, search } = new URL(url);
       this.url = `${protocol}//${hostname}`;
+
+      if (search) {
+        this.setQuery(search.slice(1));
+      }
     } catch {
       throw new Error(`Please make sure that you pass correct 'url' option.`);
     }

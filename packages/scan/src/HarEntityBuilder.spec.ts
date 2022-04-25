@@ -60,6 +60,18 @@ describe('HarEntityBuilder', () => {
 
       expect(entryBuilder).toMatchObject({ query: 'parameter=value' });
     });
+
+    it('should add query to already added query', () => {
+      const testQuery = 'parameter2=value2';
+      const entryBuilder = new HarEntryBuilder('https://example.com');
+      entryBuilder.setQuery('parameter1=value1');
+
+      entryBuilder.setQuery(testQuery);
+
+      expect(entryBuilder).toMatchObject({
+        query: 'parameter1=value1&parameter2=value2'
+      });
+    });
   });
 
   describe('setHeaders', () => {
