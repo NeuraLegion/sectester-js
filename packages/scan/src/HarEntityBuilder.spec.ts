@@ -9,6 +9,24 @@ describe('HarEntityBuilder', () => {
       expect(entryBuilder).toMatchObject({ method: 'GET' });
     });
 
+    it('should create with default method if incorect method is passed', () => {
+      const entryBuilder = new HarEntryBuilder('https://example.com', 'www');
+
+      expect(entryBuilder).toMatchObject({ method: 'GET' });
+    });
+
+    it('should normileze url', () => {
+      const entryBuilder = new HarEntryBuilder('https://example.com/test');
+
+      expect(entryBuilder).toMatchObject({ url: 'https://example.com' });
+    });
+
+    it('should add default schema if passed url without schema', () => {
+      const entryBuilder = new HarEntryBuilder('example.com');
+
+      expect(entryBuilder).toMatchObject({ url: 'https://example.com' });
+    });
+
     it('should throw if ulr is not passed', () => {
       expect(() => new HarEntryBuilder('')).toThrow('Please provide `url`.');
     });

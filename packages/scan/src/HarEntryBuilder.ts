@@ -21,19 +21,31 @@ export interface Har {
 }
 
 export class HarEntryBuilder {
-  private url: string;
+  private readonly SCHEMA_REGEXP = /^.+:\/\//;
+  private readonly CLUSTER_NORMALIZATION_REGEXP = /^(?!(?:\w+:)?\/\/)|^\/\//;
+  private readonly AVALIABLES_METHODS = [
+    'GET',
+    'DELETE',
+    'HEAD',
+    'OPTIONS',
+    'POST',
+    'PUT',
+    'PATCH',
+    'PURGE',
+    'LINK',
+    'UNLINK'
+  ];
+
+  private url!: string;
   private body?: string;
   private query?: string;
-  private headers: { name: string; value: unknown }[] = [];
   private method: string = 'GET';
+  private headers: { name: string; value: unknown }[] = [];
 
-  constructor(url: string, method?: string) {
-    if (!url) {
-      throw new Error('Please provide `url`.');
-    }
-    this.url = url;
+  constructor(url: string, method: string = 'GET') {
+    this.resolveUrls(url);
 
-    if (typeof method === 'string') {
+    if (this.AVALIABLES_METHODS.includes(method?.toUpperCase())) {
       this.method = method.toUpperCase();
     }
   }
@@ -115,5 +127,18 @@ export class HarEntryBuilder {
         wait: 0
       }
     };
+  }
+
+  private resolveUrls(url: string): void {
+    if (!this.SCHEMA_REGEXP.test(url)) {
+      url = url.replace(this.CLUSTER_NORMALIZATION_REGEXP, 'https://');
+    }
+
+    try {
+      const { hostname, protocol } = new URL(url);
+      this.url = `${protocol}//${hostname}`;
+    } catch {
+      throw new Error(`Please make sure that you pass correct 'url' option.`);
+    }
   }
 }
