@@ -36,16 +36,14 @@ export class ScanFactory {
       smart: settings.smart,
       tests: settings.tests,
       poolSize: settings.poolSize,
-      discoveryTypes: [Discovery.CRAWLER],
+      discoveryTypes: [Discovery.ARCHIVE],
       skipStaticParams: settings.skipStaticParams,
-      attackParamLocations: settings.attackParamLocations,
-      crawlerUrls: [this.getCrawlerUrl(settings.target)]
+      attackParamLocations: settings.attackParamLocations
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  public async createFile(target: Target): Promise<string> {
-    const filename = this.generateFilename();
+  private async createFile(target: Target): Promise<string> {
+    const filename = this.generateFilename(target.url);
     const har = this.createHar(target);
     const { id } = await this.scans.uploadHar({
       filename,
@@ -55,8 +53,10 @@ export class ScanFactory {
     return id;
   }
 
-  private generateFilename(): string {
-    return `${this.sdkConfig.name}-${v4()}.har`;
+  private generateFilename(url: string): string {
+    const { hostname } = new URL(url);
+
+    return `${hostname}-${v4()}.har`;
   }
 
   private createHar(target: Target): Har {
@@ -76,21 +76,5 @@ export class ScanFactory {
         entries: [entry]
       }
     };
-  }
-
-  private getCrawlerUrl(target: Target): string {
-    if (!target.query) {
-      return target.url;
-    }
-
-    let stringifiedQuery: string;
-
-    if (target.serializeQuery) {
-      stringifiedQuery = target.serializeQuery(target.query);
-    } else {
-      stringifiedQuery = new URLSearchParams(target.query).toString();
-    }
-
-    return `${target.url}?${stringifiedQuery}`;
   }
 }
