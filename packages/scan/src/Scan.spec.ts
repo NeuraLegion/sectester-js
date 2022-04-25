@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { Scan } from './Scan';
 import { DefaultScans } from './DefaultScans';
 import { IssueCategory, ScanStatus } from './Scans';

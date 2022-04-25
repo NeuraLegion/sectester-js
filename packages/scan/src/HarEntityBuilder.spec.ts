@@ -28,7 +28,9 @@ describe('HarEntityBuilder', () => {
     });
 
     it('should throw if ulr is not passed', () => {
-      expect(() => new HarEntryBuilder('')).toThrow('Please provide `url`.');
+      expect(() => new HarEntryBuilder('')).toThrow(
+        `Please make sure that you pass correct 'url' option.`
+      );
     });
   });
 
