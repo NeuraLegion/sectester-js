@@ -25,7 +25,7 @@ describe('HttpScans', () => {
   afterEach(() => reset(mockedCommandDispatcher));
 
   describe('create', () => {
-    it('should execute create command', async () => {
+    it('should execute CreateScan command', async () => {
       const id = 'roMq1UVuhPKkndLERNKnA8';
       when(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).thenResolve(
         { id }
@@ -39,24 +39,10 @@ describe('HttpScans', () => {
 
       verify(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).once();
     });
-
-    it('should throw if execution result is not defined', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).thenResolve(
-        undefined
-      );
-
-      const result = httpScans.create({
-        name: 'test',
-        tests: [TestType.DOM_XSS],
-        module: Module.DAST
-      });
-
-      await expect(result).rejects.toThrow(`Failed to create scan test`);
-    });
   });
 
   describe('listIssues', () => {
-    it('should execute command to get list of issues', async () => {
+    it('should execute ListIssues command', async () => {
       const scanId = 'roMq1UVuhPKkndLERNKnA8';
       when(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).thenResolve(
         []
@@ -66,23 +52,10 @@ describe('HttpScans', () => {
 
       verify(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).once();
     });
-
-    it('should throw if result is not defined', async () => {
-      const scanId = 'roMq1UVuhPKkndLERNKnA8';
-      when(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).thenResolve(
-        undefined
-      );
-
-      const result = httpScans.listIssues(scanId);
-
-      await expect(result).rejects.toThrow(
-        `Failed to get issue list for scan with id ${scanId}`
-      );
-    });
   });
 
   describe('stopScan', () => {
-    it('should execute stop command', async () => {
+    it('should execute StopScan command', async () => {
       const id = 'roMq1UVuhPKkndLERNKnA8';
       when(mockedCommandDispatcher.execute(anyOfClass(StopScan))).thenResolve();
 
@@ -93,7 +66,7 @@ describe('HttpScans', () => {
   });
 
   describe('getScan', () => {
-    it('should return scan state', async () => {
+    it('should execute GetScan command', async () => {
       const id = 'roMq1UVuhPKkndLERNKnA8';
       when(mockedCommandDispatcher.execute(anyOfClass(GetScan))).thenResolve({
         status: ScanStatus.DONE,
@@ -103,23 +76,10 @@ describe('HttpScans', () => {
       await httpScans.getScan(id);
       verify(mockedCommandDispatcher.execute(anyOfClass(GetScan))).once();
     });
-
-    it('should throw if result is not defined', async () => {
-      const id = 'roMq1UVuhPKkndLERNKnA8';
-      when(mockedCommandDispatcher.execute(anyOfClass(GetScan))).thenResolve(
-        undefined
-      );
-
-      const result = httpScans.getScan(id);
-
-      await expect(result).rejects.toThrow(
-        `Failed to get status of scan with id ${id}`
-      );
-    });
   });
 
   describe('uploadHar', () => {
-    it('should execute file upload command', async () => {
+    it('should execute UploadHar command', async () => {
       const id = 'roMq1UVuhPKkndLERNKnA8';
       when(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).thenResolve({
         id
@@ -127,26 +87,11 @@ describe('HttpScans', () => {
 
       await httpScans.uploadHar({
         filename: 'test.json',
-        content: harFileContent
+        har: JSON.parse(harFileContent),
+        discard: true
       });
 
       verify(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).once();
-    });
-
-    it('should throw if result is not defined', async () => {
-      const harOptions = {
-        filename: 'test.json',
-        content: harFileContent
-      };
-      when(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).thenResolve(
-        undefined
-      );
-
-      const result = httpScans.uploadHar(harOptions);
-
-      await expect(result).rejects.toThrow(
-        `Failet to uplad Har file ${harOptions.filename}.`
-      );
     });
   });
 });
