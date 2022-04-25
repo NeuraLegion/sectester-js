@@ -57,12 +57,7 @@ export class HarEntryBuilder {
   }
 
   public setQuery(
-    query:
-      | string
-      | URLSearchParams
-      | Record<string, string>
-      | [string, string][]
-      | undefined
+    query: URLSearchParams | Record<string, string> | string
   ): this {
     this.query = new URLSearchParams(query).toString();
 

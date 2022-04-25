@@ -42,21 +42,6 @@ describe('HarEntityBuilder', () => {
 
       expect(entryBuilder).toMatchObject({ query: 'parameter=value' });
     });
-
-    it('should set query if passed array', () => {
-      const testQuery: [string, string][] = [['parameter', 'value']];
-      const entryBuilder = new HarEntryBuilder('https://example.com');
-
-      entryBuilder.setQuery(testQuery);
-
-      expect(entryBuilder).toMatchObject({ query: 'parameter=value' });
-    });
-
-    it(`shouldn't throw if query is not defined`, () => {
-      const entryBuilder = new HarEntryBuilder('https://example.com');
-
-      expect(() => entryBuilder.setQuery(undefined)).not.toThrow();
-    });
   });
 
   describe('setHeaders', () => {
