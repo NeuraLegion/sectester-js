@@ -33,17 +33,18 @@ export class Scan {
   }
 
   public async *status(): AsyncIterableIterator<ScanState> {
-    while (this.active) {
-      await delay(this.DELAY_TIME);
-      try {
+    try {
+      while (this.active) {
+        await delay(this.DELAY_TIME);
         const state = await this.scans.getScan(this.id);
 
         this.state = state;
 
         yield state;
-      } finally {
-        await this.stop();
       }
+    } catch (err) {
+      await this.stop();
+      throw err;
     }
   }
 
@@ -76,6 +77,10 @@ export class Scan {
   }
 
   public async stop(): Promise<void> {
+    if (!this.active) {
+      return;
+    }
+
     return this.scans.stopScan(this.id);
   }
 

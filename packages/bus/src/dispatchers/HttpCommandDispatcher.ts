@@ -4,6 +4,7 @@ import { CommandDispatcher } from '@secbox/core';
 import { inject, injectable } from 'tsyringe';
 import axios, { AxiosRequestConfig } from 'axios';
 import rateLimit, { RateLimitedAxiosInstance } from 'axios-rate-limit';
+import FormData from 'form-data';
 import { finished, Readable } from 'stream';
 import { promisify } from 'util';
 
@@ -41,7 +42,6 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       url,
       params,
       method,
-      headers,
       expectReply,
       correlationId,
       createdAt,
@@ -49,7 +49,11 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       ttl: timeout
     } = command;
 
-    delete headers?.authorization;
+    let headers: Record<string, unknown> = {};
+
+    if (data instanceof FormData) {
+      headers = data.getHeaders();
+    }
 
     return {
       url,
@@ -57,7 +61,6 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       data,
       timeout,
       params,
-      responseType: 'text',
       headers: {
         ...headers,
         'x-correlation-id': correlationId,

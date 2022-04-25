@@ -10,7 +10,6 @@ export interface HttpOptions<T> {
   type?: string;
   correlationId?: string;
   params?: Record<string, unknown>;
-  headers?: Record<string, unknown>;
   createdAt?: Date;
 }
 
@@ -18,7 +17,6 @@ export class HttpRequest<T = undefined, R = void> extends Command<T, R> {
   public readonly method: Method;
   public readonly url: string;
   public readonly params?: Record<string, unknown>;
-  public readonly headers?: Record<string, unknown>;
 
   constructor({
     payload,
@@ -28,7 +26,6 @@ export class HttpRequest<T = undefined, R = void> extends Command<T, R> {
     params,
     correlationId,
     createdAt,
-    headers,
     url = '/',
     method = 'GET'
   }: HttpOptions<T>) {
@@ -50,6 +47,5 @@ export class HttpRequest<T = undefined, R = void> extends Command<T, R> {
 
     this.method = method;
     this.params = params;
-    this.headers = headers;
   }
 }

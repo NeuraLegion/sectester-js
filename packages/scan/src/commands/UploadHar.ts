@@ -20,8 +20,7 @@ export class UploadHar extends HttpRequest<FormData, { id: string }> {
       payload,
       url: '/api/v1/files',
       params: { discard },
-      method: 'POST',
-      headers: payload.getHeaders()
+      method: 'POST'
     };
 
     super(optins);
