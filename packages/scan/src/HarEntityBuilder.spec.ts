@@ -55,12 +55,6 @@ describe('HarEntityBuilder', () => {
         headers: [{ name: 'Content-Type', value: 'application/json' }]
       });
     });
-
-    it(`shouldn't throw if passed undefined`, () => {
-      const entryBuilder = new HarEntryBuilder('http://example.com');
-
-      expect(() => entryBuilder.setHeaders(undefined)).not.toThrow();
-    });
   });
 
   describe('postData', () => {

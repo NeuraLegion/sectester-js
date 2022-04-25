@@ -1,4 +1,3 @@
-import { Header } from './Scans';
 import FormData from 'form-data';
 
 export interface Entry {
@@ -25,7 +24,7 @@ export class HarEntryBuilder {
   private url: string;
   private body?: string;
   private query?: string;
-  private headers: Header[] = [];
+  private headers: { name: string; value: unknown }[] = [];
   private method: string = 'GET';
 
   constructor(url: string, method?: string) {
@@ -64,10 +63,10 @@ export class HarEntryBuilder {
     return this;
   }
 
-  public setHeaders(headers: Record<string, string> | undefined): this {
+  public setHeaders(headers: Record<string, unknown>): this {
     if (headers) {
       this.headers.push(
-        ...Object.entries(headers).map(([name, value]: [string, string]) => ({
+        ...Object.entries(headers).map(([name, value]: [string, unknown]) => ({
           name,
           value
         }))
