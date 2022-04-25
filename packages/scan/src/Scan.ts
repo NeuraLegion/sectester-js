@@ -19,11 +19,7 @@ export class Scan {
   ];
 
   get active(): boolean {
-    if (!this.state) {
-      return false;
-    }
-
-    return this.ACTIVITY_STATUSES.includes(this.state.status);
+    return this.ACTIVITY_STATUSES.some(status => status === this.state?.status);
   }
 
   constructor(public readonly id: string, private readonly scans: Scans) {
