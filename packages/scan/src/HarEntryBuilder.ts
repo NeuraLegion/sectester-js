@@ -95,11 +95,17 @@ export class HarEntryBuilder {
 
   public build(): Entry {
     let url = this.url;
+    const queryString: Record<string, unknown>[] = [];
     const separator = url.includes('?') ? '&' : '?';
 
     if (this.query) {
       url += `${separator}${this.query}`;
+      for (const [name, value] of new URLSearchParams(this.query).entries()) {
+        queryString.push({ name, value });
+      }
     }
+    const a = Buffer.from(JSON.stringify(this.headers)).byteLength;
+    a;
 
     return {
       startedDateTime: new Date().toISOString(),
@@ -107,12 +113,12 @@ export class HarEntryBuilder {
         url,
         httpVersion: 'HTTP/1.1',
         method: this.method,
-        headers: this.headers,
-        body: this.body,
-        headersSize: -1,
-        bodySize: -1,
+        headers: this.headers.slice(),
+        postData: this.body,
+        headersSize: Buffer.from(JSON.stringify(this.headers)).byteLength,
+        bodySize: this.body ? Buffer.from(this.body).byteLength : -1,
         cookies: [],
-        queryString: []
+        queryString
       },
       response: {
         httpVersion: 'HTTP/1.1',

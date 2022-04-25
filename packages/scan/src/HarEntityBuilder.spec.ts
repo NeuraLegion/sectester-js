@@ -144,35 +144,42 @@ describe('HarEntityBuilder', () => {
     it('should build correct entry', () => {
       const url = 'https://example.com';
       const query = 'parameter=value';
-      const headers = { 'Content-Type': 'application/json' };
+      const passedHeaders = { 'Content-Type': 'application/json' };
       const data = { test: 'test' };
       const entryBuilder = new HarEntryBuilder(url);
-      entryBuilder.setQuery(query).setHeaders(headers).postData(data);
+      entryBuilder.setQuery(query).setHeaders(passedHeaders).postData(data);
 
       const entry = entryBuilder.build();
+
+      const headers = [
+        {
+          name: 'Content-Type',
+          value: 'application/json'
+        }
+      ];
+      const queryString = [];
+      for (const [name, value] of new URLSearchParams(query).entries()) {
+        queryString.push({ name, value });
+      }
       expect(entry).toMatchObject({
         request: {
           url: `${url}?${query}`,
           httpVersion: 'HTTP/1.1',
           method: 'GET',
-          headers: [
-            {
-              name: 'Content-Type',
-              value: 'application/json'
-            }
-          ],
-          headersSize: -1,
-          bodySize: -1,
+          postData: JSON.stringify(data),
+          headers,
+          headersSize: Buffer.from(JSON.stringify(headers)).byteLength,
+          bodySize: Buffer.from(JSON.stringify(data)).byteLength,
           cookies: [],
-          queryString: []
+          queryString
         },
         response: {
           httpVersion: 'HTTP/1.1',
           status: 200,
-          statusText: 'Ok',
+          statusText: 'OK',
           headersSize: -1,
           bodySize: -1,
-          content: '',
+          content: {},
           redirectURL: '',
           cookies: [],
           headers: []
