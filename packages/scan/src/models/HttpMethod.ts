@@ -15,3 +15,6 @@ export enum HttpMethod {
   PROPFIND = 'PROPFIND',
   VIEW = 'VIEW'
 }
+
+export const isHttpMethod = (value: string): value is HttpMethod =>
+  Object.values<string>(HttpMethod).includes(value.toUpperCase());

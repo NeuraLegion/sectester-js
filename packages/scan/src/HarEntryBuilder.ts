@@ -1,53 +1,27 @@
+import { HttpMethod, isHttpMethod } from './models';
 import FormData from 'form-data';
-
-export interface Entry {
-  startedDateTime: string;
-  time: number;
-  request: Record<string, unknown>;
-  response: Record<string, unknown>;
-  cache: Record<string, unknown>;
-  timings: Record<string, unknown>;
-}
-
-export interface Har {
-  log: {
-    version: string;
-    creator: {
-      name: string;
-      version: string;
-    };
-    entries: Entry[];
-  };
-}
+import {
+  Entry,
+  normalizeUrl,
+  Request,
+  Header,
+  QueryString
+} from '@har-sdk/core';
 
 export class HarEntryBuilder {
-  private readonly SCHEMA_REGEXP = /^.+:\/\//;
-  private readonly CLUSTER_NORMALIZATION_REGEXP = /^(?!(?:\w+:)?\/\/)|^\/\//;
-  private readonly AVALIABLES_METHODS = [
-    'GET',
-    'DELETE',
-    'HEAD',
-    'OPTIONS',
-    'POST',
-    'PUT',
-    'PATCH',
-    'PURGE',
-    'LINK',
-    'UNLINK'
-  ];
-
   private url!: string;
   private body?: string;
   private query?: string;
-  private method: string = 'GET';
-  private headers: { name: string; value: unknown }[] = [];
+  private method: HttpMethod;
+  private headers: Header[] = [];
 
-  constructor(url: string, method: string = 'GET') {
-    this.resolveUrls(url);
-
-    if (this.AVALIABLES_METHODS.includes(method?.toUpperCase())) {
-      this.method = method.toUpperCase();
-    }
+  constructor(url: string, method: HttpMethod | string = HttpMethod.GET) {
+    this.url = normalizeUrl(url);
+    this.method = isHttpMethod(method)
+      ? (method.toUpperCase() as HttpMethod)
+      : HttpMethod.GET;
+    const u = new URL(this.url);
+    this.setQuery(u.search.slice(1));
   }
 
   public postData(body: FormData | URLSearchParams | string | unknown): this {
@@ -71,10 +45,10 @@ export class HarEntryBuilder {
     return this;
   }
 
-  public setHeaders(headers: Record<string, unknown>): this {
+  public setHeaders(headers: Record<string, string>): this {
     if (headers) {
       this.headers.push(
-        ...Object.entries(headers).map(([name, value]: [string, unknown]) => ({
+        ...Object.entries(headers).map(([name, value]: [string, string]) => ({
           name,
           value
         }))
@@ -94,7 +68,10 @@ export class HarEntryBuilder {
         statusText: 'OK',
         headersSize: -1,
         bodySize: -1,
-        content: {},
+        content: {
+          size: -1,
+          mimeType: 'text/plain'
+        },
         redirectURL: '',
         cookies: [],
         headers: []
@@ -107,23 +84,6 @@ export class HarEntryBuilder {
         wait: 0
       }
     };
-  }
-
-  private resolveUrls(url: string): void {
-    if (!this.SCHEMA_REGEXP.test(url)) {
-      url = url.replace(this.CLUSTER_NORMALIZATION_REGEXP, 'https://');
-    }
-
-    try {
-      const { hostname, protocol, search } = new URL(url);
-      this.url = `${protocol}//${hostname}`;
-
-      if (search) {
-        this.setQuery(search.slice(1));
-      }
-    } catch {
-      throw new Error(`Please make sure that you pass correct 'url' option.`);
-    }
   }
 
   private parseBody(body: FormData | URLSearchParams | string | unknown): void {
@@ -139,13 +99,20 @@ export class HarEntryBuilder {
     }
   }
 
-  private buildRequest(): Record<string, unknown> {
+  private buildRequest(): Request {
     return {
-      url: this.getUrl(),
+      url: this.serializeUrl(),
       httpVersion: 'HTTP/1.1',
       method: this.method,
       headers: this.headers.slice(),
-      postData: this.body,
+      postData: this.body
+        ? {
+            text: this.body,
+            mimeType:
+              this.headers.find(({ name }) => name === 'content-type')?.value ||
+              'text/plain'
+          }
+        : undefined,
       headersSize: Buffer.from(JSON.stringify(this.headers)).byteLength,
       bodySize: this.body ? Buffer.from(this.body).byteLength : -1,
       cookies: [],
@@ -153,7 +120,7 @@ export class HarEntryBuilder {
     };
   }
 
-  private getUrl(): string {
+  private serializeUrl(): string {
     let url = this.url;
     const separator = url.includes('?') ? '&' : '?';
 
@@ -164,8 +131,8 @@ export class HarEntryBuilder {
     return url;
   }
 
-  private getQueryString(): Record<string, unknown>[] {
-    const queryString: Record<string, unknown>[] = [];
+  private getQueryString(): QueryString[] {
+    const queryString: QueryString[] = [];
 
     if (this.query) {
       for (const [name, value] of new URLSearchParams(this.query).entries()) {
