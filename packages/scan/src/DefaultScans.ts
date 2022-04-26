@@ -20,7 +20,7 @@ export class DefaultScans implements Scans {
   public async create(config: ScanConfig): Promise<{ id: string }> {
     const result = await this.commandDispatcher.execute(new CreateScan(config));
 
-    return result ?? ({} as unknown as { id: string });
+    return result ?? ({} as { id: string });
   }
 
   public async listIssues(id: string): Promise<Issue[]> {
@@ -36,12 +36,12 @@ export class DefaultScans implements Scans {
   public async getScan(id: string): Promise<ScanState> {
     const result = await this.commandDispatcher.execute(new GetScan(id));
 
-    return result ?? ({} as unknown as ScanState);
+    return result ?? ({} as ScanState);
   }
 
   public async uploadHar(options: UploadHarPayload): Promise<{ id: string }> {
     const result = await this.commandDispatcher.execute(new UploadHar(options));
 
-    return result ?? ({} as unknown as { id: string });
+    return result ?? ({} as { id: string });
   }
 }

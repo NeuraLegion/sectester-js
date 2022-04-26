@@ -62,12 +62,8 @@ export class Scan {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     for await (const _ of this.status()) {
-      if (this.satisfyExpectation(expectation)) {
+      if (this.satisfyExpectation(expectation) || timeoutPassed) {
         break;
-      }
-
-      if (timeoutPassed) {
-        throw new Error(`Exceeded allowed timeout (${timeout})`);
       }
     }
 

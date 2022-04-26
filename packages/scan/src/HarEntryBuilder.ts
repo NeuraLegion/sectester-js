@@ -52,16 +52,7 @@ export class HarEntryBuilder {
 
   public postData(body: FormData | URLSearchParams | string | unknown): this {
     if (body) {
-      if (typeof body === 'string') {
-        this.body = body;
-      } else if (body instanceof FormData) {
-        this.setHeaders(body.getHeaders());
-        this.body = body.getBuffer().toString();
-      } else if (body instanceof URLSearchParams) {
-        this.body = body.toString();
-      } else {
-        this.body = JSON.stringify(body);
-      }
+      this.parseBody(body);
     }
 
     return this;
@@ -94,30 +85,9 @@ export class HarEntryBuilder {
   }
 
   public build(): Entry {
-    let url = this.url;
-    const queryString: Record<string, unknown>[] = [];
-    const separator = url.includes('?') ? '&' : '?';
-
-    if (this.query) {
-      url += `${separator}${this.query}`;
-      for (const [name, value] of new URLSearchParams(this.query).entries()) {
-        queryString.push({ name, value });
-      }
-    }
-
     return {
       startedDateTime: new Date().toISOString(),
-      request: {
-        url,
-        httpVersion: 'HTTP/1.1',
-        method: this.method,
-        headers: this.headers.slice(),
-        postData: this.body,
-        headersSize: Buffer.from(JSON.stringify(this.headers)).byteLength,
-        bodySize: this.body ? Buffer.from(this.body).byteLength : -1,
-        cookies: [],
-        queryString
-      },
+      request: this.buildRequest(),
       response: {
         httpVersion: 'HTTP/1.1',
         status: 200,
@@ -154,5 +124,55 @@ export class HarEntryBuilder {
     } catch {
       throw new Error(`Please make sure that you pass correct 'url' option.`);
     }
+  }
+
+  private parseBody(body: FormData | URLSearchParams | string | unknown): void {
+    if (typeof body === 'string') {
+      this.body = body;
+    } else if (body instanceof FormData) {
+      this.setHeaders(body.getHeaders());
+      this.body = body.getBuffer().toString();
+    } else if (body instanceof URLSearchParams) {
+      this.body = body.toString();
+    } else {
+      this.body = JSON.stringify(body);
+    }
+  }
+
+  private buildRequest(): Record<string, unknown> {
+    return {
+      url: this.getUrl(),
+      httpVersion: 'HTTP/1.1',
+      method: this.method,
+      headers: this.headers.slice(),
+      postData: this.body,
+      headersSize: Buffer.from(JSON.stringify(this.headers)).byteLength,
+      bodySize: this.body ? Buffer.from(this.body).byteLength : -1,
+      cookies: [],
+      queryString: this.getQueryString()
+    };
+  }
+
+  private getUrl(): string {
+    let url = this.url;
+    const separator = url.includes('?') ? '&' : '?';
+
+    if (this.query) {
+      url += `${separator}${this.query}`;
+    }
+
+    return url;
+  }
+
+  private getQueryString(): Record<string, unknown>[] {
+    const queryString: Record<string, unknown>[] = [];
+
+    if (this.query) {
+      for (const [name, value] of new URLSearchParams(this.query).entries()) {
+        queryString.push({ name, value });
+      }
+    }
+
+    return queryString;
   }
 }

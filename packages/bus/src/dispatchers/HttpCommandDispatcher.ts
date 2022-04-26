@@ -49,12 +49,6 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       ttl: timeout
     } = command;
 
-    let headers: Record<string, unknown> = {};
-
-    if (data instanceof FormData) {
-      headers = data.getHeaders();
-    }
-
     return {
       url,
       method,
@@ -62,7 +56,7 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       timeout,
       params,
       headers: {
-        ...headers,
+        ...this.getBodyHeaders(data),
         'x-correlation-id': correlationId,
         'date': createdAt.toISOString()
       },
@@ -96,5 +90,15 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       maxRequests: rate.limit,
       perMilliseconds: rate.window
     });
+  }
+
+  private getBodyHeaders<T>(data: T): Record<string, unknown> {
+    let headers: Record<string, unknown> = {};
+
+    if (data instanceof FormData) {
+      headers = data.getHeaders();
+    }
+
+    return headers;
   }
 }

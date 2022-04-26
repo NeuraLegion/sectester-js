@@ -135,7 +135,7 @@ describe('Scan', () => {
       verify(mosckedScans.getScan(id)).thrice();
     });
 
-    it('should throw if timeout passed', async () => {
+    it('should not to throw if timeout passed', async () => {
       useFakeTimers();
       const timeout = 10000;
       when(mosckedScans.getScan(id)).thenResolve({
@@ -148,9 +148,7 @@ describe('Scan', () => {
         timeout
       });
 
-      await expect(promise).rejects.toThrow(
-        `Exceeded allowed timeout (${timeout})`
-      );
+      await expect(promise).resolves.not.toThrow();
     });
   });
 
