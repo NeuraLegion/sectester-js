@@ -8,6 +8,7 @@ import {
 import { Configuration, EventBus, Logger } from '@secbox/core';
 import {
   anyOfClass,
+  anyString,
   anything,
   capture,
   instance,
@@ -30,13 +31,6 @@ describe('Repeater', () => {
   const mockedLogger = mock<Logger>();
   const mockedContainer = mock<DependencyContainer>();
 
-  const createRepeater = () =>
-    new Repeater({
-      repeaterId,
-      bus: instance(mockedEventBus),
-      configuration: instance(mockedConfiguration)
-    });
-
   beforeEach(() => {
     when(mockedContainer.resolve(Logger)).thenReturn(instance(mockedLogger));
     when(mockedContainer.isRegistered(Logger, anything())).thenReturn(true);
@@ -49,7 +43,11 @@ describe('Repeater', () => {
 
     jest.useFakeTimers();
 
-    repeater = createRepeater();
+    repeater = new Repeater({
+      repeaterId,
+      bus: instance(mockedEventBus),
+      configuration: instance(mockedConfiguration)
+    });
   });
 
   afterEach(() => {
@@ -245,7 +243,6 @@ describe('Repeater', () => {
     });
 
     it('should stop() on process termination', async () => {
-      repeater = createRepeater();
       const spiedRepeater = spy(repeater);
 
       await repeater.start();
@@ -255,13 +252,26 @@ describe('Repeater', () => {
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
 
-    it('should not stop() repeater which is not running', () => {
-      repeater = createRepeater();
+    it('should not stop() not started repeater on process termination', () => {
       const spiedRepeater = spy(repeater);
 
       process.emit('SIGTERM' as any);
 
       verify(spiedRepeater.stop()).never();
+    });
+
+    it('should log an error on failed stop() on process termination', async () => {
+      await repeater.start();
+
+      when(
+        mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))
+      ).thenReject();
+
+      process.emit('SIGTERM' as any);
+      jest.useRealTimers();
+      await new Promise(process.nextTick);
+
+      verify(mockedLogger.error(anyString())).once();
     });
   });
 
