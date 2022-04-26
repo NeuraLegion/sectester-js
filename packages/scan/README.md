@@ -1,11 +1,11 @@
-# @sec-tester/scan
+# @secbox/scan
 
 The package defines a simple public API to manage scans, create, and send the reporters after the scan has been finished.
 
 ## Setup
 
 ```bash
-npm i -s @sec-tester/scan
+npm i -s @secbox/scan
 ```
 
 ## Usage
@@ -24,7 +24,7 @@ const scans = new HttpScans(new HttpCommandDispatcher(/*options*/));
 const scanFactory = new ScanFactory(scans, config);
 ```
 
-> To see more about `HttpCommandDispatcher` please see `@sec-tester/bus`
+> To see more about `HttpCommandDispatcher` please see `@secbox/bus`
 
 ### Scan
 
