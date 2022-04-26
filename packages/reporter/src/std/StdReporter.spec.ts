@@ -53,7 +53,6 @@ describe('StdReporter', () => {
       /* eslint-disable no-console */
       expect(console.error).toHaveBeenCalled();
       expect(console.warn).not.toHaveBeenCalled();
-      expect(console.log).not.toHaveBeenCalled();
       /* eslint-enable no-console */
     });
 
@@ -65,7 +64,6 @@ describe('StdReporter', () => {
       /* eslint-disable no-console */
       expect(console.error).not.toHaveBeenCalled();
       expect(console.warn).toHaveBeenCalled();
-      expect(console.log).not.toHaveBeenCalled();
       /* eslint-enable no-console */
     });
 
