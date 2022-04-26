@@ -9,4 +9,3 @@ container.register(RetryStrategy, {
 export * from './dispatchers';
 export * from './commands';
 export * from './retry-strategies';
-export * from './utils';

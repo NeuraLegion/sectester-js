@@ -6,7 +6,7 @@ import {
   ScanState,
   ScanStatus
 } from './Scans';
-import { delay } from '@secbox/bus';
+import { delay } from '@secbox/core';
 
 export class Scan {
   private state?: ScanState;
