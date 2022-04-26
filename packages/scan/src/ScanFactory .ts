@@ -36,6 +36,7 @@ export class ScanFactory {
       smart: settings.smart,
       tests: settings.tests,
       poolSize: settings.poolSize,
+      repeaters: settings.repeatersId,
       discoveryTypes: [Discovery.ARCHIVE],
       skipStaticParams: settings.skipStaticParams,
       attackParamLocations: settings.attackParamLocations

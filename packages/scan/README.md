@@ -21,7 +21,6 @@ const config = new Configuration({
 
 const scans = new HttpScans(new HttpCommandDispatcher(/*options*/));
 
-
 const scanFactory = new ScanFactory(scans, config);
 ```
 
@@ -34,7 +33,7 @@ To create `Scan` you should use `createScan` method from `ScanFactory`.
 ```ts
 const scanFactory = new ScanFactory(/*options*/);
 
-const scanSettings: ScanSettings = 
+const scanSettings: ScanSettings =
 
 const scan = scanFactory.createScan({
   name: 'example',
@@ -45,13 +44,14 @@ const scan = scanFactory.createScan({
 
 Below you will find a list of parameters that can be used to configure a `Scan`:
 
-| Option                 |                 Description                 |
-|------------------------|---------------------------------------------|
+| Option                 | Description                                 |
+| ---------------------- | ------------------------------------------- |
 | `name`                 | Application url                             |
 | `tests`                | Authorization token                         |
 | `target`               | The target that will be attacked            |
 | `smart`                | Determine whether scan is smart or simple   |
 | `poolSize`             | Pool size                                   |
+| `repeatersId`          | Id of the repeater                          |
 | `skipStaticParams`     | Allows to skip testing static parameters.   |
 | `attackParamLocations` | Defines which part of the request to attack |
 
@@ -73,17 +73,19 @@ const issues = await scan.listIssues();
 To ensure that the scan is done and nothing prevents the user to check for issues, you can use a `status` method to obtain scan status:
 
 ```ts
-for await(const state of scan.status()) {
+for await (const state of scan.status()) {
   // your code
 }
 ```
+
 > When pooling is timed out or tests failed scan will be stoped.
 
 This `await..of loop` will be work while scan is active.
 
 To stop scan please use `stop` method.
+
 ```ts
-  await scan.stop();
+await scan.stop();
 ```
 
 ## License

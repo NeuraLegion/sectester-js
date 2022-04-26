@@ -159,6 +159,8 @@ export interface ScanSettings {
   tests: TestType[];
   // The target that will be attacked
   target: Target;
+  // Id of the repeater
+  repeatersId?: string[];
   // Determine whether scan is smart or simple
   smart?: boolean;
   // Pool size
