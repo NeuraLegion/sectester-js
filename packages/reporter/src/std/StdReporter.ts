@@ -1,6 +1,6 @@
 import { Reporter } from '../lib';
 import { Issue, Scan, Severity } from '../models';
-import { IssuesGrouper } from '../utils/group-issues';
+import { IssuesGrouper } from '../utils';
 import Table, { Header } from 'tty-table';
 import chalk from 'chalk';
 
@@ -13,12 +13,14 @@ export class StdReporter implements Reporter {
       return;
     }
 
-    (Object.values(Severity) as Severity[]).forEach((severity: Severity) => {
-      const message = this.formatMessage(issues, severity);
-      if (message) {
-        this.getStdoutFn(severity)(message);
+    [Severity.HIGH, Severity.MEDIUM, Severity.LOW].forEach(
+      (severity: Severity) => {
+        const message = this.formatMessage(issues, severity);
+        if (message) {
+          this.getStdoutFn(severity)(message);
+        }
       }
-    });
+    );
 
     console.log(this.renderDetailsTable(issues));
   }
