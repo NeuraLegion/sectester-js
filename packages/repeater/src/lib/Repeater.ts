@@ -16,13 +16,18 @@ export enum RunningStatus {
 
 export class Repeater {
   public readonly repeaterId: string;
-  public runningStatus = RunningStatus.OFF;
 
   private readonly bus: EventBus;
   private readonly configuration: Configuration;
   private readonly logger: Logger | undefined;
 
   private timer?: Timer;
+
+  private _runningStatus = RunningStatus.OFF;
+
+  get runningStatus(): RunningStatus {
+    return this._runningStatus;
+  }
 
   constructor({
     repeaterId,
@@ -50,7 +55,7 @@ export class Repeater {
       throw new Error('Repeater is already active.');
     }
 
-    this.runningStatus = RunningStatus.STARTING;
+    this._runningStatus = RunningStatus.STARTING;
 
     try {
       const res = await this.register();
@@ -62,9 +67,9 @@ export class Repeater {
 
       await this.schedulePing();
 
-      this.runningStatus = RunningStatus.RUNNING;
+      this._runningStatus = RunningStatus.RUNNING;
     } catch (e) {
-      this.runningStatus = RunningStatus.OFF;
+      this._runningStatus = RunningStatus.OFF;
       throw e;
     }
   }
@@ -74,7 +79,7 @@ export class Repeater {
       throw new Error('Cannot stop non-running repeater.');
     }
 
-    this.runningStatus = RunningStatus.OFF;
+    this._runningStatus = RunningStatus.OFF;
 
     if (this.timer) {
       clearInterval(this.timer);
