@@ -123,10 +123,8 @@ export class Repeater {
         if (this.runningStatus === RunningStatus.RUNNING) {
           try {
             await this.stop();
-            process.exit(0);
           } catch (e) {
             this.logger?.error(e.message);
-            process.exit(1);
           }
         }
       })

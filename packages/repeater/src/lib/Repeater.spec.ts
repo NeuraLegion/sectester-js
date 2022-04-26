@@ -1,10 +1,9 @@
 import 'reflect-metadata';
 import { Repeater, RunningStatus } from './Repeater';
 import { RegisterRepeaterCommand, RepeaterStatusEvent } from '../bus';
-import { Configuration, EventBus, Logger, LogLevel } from '@secbox/core';
+import { Configuration, EventBus, Logger } from '@secbox/core';
 import {
   anyOfClass,
-  between,
   instance,
   mock,
   objectContaining,
@@ -13,7 +12,7 @@ import {
   verify,
   when
 } from 'ts-mockito';
-import { container } from 'tsyringe';
+import { container, DependencyContainer } from 'tsyringe';
 
 describe('Repeater', () => {
   const version = '42.0.1';
@@ -22,6 +21,7 @@ describe('Repeater', () => {
   let repeater!: Repeater;
   const mockedConfiguration = mock<Configuration>();
   const mockedEventBus = mock<EventBus>();
+  const mockedLogger = mock<Logger>();
   const spiedContainer = spy(container);
 
   const createRepeater = () =>
@@ -32,9 +32,7 @@ describe('Repeater', () => {
     });
 
   beforeEach(() => {
-    when(spiedContainer.resolve(Logger)).thenReturn(
-      new Logger(LogLevel.SILENT)
-    );
+    when(spiedContainer.resolve(Logger)).thenReturn(instance(mockedLogger));
     when(mockedConfiguration.version).thenReturn(version);
     when(mockedConfiguration.container).thenReturn(container);
     when(
@@ -48,7 +46,12 @@ describe('Repeater', () => {
   });
 
   afterEach(() => {
-    reset<Configuration | EventBus>(mockedConfiguration, mockedEventBus);
+    reset<Configuration | EventBus | DependencyContainer | Logger>(
+      mockedConfiguration,
+      mockedEventBus,
+      mockedLogger,
+      spiedContainer
+    );
 
     jest.useRealTimers();
   });
@@ -198,16 +201,6 @@ describe('Repeater', () => {
   });
 
   describe('process termination', () => {
-    let exitCodePromise: Promise<number>;
-
-    const spiedProcess = spy(process);
-
-    beforeEach(() => {
-      exitCodePromise = new Promise(resolve => {
-        when(spiedProcess.exit(between(0, 1))).thenCall(resolve);
-      });
-    });
-
     it('should stop()', async () => {
       repeater = createRepeater();
 
@@ -215,22 +208,6 @@ describe('Repeater', () => {
       process.emit('SIGTERM' as any);
 
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
-      await expect(exitCodePromise).resolves.toBe(0);
-    });
-
-    it('should return error code on stop() error', async () => {
-      repeater = createRepeater();
-
-      await repeater.start();
-
-      when(
-        mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))
-      ).thenReject();
-
-      process.emit('SIGTERM' as any);
-
-      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
-      await expect(exitCodePromise).resolves.toBe(1);
     });
 
     it('should not stop() repeater which is not running', () => {
