@@ -18,15 +18,14 @@ export class DefaultScans implements Scans {
   ) {}
 
   public async create(config: ScanConfig): Promise<{ id: string }> {
-    const result = await this.commandDispatcher.execute(new CreateScan(config));
-
-    return result ?? ({} as { id: string });
+    return (
+      (await this.commandDispatcher.execute(new CreateScan(config))) ??
+      ({} as { id: string })
+    );
   }
 
   public async listIssues(id: string): Promise<Issue[]> {
-    const result = await this.commandDispatcher.execute(new ListIssues(id));
-
-    return result ?? [];
+    return (await this.commandDispatcher.execute(new ListIssues(id))) ?? [];
   }
 
   public stopScan(id: string): Promise<void> {
@@ -34,14 +33,16 @@ export class DefaultScans implements Scans {
   }
 
   public async getScan(id: string): Promise<ScanState> {
-    const result = await this.commandDispatcher.execute(new GetScan(id));
-
-    return result ?? ({} as ScanState);
+    return (
+      (await this.commandDispatcher.execute(new GetScan(id))) ??
+      ({} as ScanState)
+    );
   }
 
   public async uploadHar(options: UploadHarPayload): Promise<{ id: string }> {
-    const result = await this.commandDispatcher.execute(new UploadHar(options));
-
-    return result ?? ({} as { id: string });
+    return (
+      (await this.commandDispatcher.execute(new UploadHar(options))) ??
+      ({} as { id: string })
+    );
   }
 }
