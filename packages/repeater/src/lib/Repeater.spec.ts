@@ -116,6 +116,33 @@ describe('Repeater', () => {
         )
       ).thrice();
     });
+
+    it('should have RunningStatus.STARTING just after start() call', () => {
+      void repeater.start();
+      expect(repeater.runningStatus).toBe(RunningStatus.STARTING);
+    });
+
+    it('should have RunningStatus.RUNNING after successful start()', async () => {
+      await repeater.start();
+      expect(repeater.runningStatus).toBe(RunningStatus.RUNNING);
+    });
+
+    it('should throw an error on start() twice', async () => {
+      await repeater.start();
+
+      const res = repeater.start();
+
+      await expect(res).rejects.toThrow('Repeater is already active.');
+    });
+
+    it('should be possible to start() after start() error', async () => {
+      when(mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand)))
+        .thenReject()
+        .thenResolve({ version });
+
+      await expect(repeater.start()).rejects.toThrow();
+      await expect(repeater.start()).resolves.not.toThrow();
+    });
   });
 
   describe('stop', () => {
@@ -144,44 +171,11 @@ describe('Repeater', () => {
         )
       ).once();
     });
-  });
-
-  describe('runningStatus', () => {
-    it('should have RunningStatus.OFF initially', () => {
-      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
-    });
-
-    it('should have RunningStatus.STARTING just after start() call', () => {
-      void repeater.start();
-      expect(repeater.runningStatus).toBe(RunningStatus.STARTING);
-    });
-
-    it('should have RunningStatus.RUNNING after successful start()', async () => {
-      await repeater.start();
-      expect(repeater.runningStatus).toBe(RunningStatus.RUNNING);
-    });
 
     it('should have RunningStatus.OFF after start() and stop()', async () => {
       await repeater.start();
       await repeater.stop();
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
-    });
-
-    it('should throw an error on start() twice', async () => {
-      await repeater.start();
-
-      const res = repeater.start();
-
-      await expect(res).rejects.toThrow('Repeater is already active.');
-    });
-
-    it('should be possible to start() after start() error', async () => {
-      when(mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand)))
-        .thenReject()
-        .thenResolve({ version });
-
-      await expect(repeater.start()).rejects.toThrow();
-      await expect(repeater.start()).resolves.not.toThrow();
     });
 
     it('should throw an error on stop() without start()', async () => {
@@ -198,15 +192,15 @@ describe('Repeater', () => {
 
       await expect(res).rejects.toThrow('Cannot stop non-running repeater.');
     });
-  });
 
-  describe('process termination', () => {
-    it('should stop()', async () => {
+    it('should stop() on process termination', async () => {
       repeater = createRepeater();
+      const spiedRepeater = spy(repeater);
 
       await repeater.start();
       process.emit('SIGTERM' as any);
 
+      verify(spiedRepeater.stop()).once();
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
 
@@ -217,6 +211,12 @@ describe('Repeater', () => {
       process.emit('SIGTERM' as any);
 
       verify(spiedRepeater.stop()).never();
+    });
+  });
+
+  describe('runningStatus', () => {
+    it('should have RunningStatus.OFF initially', () => {
+      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
   });
 });
