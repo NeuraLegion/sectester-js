@@ -1,28 +1,26 @@
 import { Har } from '../HarEntryBuilder';
 import FormData from 'form-data';
-import { HttpOptions, HttpRequest } from '@secbox/bus';
+import { HttpRequest } from '@secbox/bus';
 
 export interface UploadHarPayload {
   har: Har;
   filename: string;
   discard?: boolean;
 }
+
 export class UploadHar extends HttpRequest<FormData, { id: string }> {
-  constructor(fileOptions: UploadHarPayload) {
-    const { filename, har, discard } = fileOptions;
+  constructor({ filename, har, discard = false }: UploadHarPayload) {
     const payload = new FormData();
     payload.append('file', JSON.stringify(har), {
       filename,
       contentType: 'application/json'
     });
 
-    const optins: HttpOptions<FormData> = {
+    super({
       payload,
+      method: 'POST',
       url: '/api/v1/files',
-      params: { discard },
-      method: 'POST'
-    };
-
-    super(optins);
+      params: { discard }
+    });
   }
 }
