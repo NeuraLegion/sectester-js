@@ -1,9 +1,15 @@
 import 'reflect-metadata';
 import { Repeater, RunningStatus } from './Repeater';
-import { RegisterRepeaterCommand, RepeaterStatusEvent } from '../bus';
+import {
+  RegisterRepeaterCommand,
+  RepeaterRegisteringError,
+  RepeaterStatusEvent
+} from '../bus';
 import { Configuration, EventBus, Logger } from '@secbox/core';
 import {
   anyOfClass,
+  anything,
+  capture,
   instance,
   mock,
   objectContaining,
@@ -12,7 +18,7 @@ import {
   verify,
   when
 } from 'ts-mockito';
-import { container, DependencyContainer } from 'tsyringe';
+import { DependencyContainer } from 'tsyringe';
 
 describe('Repeater', () => {
   const version = '42.0.1';
@@ -22,7 +28,7 @@ describe('Repeater', () => {
   const mockedConfiguration = mock<Configuration>();
   const mockedEventBus = mock<EventBus>();
   const mockedLogger = mock<Logger>();
-  const spiedContainer = spy(container);
+  const mockedContainer = mock<DependencyContainer>();
 
   const createRepeater = () =>
     new Repeater({
@@ -32,9 +38,10 @@ describe('Repeater', () => {
     });
 
   beforeEach(() => {
-    when(spiedContainer.resolve(Logger)).thenReturn(instance(mockedLogger));
+    when(mockedContainer.resolve(Logger)).thenReturn(instance(mockedLogger));
+    when(mockedContainer.isRegistered(Logger, anything())).thenReturn(true);
     when(mockedConfiguration.version).thenReturn(version);
-    when(mockedConfiguration.container).thenReturn(container);
+    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
     when(
       mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
     ).thenResolve({ payload: { version } });
@@ -50,7 +57,7 @@ describe('Repeater', () => {
       mockedConfiguration,
       mockedEventBus,
       mockedLogger,
-      spiedContainer
+      mockedContainer
     );
 
     jest.useRealTimers();
@@ -89,7 +96,7 @@ describe('Repeater', () => {
       ).once();
     });
 
-    it('should throw Error on failed registration', async () => {
+    it('should throw an error on failed registration', async () => {
       when(
         mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
       ).thenResolve();
@@ -142,6 +149,50 @@ describe('Repeater', () => {
 
       await expect(repeater.start()).rejects.toThrow();
       await expect(repeater.start()).resolves.not.toThrow();
+    });
+
+    it.each([
+      {
+        error: RepeaterRegisteringError.REQUIRES_TO_BE_UPDATED,
+        expected: 'The current running version is no longer supported'
+      },
+      {
+        error: RepeaterRegisteringError.BUSY,
+        expected: `There is an already running Repeater with ID ${repeaterId}`
+      },
+      {
+        error: RepeaterRegisteringError.NOT_FOUND,
+        expected: 'Unauthorized access'
+      },
+      {
+        error: RepeaterRegisteringError.NOT_ACTIVE,
+        expected: 'The current Repeater is not active'
+      }
+    ])(
+      'should throw an error on registration error ${error}',
+      async ({ expected, error }) => {
+        when(
+          mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
+        ).thenResolve({
+          payload: { error }
+        });
+
+        await expect(repeater.start()).rejects.toThrow(expected);
+      }
+    );
+
+    it('should log a warning if a new version is available', async () => {
+      const newVersion = version.replace(/(\d+)/, (_, x) => `${+x + 1}`);
+      when(
+        mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
+      ).thenResolve({
+        payload: { version: newVersion }
+      });
+
+      await repeater.start();
+
+      const [arg]: string[] = capture(mockedLogger.warn).first();
+      expect(arg).toContain('A new Repeater version (%s) is available');
     });
   });
 
