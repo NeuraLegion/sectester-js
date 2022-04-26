@@ -1,4 +1,4 @@
-import { Issue } from '../Scans';
+import { Issue } from '../models';
 import { HttpRequest } from '@secbox/bus';
 
 export class ListIssues extends HttpRequest<undefined, Issue[]> {

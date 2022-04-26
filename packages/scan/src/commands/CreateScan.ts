@@ -1,4 +1,4 @@
-import { ScanConfig } from '../Scans';
+import { ScanConfig } from '../models';
 import { HttpRequest } from '@secbox/bus';
 
 export class CreateScan extends HttpRequest<ScanConfig, { id: string }> {

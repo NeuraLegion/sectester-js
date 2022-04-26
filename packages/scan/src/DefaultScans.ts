@@ -1,12 +1,12 @@
-import { Issue, ScanConfig, Scans, ScanState } from './Scans';
+import { Scans, UploadHarOptions } from './Scans';
 import {
   CreateScan,
   GetScan,
   ListIssues,
   StopScan,
-  UploadHar,
-  UploadHarPayload
+  UploadHar
 } from './commands';
+import { Issue, ScanConfig, ScanState } from './models';
 import { inject, injectable } from 'tsyringe';
 import { CommandDispatcher } from '@secbox/core';
 
@@ -17,7 +17,7 @@ export class DefaultScans implements Scans {
     private readonly commandDispatcher: CommandDispatcher
   ) {}
 
-  public async create(config: ScanConfig): Promise<{ id: string }> {
+  public async createScan(config: ScanConfig): Promise<{ id: string }> {
     return (
       (await this.commandDispatcher.execute(new CreateScan(config))) ??
       ({} as { id: string })
@@ -39,7 +39,7 @@ export class DefaultScans implements Scans {
     );
   }
 
-  public async uploadHar(options: UploadHarPayload): Promise<{ id: string }> {
+  public async uploadHar(options: UploadHarOptions): Promise<{ id: string }> {
     return (
       (await this.commandDispatcher.execute(new UploadHar(options))) ??
       ({} as { id: string })

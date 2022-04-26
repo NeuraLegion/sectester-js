@@ -1,15 +1,9 @@
-import {
-  CountIssuesBySeverity,
-  Issue,
-  IssueCategory,
-  Scans,
-  ScanState,
-  ScanStatus
-} from './Scans';
+import { Scans } from './Scans';
+import { Issue, IssueGroup, ScanState, ScanStatus, Severity } from './models';
 import { delay } from '@secbox/core';
 
 export class Scan {
-  private state?: ScanState;
+  private state: ScanState = { status: ScanStatus.PENDING };
 
   private readonly DELAY_TIME = 1000;
 
@@ -19,17 +13,13 @@ export class Scan {
   ];
 
   get active(): boolean {
-    return this.ACTIVITY_STATUSES.some(status => status === this.state?.status);
+    return this.ACTIVITY_STATUSES.includes(this.state.status);
   }
 
-  constructor(public readonly id: string, private readonly scans: Scans) {
-    this.state = { status: ScanStatus.PENDING, issuesBySeverity: [] };
-  }
+  constructor(public readonly id: string, private readonly scans: Scans) {}
 
   public async issues(): Promise<Issue[]> {
-    const issues = await this.scans.listIssues(this.id);
-
-    return issues;
+    return this.scans.listIssues(this.id);
   }
 
   public async *status(): AsyncIterableIterator<ScanState> {
@@ -49,7 +39,7 @@ export class Scan {
   }
 
   public async waitFor(options: {
-    expectation: 'any' | IssueCategory;
+    expectation: 'any' | Severity;
     timeout?: number;
   }): Promise<void> {
     const { expectation, timeout } = options;
@@ -80,10 +70,10 @@ export class Scan {
     return this.scans.stopScan(this.id);
   }
 
-  private satisfyExpectation(expectation: 'any' | IssueCategory): boolean {
+  private satisfyExpectation(expectation: 'any' | Severity): boolean {
     const issuesBySeverity = this.state?.issuesBySeverity ?? [];
 
-    return issuesBySeverity.some((x: CountIssuesBySeverity) =>
+    return issuesBySeverity.some((x: IssueGroup) =>
       expectation !== 'any' ? x.type === expectation : !!x.number
     );
   }

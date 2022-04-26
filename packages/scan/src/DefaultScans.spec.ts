@@ -6,8 +6,8 @@ import {
   StopScan,
   UploadHar
 } from './commands';
-import { Module, ScanState, ScanStatus, TestType } from './Scans';
 import { DefaultScans } from './DefaultScans';
+import { Module, ScanState, ScanStatus, TestType } from './models';
 import { HttpCommandDispatcher } from '@secbox/bus';
 import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
 
@@ -31,7 +31,7 @@ describe('HttpScans', () => {
         { id }
       );
 
-      await httpScans.create({
+      await httpScans.createScan({
         name: 'test',
         tests: [TestType.DOM_XSS],
         module: Module.DAST

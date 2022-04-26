@@ -1,15 +1,11 @@
-import {
-  Discovery,
-  Module,
-  ScanConfig,
-  Scans,
-  ScanSettings,
-  Target
-} from './Scans';
+import { Scans } from './Scans';
 import { Scan } from './Scan';
 import { Har, HarEntryBuilder } from './HarEntryBuilder';
-import { Configuration } from '@secbox/core';
+import { Discovery, Module, ScanConfig } from './models';
+import { ScanSettings } from './ScanSettings';
+import { Target } from './Target';
 import { v4 } from 'uuid';
+import { Configuration } from '@secbox/core';
 
 export class ScanFactory {
   private readonly scans: Scans;
@@ -21,7 +17,7 @@ export class ScanFactory {
   public async createScan(settings: ScanSettings): Promise<Scan> {
     const scanConfig: ScanConfig = await this.buildScanConfig(settings);
 
-    const { id } = await this.scans.create(scanConfig);
+    const { id } = await this.scans.createScan(scanConfig);
 
     return new Scan(id, this.scans);
   }
@@ -36,7 +32,7 @@ export class ScanFactory {
       smart: settings.smart,
       tests: settings.tests,
       poolSize: settings.poolSize,
-      repeaters: settings.repeatersId,
+      repeaters: settings.repeaterId ? [settings.repeaterId] : undefined,
       discoveryTypes: [Discovery.ARCHIVE],
       skipStaticParams: settings.skipStaticParams,
       attackParamLocations: settings.attackParamLocations

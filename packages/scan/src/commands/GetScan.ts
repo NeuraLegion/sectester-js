@@ -1,4 +1,4 @@
-import { ScanState } from '../Scans';
+import { ScanState } from '../models';
 import { HttpRequest } from '@secbox/bus';
 
 export class GetScan extends HttpRequest<undefined, ScanState> {

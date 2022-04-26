@@ -1,6 +1,7 @@
 import 'reflect-metadata';
-import { Module, Scans, TestType } from './Scans';
+import { Scans } from './Scans';
 import { ScanFactory } from './ScanFactory ';
+import { Module, TestType } from './models';
 import {
   anything,
   instance,
@@ -46,13 +47,13 @@ describe('ScanFactory', () => {
         tests: [TestType.DOM_XSS]
       };
       when(mockedScans.uploadHar(anything())).thenResolve({ id: harId });
-      when(mockedScans.create(anything())).thenResolve({ id: scanId });
+      when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
 
       const result = await scanFactory.createScan(scanSettings);
 
       verify(mockedScans.uploadHar(anything())).once();
       verify(
-        mockedScans.create(
+        mockedScans.createScan(
           objectContaining({
             fileId: harId,
             module: Module.DAST,
@@ -74,14 +75,14 @@ describe('ScanFactory', () => {
         tests: [TestType.DOM_XSS]
       };
       when(mockedScans.uploadHar(anything())).thenThrow();
-      when(mockedScans.create(anything())).thenResolve({ id: scanId });
+      when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
 
       const result = scanFactory.createScan(scanSettings);
 
       await expect(result).rejects.toThrow();
       verify(mockedScans.uploadHar(anything())).once();
       verify(
-        mockedScans.create(
+        mockedScans.createScan(
           objectContaining({
             fileId: harId,
             module: Module.DAST,

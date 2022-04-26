@@ -1,15 +1,9 @@
-import { Har } from '../HarEntryBuilder';
+import { UploadHarOptions } from '../Scans';
 import FormData from 'form-data';
 import { HttpRequest } from '@secbox/bus';
 
-export interface UploadHarPayload {
-  har: Har;
-  filename: string;
-  discard?: boolean;
-}
-
 export class UploadHar extends HttpRequest<FormData, { id: string }> {
-  constructor({ filename, har, discard = false }: UploadHarPayload) {
+  constructor({ filename, har, discard = false }: UploadHarOptions) {
     const payload = new FormData();
     payload.append('file', JSON.stringify(har), {
       filename,

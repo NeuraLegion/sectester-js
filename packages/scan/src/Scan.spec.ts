@@ -1,8 +1,7 @@
 import 'reflect-metadata';
-
 import { Scan } from './Scan';
 import { DefaultScans } from './DefaultScans';
-import { IssueCategory, ScanStatus } from './Scans';
+import { ScanStatus, Severity } from './models';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
 
 describe('Scan', () => {
@@ -106,10 +105,10 @@ describe('Scan', () => {
       useFakeTimers();
       when(mosckedScans.getScan(id)).thenResolve({
         status: ScanStatus.DONE,
-        issuesBySeverity: [{ number: 1, type: IssueCategory.HIGH }]
+        issuesBySeverity: [{ number: 1, type: Severity.HIGH }]
       });
 
-      await scan.waitFor({ expectation: IssueCategory.HIGH });
+      await scan.waitFor({ expectation: Severity.HIGH });
 
       verify(mosckedScans.getScan(id)).once();
     });
@@ -119,18 +118,18 @@ describe('Scan', () => {
       when(mosckedScans.getScan(id))
         .thenResolve({
           status: ScanStatus.RUNNING,
-          issuesBySeverity: [{ number: 1, type: IssueCategory.LOW }]
+          issuesBySeverity: [{ number: 1, type: Severity.LOW }]
         })
         .thenResolve({
           status: ScanStatus.RUNNING,
-          issuesBySeverity: [{ number: 1, type: IssueCategory.LOW }]
+          issuesBySeverity: [{ number: 1, type: Severity.LOW }]
         })
         .thenResolve({
           status: ScanStatus.RUNNING,
-          issuesBySeverity: [{ number: 1, type: IssueCategory.HIGH }]
+          issuesBySeverity: [{ number: 1, type: Severity.HIGH }]
         });
 
-      await scan.waitFor({ expectation: IssueCategory.HIGH });
+      await scan.waitFor({ expectation: Severity.HIGH });
 
       verify(mosckedScans.getScan(id)).thrice();
     });
@@ -140,11 +139,11 @@ describe('Scan', () => {
       const timeout = 10000;
       when(mosckedScans.getScan(id)).thenResolve({
         status: ScanStatus.RUNNING,
-        issuesBySeverity: [{ number: 1, type: IssueCategory.LOW }]
+        issuesBySeverity: [{ number: 1, type: Severity.LOW }]
       });
 
       const promise = scan.waitFor({
-        expectation: IssueCategory.HIGH,
+        expectation: Severity.HIGH,
         timeout
       });
 
