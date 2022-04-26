@@ -79,6 +79,22 @@ describe('StdReporter', () => {
       /* eslint-enable no-console */
     });
 
+    it('should log mixed severity issues to stdout', async () => {
+      when(MockedScan.issues()).thenResolve([
+        lowSeverityIssue,
+        mediumSeverityIssue,
+        highSeverityIssue
+      ] as Issue[]);
+
+      await reporter.report(instance(MockedScan));
+
+      /* eslint-disable no-console */
+      expect(console.error).toHaveBeenCalled();
+      expect(console.warn).toHaveBeenCalled();
+      expect(console.log).toHaveBeenCalled();
+      /* eslint-enable no-console */
+    });
+
     it('should not log anything if there are no issues', async () => {
       when(MockedScan.issues()).thenResolve([]);
 
