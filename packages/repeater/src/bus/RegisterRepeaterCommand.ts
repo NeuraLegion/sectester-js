@@ -5,14 +5,23 @@ export interface RegisterRepeaterCommandPayload {
   repeaterId: string;
 }
 
-export interface RegisterRepeaterResult {
-  version: string;
-  script: string | Record<string, string>;
+export type RegisterRepeaterResult =
+  | {
+      version: string;
+      script: string | Record<string, string>;
+    }
+  | { error: RepeaterRegisteringError };
+
+export enum RepeaterRegisteringError {
+  NOT_ACTIVE = 'not_active',
+  BUSY = 'busy',
+  REQUIRES_TO_BE_UPDATED = 'requires_to_be_updated',
+  NOT_FOUND = 'not_found'
 }
 
 export class RegisterRepeaterCommand extends Command<
   RegisterRepeaterCommandPayload,
-  RegisterRepeaterResult
+  { payload: RegisterRepeaterResult }
 > {
   constructor(payload: RegisterRepeaterCommandPayload) {
     super(payload, { type: 'RepeaterRegistering' });

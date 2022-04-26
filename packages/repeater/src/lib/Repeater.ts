@@ -2,10 +2,13 @@ import {
   ExecuteRequestEventHandler,
   RegisterRepeaterCommand,
   RegisterRepeaterResult,
+  RepeaterRegisteringError,
   RepeaterStatusEvent
 } from '../bus';
 import { RepeaterStatus } from '../models';
 import { Configuration, EventBus, Logger } from '@secbox/core';
+import { gt } from 'semver';
+import chalk from 'chalk';
 import Timer = NodeJS.Timer;
 
 export enum RunningStatus {
@@ -58,13 +61,8 @@ export class Repeater {
     this._runningStatus = RunningStatus.STARTING;
 
     try {
-      const res = await this.register();
-      if (!res) {
-        throw new Error('Error registering repeater.');
-      }
-
+      await this.register();
       await this.subscribeToEvents();
-
       await this.schedulePing();
 
       this._runningStatus = RunningStatus.RUNNING;
@@ -89,13 +87,15 @@ export class Repeater {
     await this.bus.destroy?.();
   }
 
-  private register(): Promise<RegisterRepeaterResult | undefined> {
-    return this.bus.execute(
+  private async register(): Promise<void> {
+    const res = await this.bus.execute(
       new RegisterRepeaterCommand({
         version: this.configuration.version,
         repeaterId: this.repeaterId
       })
     );
+
+    this.handleRegisterResult(res);
   }
 
   private async subscribeToEvents(): Promise<void> {
@@ -134,5 +134,46 @@ export class Repeater {
         }
       })
     );
+  }
+
+  private handleRegisterResult(
+    res: { payload: RegisterRepeaterResult } | undefined
+  ): void {
+    if (!res) {
+      throw new Error('Error registering repeater.');
+    }
+
+    const { payload } = res;
+
+    if ('error' in payload) {
+      this.handleRegisterError(payload.error);
+    } else {
+      if (gt(payload.version, this.configuration.version)) {
+        this.logger?.warn(
+          '%s: A new Repeater version (%s) is available, please update @secbox.',
+          chalk.yellow('(!) IMPORTANT'),
+          payload.version
+        );
+      }
+    }
+  }
+
+  private handleRegisterError(error: RepeaterRegisteringError): never {
+    switch (error) {
+      case RepeaterRegisteringError.NOT_ACTIVE:
+        throw new Error(`Access Refused: The current Repeater is not active.`);
+      case RepeaterRegisteringError.NOT_FOUND:
+        throw new Error(`Unauthorized access. Please check your credentials.`);
+      case RepeaterRegisteringError.BUSY:
+        throw new Error(
+          `Access Refused: There is an already running Repeater with ID ${this.repeaterId}`
+        );
+      case RepeaterRegisteringError.REQUIRES_TO_BE_UPDATED:
+        throw new Error(
+          `${chalk.red(
+            '(!) CRITICAL'
+          )}: The current running version is no longer supported, please update @secbox.`
+        );
+    }
   }
 }

@@ -37,7 +37,7 @@ describe('Repeater', () => {
     when(mockedConfiguration.container).thenReturn(container);
     when(
       mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-    ).thenResolve({ version });
+    ).thenResolve({ payload: { version } });
     when(mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))).thenResolve();
 
     jest.useFakeTimers();
@@ -138,7 +138,7 @@ describe('Repeater', () => {
     it('should be possible to start() after start() error', async () => {
       when(mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand)))
         .thenReject()
-        .thenResolve({ version });
+        .thenResolve({ payload: { version } });
 
       await expect(repeater.start()).rejects.toThrow();
       await expect(repeater.start()).resolves.not.toThrow();
