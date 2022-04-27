@@ -1,0 +1,47 @@
+{
+  "root": "packages/runner",
+  "sourceRoot": "packages/runner/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/runner",
+        "tsConfig": "packages/runner/tsconfig.lib.json",
+        "packageJson": "packages/runner/package.json",
+        "main": "packages/runner/src/index.ts",
+        "assets": [
+          "packages/runner/*.md",
+          {
+            "glob": "LICENSE",
+            "input": "",
+            "output": ""
+          }
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/runner/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/runner"],
+      "options": {
+        "jestConfig": "packages/runner/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "publish": {
+      "executor": "./tools/executors:publish",
+      "options": {
+        "dist": "dist/packages/runner"
+      }
+    }
+  },
+  "tags": []
+}
