@@ -1,6 +1,6 @@
 import { SecScan } from '../SecScan';
 import { SecTarget } from '../SecTarget';
-import { ScanSettings } from '../../models';
+import { ScanSettings, Severity } from '../../models';
 
 export class DefaultSecScan implements SecScan {
   constructor(_settings: ScanSettings) {
@@ -11,7 +11,7 @@ export class DefaultSecScan implements SecScan {
     return Promise.resolve();
   }
 
-  public threshold(_severity?: 'high' | 'medium' | 'low'): SecScan {
+  public threshold(_severity?: Severity): SecScan {
     return this;
   }
 }

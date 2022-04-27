@@ -1,6 +1,7 @@
 import { SecTarget } from './SecTarget';
+import { Severity } from '../models';
 
 export interface SecScan {
-  threshold(severity?: 'high' | 'medium' | 'low'): SecScan;
+  threshold(severity?: Severity): SecScan;
   run(target: SecTarget): Promise<void>;
 }

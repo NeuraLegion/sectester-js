@@ -5,17 +5,20 @@ import { SecTarget } from '../SecTarget';
 import { DefaultSecTarget } from './DefaultSecTarget';
 import { DefaultSecScan } from './DefaultSecScan';
 import { ConfigurationOptions } from '@secbox/core';
+import { RequestRunnerOptions } from '@secbox/repeater';
 
 export class DefaultSecRunner implements SecRunner {
   constructor(_config: ConfigurationOptions) {
     /** noop **/
   }
 
-  public init(_unnamedOptions: unknown): Promise<void> {
+  public init(_options: Partial<RequestRunnerOptions>): Promise<void> {
+    // TODO among others - create & start repeater
     return Promise.resolve();
   }
 
   public clear(): Promise<void> {
+    // TODO among others - stop & delete repeater
     return Promise.resolve(undefined);
   }
 

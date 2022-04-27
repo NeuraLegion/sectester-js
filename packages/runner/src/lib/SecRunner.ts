@@ -1,13 +1,14 @@
 import { ScanSettings, TargetOptions } from '../models';
 import { SecTarget } from './SecTarget';
 import { SecScan } from './SecScan';
+import { RequestRunnerOptions } from '@secbox/repeater';
 
 export interface SecRunner {
   // ctor (config: ConfigurationOptions): SecRunner;
 
-  init(unnamedOptions: unknown): Promise<void>;
+  init(options: Partial<RequestRunnerOptions>): Promise<void>;
   clear(): Promise<void>;
 
   createTarget(options: TargetOptions): SecTarget;
-  createScan(settings: ScanSettings): SecScan;
+  createScan(settings: Omit<ScanSettings, 'name'> & { name?: string }): SecScan;
 }
