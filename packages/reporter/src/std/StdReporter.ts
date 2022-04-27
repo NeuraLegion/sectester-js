@@ -4,9 +4,27 @@ import { IssuesGrouper } from '../utils';
 import table, { Header } from 'tty-table';
 import chalk from 'chalk';
 
-/* eslint-disable no-console */
-
 export class StdReporter implements Reporter {
+  private readonly severityColorFn: Record<
+    Severity,
+    (...x: unknown[]) => string
+  > = {
+    [Severity.HIGH]: chalk.red,
+    [Severity.MEDIUM]: chalk.yellow,
+    [Severity.LOW]: chalk.blue
+  };
+
+  private readonly severityPrintFn: Record<
+    Severity,
+    (...x: unknown[]) => void
+  > = {
+    /* eslint-disable no-console */
+    [Severity.HIGH]: console.error,
+    [Severity.MEDIUM]: console.warn,
+    [Severity.LOW]: console.log
+    /* eslint-enable no-console */
+  };
+
   public async report(scan: Scan): Promise<void> {
     const issues: Issue[] = await scan.issues();
     if (!issues.length) {
@@ -17,11 +35,12 @@ export class StdReporter implements Reporter {
       (severity: Severity) => {
         const message = this.formatFindingsMessage(issues, severity);
         if (message) {
-          this.getPrintFn(severity)(message);
+          this.print(message, severity);
         }
       }
     );
 
+    // eslint-disable-next-line no-console
     console.log(this.renderDetailsTable(issues));
   }
 
@@ -34,12 +53,12 @@ export class StdReporter implements Reporter {
       return undefined;
     }
 
-    const pluralize = (x: any[]) => (x.length > 1 ? 's' : '');
-
-    return this.getColorFn(severity)(
-      `Found ${filtered.length} ${severity} severity issue${pluralize(
-        filtered
-      )}.`
+    return this.colorize(
+      `Found ${filtered.length} ${severity} severity ${this.pluralize(
+        'issue',
+        filtered.length
+      )}.`,
+      severity
     );
   }
 
@@ -49,7 +68,7 @@ export class StdReporter implements Reporter {
     return table(
       [
         this.getHeaderConfig('severity', {
-          formatter: x => this.getColorFn(x)(x),
+          formatter: x => this.colorize(x, x),
           width: 10
         }),
         this.getHeaderConfig('name'),
@@ -90,25 +109,15 @@ export class StdReporter implements Reporter {
     } as Header;
   }
 
-  private getColorFn(severity: Severity): (...x: unknown[]) => string {
-    switch (severity) {
-      case Severity.HIGH:
-        return chalk.red;
-      case Severity.MEDIUM:
-        return chalk.yellow;
-      case Severity.LOW:
-        return chalk.blue;
-    }
+  private pluralize(word: string, quantity: number): string {
+    return quantity > 1 ? `${word}s` : word;
   }
 
-  private getPrintFn(severity: Severity): (...x: unknown[]) => void {
-    switch (severity) {
-      case Severity.HIGH:
-        return console.error;
-      case Severity.MEDIUM:
-        return console.warn;
-      case Severity.LOW:
-        return console.log;
-    }
+  private colorize(message: string, severity: Severity): string {
+    return this.severityColorFn[severity](message);
+  }
+
+  private print(message: string, severity: Severity): void {
+    return this.severityPrintFn[severity](message);
   }
 }

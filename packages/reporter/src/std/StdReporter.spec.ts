@@ -1,5 +1,6 @@
-import { StdReporter } from './StdReporter';
+import { Reporter } from '../lib';
 import { Issue, Scan, Severity } from '../models';
+import { StdReporter } from './StdReporter';
 import { instance, mock, reset, when } from 'ts-mockito';
 
 const highSeverityIssue: Partial<Issue> = {
@@ -27,7 +28,7 @@ const lowSeverityIssue: Partial<Issue> = {
 };
 
 describe('StdReporter', () => {
-  const reporter = new StdReporter();
+  let reporter!: Reporter;
 
   const MockedScan = mock<Scan>();
 
@@ -37,6 +38,8 @@ describe('StdReporter', () => {
     console.warn = jest.fn();
     console.error = jest.fn();
     /* eslint-enable no-console */
+
+    reporter = new StdReporter();
   });
 
   afterEach(() => {
