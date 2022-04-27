@@ -1,10 +1,13 @@
-import { inject, injectable } from 'tsyringe';
+import { DependencyContainer, inject, injectable } from 'tsyringe';
 import { Configuration, EventBus, RetryStrategy } from '@secbox/core';
 import { RMQEventBus, RMQEventBusConfig } from '@secbox/bus';
 
 @injectable()
 export class EventBusFactory {
-  constructor(@inject(Configuration) private readonly config: Configuration) {}
+  constructor(
+    @inject(Configuration) private readonly config: Configuration,
+    @inject('container') private readonly container: DependencyContainer
+  ) {}
 
   public async create(
     repeaterId: string,
@@ -34,8 +37,8 @@ export class EventBusFactory {
     };
 
     return new RMQEventBus(
-      this.config.container,
-      this.config.container.resolve(RetryStrategy),
+      this.container,
+      this.container.resolve(RetryStrategy),
       busConfig
     );
   }
