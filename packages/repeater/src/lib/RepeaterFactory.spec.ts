@@ -51,6 +51,10 @@ describe('RepeaterFactory', () => {
 
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
 
+    when(mockedContainer.createChildContainer()).thenReturn(
+      instance(mockedContainer)
+    );
+
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     when(mockedEventBus.init!()).thenResolve();
 

@@ -13,8 +13,6 @@ describe('EventBusFactory', () => {
 
   beforeEach(() => {
     configuration = instance(mockedConfiguration);
-
-    when(mockedConfiguration.container).thenReturn(container);
   });
 
   afterEach(() => reset(mockedConfiguration));
@@ -23,7 +21,7 @@ describe('EventBusFactory', () => {
     it('should throw an error on missing credentials', async () => {
       when(mockedConfiguration.credentials).thenReturn();
 
-      const factory = new EventBusFactory(configuration);
+      const factory = new EventBusFactory(configuration, container);
 
       const res = factory.create('fooId');
 
@@ -37,7 +35,7 @@ describe('EventBusFactory', () => {
       when(mockedConfiguration.credentials).thenReturn(
         new Credentials({ token })
       );
-      const factory = new EventBusFactory(configuration);
+      const factory = new EventBusFactory(configuration, container);
 
       const res = factory.create('id');
 
