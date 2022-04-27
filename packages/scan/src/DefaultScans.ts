@@ -25,7 +25,9 @@ export class DefaultScans implements Scans {
   }
 
   public async listIssues(id: string): Promise<Issue[]> {
-    return (await this.commandDispatcher.execute(new ListIssues(id))) ?? [];
+    const issues = await this.commandDispatcher.execute(new ListIssues(id));
+
+    return issues ?? [];
   }
 
   public stopScan(id: string): Promise<void> {

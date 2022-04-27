@@ -1,13 +1,13 @@
 import { AttackParamLocation, TestType } from './models';
-import { Target } from './Target';
+import { Target, TargetOptions } from './Target';
 
 export interface ScanSettings {
-  // The Scan name
-  name: string;
   // The list of tests to be performed against the target application
   tests: TestType[];
   // The target that will be attacked
-  target: Target;
+  target: Target | TargetOptions;
+  // The Scan name
+  name?: string;
   // ID of the repeater
   repeaterId?: string;
   // Determine whether scan is smart or simple

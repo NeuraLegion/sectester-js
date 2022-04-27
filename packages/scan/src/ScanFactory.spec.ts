@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Scans } from './Scans';
-import { ScanFactory } from './ScanFactory ';
+import { ScanFactory } from './ScanFactory';
 import { Module, TestType } from './models';
 import {
   anything,

@@ -1,5 +1,5 @@
 import { Issue, ScanConfig, ScanState } from './models';
-import { Har } from './HarEntryBuilder';
+import { Har } from '@har-sdk/core';
 
 export interface UploadHarOptions {
   har: Har;

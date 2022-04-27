@@ -1,11 +1,17 @@
 import { Scans } from './Scans';
 import { Scan } from './Scan';
-import { Har, HarEntryBuilder } from './HarEntryBuilder';
-import { Discovery, Module, ScanConfig } from './models';
+import {
+  AttackParamLocation,
+  Discovery,
+  Module,
+  ScanConfig,
+  TestType
+} from './models';
 import { ScanSettings } from './ScanSettings';
-import { Target } from './Target';
+import { Target, TargetOptions } from './Target';
 import { v4 } from 'uuid';
 import { Configuration } from '@secbox/core';
+import { Entry, Har } from '@har-sdk/core';
 
 export class ScanFactory {
   private readonly scans: Scans;
@@ -14,34 +20,98 @@ export class ScanFactory {
     this.scans = sdkConfig.container.resolve(Scans);
   }
 
-  public async createScan(settings: ScanSettings): Promise<Scan> {
-    const scanConfig: ScanConfig = await this.buildScanConfig(settings);
+  public async createScan(options: ScanSettings): Promise<Scan> {
+    const scanConfig = await this.buildScanConfig(options);
 
     const { id } = await this.scans.createScan(scanConfig);
 
     return new Scan(id, this.scans);
   }
 
-  private async buildScanConfig(settings: ScanSettings): Promise<ScanConfig> {
-    const fileId = await this.createFile(settings.target);
+  // TODO: consider refactoring
+  // eslint-disable-next-line complexity
+  private async buildScanConfig({
+    name,
+    tests,
+    target,
+    repeaterId,
+    smart = true,
+    poolSize = 10,
+    targetTimeout = 5,
+    slowEpTimeout = 1000,
+    skipStaticParams = true,
+    attackParamLocations = [
+      AttackParamLocation.BODY,
+      AttackParamLocation.QUERY,
+      AttackParamLocation.FRAGMENT
+    ]
+  }: ScanSettings): Promise<ScanConfig> {
+    const fileId = await this.createAndUploadHar(target);
+
+    if (tests.some((x: TestType) => !Object.values(TestType).includes(x))) {
+      throw new Error('Unknown test type supplied.');
+    }
+
+    const uniqueTestTypes = new Set<TestType>(tests);
+
+    if (uniqueTestTypes.size < 1) {
+      throw new Error('Please provide a least one test.');
+    }
+
+    if (
+      attackParamLocations.some(
+        (x: AttackParamLocation) =>
+          !Object.values(AttackParamLocation).includes(x)
+      )
+    ) {
+      throw new Error('Unknown attack param location supplied.');
+    }
+
+    const uniqueAttackParamLocations = new Set<AttackParamLocation>(
+      attackParamLocations
+    );
+
+    if (uniqueAttackParamLocations.size < 1) {
+      throw new Error('Please provide a least one attack parameter location.');
+    }
+
+    if (isNaN(poolSize) || (poolSize > 50 && poolSize < 1)) {
+      throw new Error('Invalid pool size.');
+    }
+
+    if (isNaN(slowEpTimeout) || slowEpTimeout < 100) {
+      throw new Error('Invalid slow entry point timeout.');
+    }
+
+    if (isNaN(targetTimeout) || targetTimeout > 120 || targetTimeout <= 0) {
+      throw new Error('Invalid target connection timeout.');
+    }
+
+    if (!fileId) {
+      throw new Error('No HAR file configured.');
+    }
 
     return {
       fileId,
+      smart,
+      poolSize,
+      skipStaticParams,
+      slowEpTimeout,
+      targetTimeout,
       module: Module.DAST,
-      name: settings.name,
-      smart: settings.smart,
-      tests: settings.tests,
-      poolSize: settings.poolSize,
-      repeaters: settings.repeaterId ? [settings.repeaterId] : undefined,
       discoveryTypes: [Discovery.ARCHIVE],
-      skipStaticParams: settings.skipStaticParams,
-      attackParamLocations: settings.attackParamLocations
+      name: name || `${target.method} ${target.url}`,
+      attackParamLocations: [...uniqueAttackParamLocations],
+      tests: [...uniqueTestTypes],
+      repeaters: repeaterId ? [repeaterId] : undefined
     };
   }
 
-  private async createFile(target: Target): Promise<string> {
+  private async createAndUploadHar(
+    target: Target | TargetOptions
+  ): Promise<string> {
+    const har = this.createHar(new Target(target));
     const filename = this.generateFilename(target.url);
-    const har = this.createHar(target);
     const { id } = await this.scans.uploadHar({
       har,
       filename,
@@ -57,18 +127,35 @@ export class ScanFactory {
     return `${hostname}-${v4()}.har`;
   }
 
-  private createHar(target: Target): Har {
-    let query: string | URLSearchParams | Record<string, string> =
-      target.query ?? {};
-    if (target.serializeQuery) {
-      query = target.serializeQuery(query);
-    }
-    const entry = new HarEntryBuilder(target.url, target.method)
-      .setHeaders(target.headers ?? {})
-      .setQuery(query)
-      .postData(target.body)
-      .build();
+  private createHarEntry(target: Target): Entry {
+    return {
+      startedDateTime: new Date().toISOString(),
+      request: target.toHarRequest(),
+      response: {
+        httpVersion: 'HTTP/1.1',
+        status: 200,
+        statusText: 'OK',
+        headersSize: -1,
+        bodySize: -1,
+        content: {
+          size: -1,
+          mimeType: 'text/plain'
+        },
+        redirectURL: '',
+        cookies: [],
+        headers: []
+      },
+      cache: {},
+      time: 0,
+      timings: {
+        send: 0,
+        receive: 0,
+        wait: 0
+      }
+    };
+  }
 
+  private createHar(target: Target): Har {
     return {
       log: {
         version: '1.2',
@@ -76,7 +163,7 @@ export class ScanFactory {
           name: this.sdkConfig.name,
           version: this.sdkConfig.version
         },
-        entries: [entry]
+        entries: [this.createHarEntry(target)]
       }
     };
   }
