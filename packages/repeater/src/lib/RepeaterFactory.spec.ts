@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { RepeaterFactory } from './RepeaterFactory';
+import { RequestRunnerOptions } from '../request-runner';
 import { Repeater } from './Repeater';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
@@ -9,6 +10,7 @@ import {
   capture,
   instance,
   mock,
+  objectContaining,
   reset,
   verify,
   when
@@ -117,6 +119,52 @@ describe('RepeaterFactory', () => {
 
       expect(arg?.name).toMatch(/^foo/);
       expect(arg?.description).toBe('description');
+      expect(res).toBeInstanceOf(Repeater);
+    });
+
+    it('should create repeater and apply RequestRunnerOptions', async () => {
+      const factory = new RepeaterFactory(configuration);
+      when(
+        mockedContainer.register(RequestRunnerOptions, anything())
+      ).thenReturn();
+
+      const requestRunnerOptions = {
+        timeout: 10000,
+        maxContentLength: 200,
+        reuseConnection: false,
+        whitelistMimes: [
+          'text/html',
+          'text/plain',
+          'text/css',
+          'text/javascript',
+          'text/markdown',
+          'text/xml',
+          'application/javascript',
+          'application/x-javascript',
+          'application/json',
+          'application/xml',
+          'application/x-www-form-urlencoded',
+          'application/msgpack',
+          'application/ld+json',
+          'application/graphql'
+        ]
+      };
+
+      const res = await factory.createRepeater({
+        namePrefix: 'foo',
+        description: 'description',
+        requestRunnerOptions
+      });
+
+      verify(
+        mockedContainer.register(
+          RequestRunnerOptions,
+          objectContaining({
+            useValue: requestRunnerOptions
+          })
+        )
+      ).once();
+
       expect(res).toBeInstanceOf(Repeater);
     });
   });
