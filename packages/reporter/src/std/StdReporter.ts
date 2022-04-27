@@ -1,7 +1,7 @@
 import { Reporter } from '../lib';
 import { Issue, Scan, Severity } from '../models';
 import { IssuesGrouper } from '../utils';
-import Table, { Header } from 'tty-table';
+import table, { Header } from 'tty-table';
 import chalk from 'chalk';
 
 /* eslint-disable no-console */
@@ -15,9 +15,9 @@ export class StdReporter implements Reporter {
 
     [Severity.HIGH, Severity.MEDIUM, Severity.LOW].forEach(
       (severity: Severity) => {
-        const message = this.formatMessage(issues, severity);
+        const message = this.formatFindingsMessage(issues, severity);
         if (message) {
-          this.getStdoutFn(severity)(message);
+          this.getPrintFn(severity)(message);
         }
       }
     );
@@ -25,7 +25,7 @@ export class StdReporter implements Reporter {
     console.log(this.renderDetailsTable(issues));
   }
 
-  private formatMessage(
+  private formatFindingsMessage(
     issues: Issue[],
     severity: Severity
   ): string | undefined {
@@ -46,7 +46,7 @@ export class StdReporter implements Reporter {
   private renderDetailsTable(issues: Issue[]): string {
     const issueGroups = IssuesGrouper.group(issues);
 
-    return Table(
+    return table(
       [
         this.getHeaderConfig('severity', {
           formatter: x => this.getColorFn(x)(x),
@@ -101,7 +101,7 @@ export class StdReporter implements Reporter {
     }
   }
 
-  private getStdoutFn(severity: Severity): (...x: unknown[]) => void {
+  private getPrintFn(severity: Severity): (...x: unknown[]) => void {
     switch (severity) {
       case Severity.HIGH:
         return console.error;
