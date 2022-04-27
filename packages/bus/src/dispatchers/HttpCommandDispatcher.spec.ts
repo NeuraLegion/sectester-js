@@ -1,17 +1,23 @@
 import { HttpRequest } from '../commands';
 import { HttpCommandDispatcher } from './HttpCommandDispatcher';
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
-import { reset, spy } from 'ts-mockito';
+import { RetryStrategy } from '@secbox/core';
+import { anyFunction, instance, mock, reset, spy, when } from 'ts-mockito';
 import nock from 'nock';
 
 describe('HttpCommandDispatcher', () => {
+  const mockedRetryStrategy = mock<RetryStrategy>();
+
   beforeAll(() => {
     nock.disableNetConnect();
     nock.enableNetConnect('127.0.0.1');
   });
 
   afterEach(() => {
-    reset<HttpCommandDispatcherConfig>(spiedOptions);
+    reset<RetryStrategy | HttpCommandDispatcherConfig>(
+      spiedOptions,
+      mockedRetryStrategy
+    );
     nock.cleanAll();
     nock.restore();
   });
@@ -32,7 +38,15 @@ describe('HttpCommandDispatcher', () => {
       nock.activate();
     }
     spiedOptions = spy(options);
-    axiosDispatcher = new HttpCommandDispatcher(options);
+
+    when(mockedRetryStrategy.acquire(anyFunction())).thenCall(
+      (callback: (...args: unknown[]) => unknown) => callback()
+    );
+
+    axiosDispatcher = new HttpCommandDispatcher(
+      instance(mockedRetryStrategy),
+      options
+    );
   });
 
   describe('execute', () => {

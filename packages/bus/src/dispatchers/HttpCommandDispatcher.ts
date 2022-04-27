@@ -1,6 +1,6 @@
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { HttpRequest } from '../commands';
-import { CommandDispatcher } from '@secbox/core';
+import { CommandDispatcher, RetryStrategy } from '@secbox/core';
 import { inject, injectable } from 'tsyringe';
 import axios, { AxiosRequestConfig } from 'axios';
 import rateLimit, { RateLimitedAxiosInstance } from 'axios-rate-limit';
@@ -13,6 +13,8 @@ export class HttpCommandDispatcher implements CommandDispatcher {
   private readonly client: RateLimitedAxiosInstance;
 
   constructor(
+    @inject(RetryStrategy)
+    private readonly retryStrategy: RetryStrategy,
     @inject(HttpCommandDispatcherConfig)
     private readonly options: HttpCommandDispatcherConfig
   ) {
@@ -22,8 +24,9 @@ export class HttpCommandDispatcher implements CommandDispatcher {
   public async execute<T, R>(
     command: HttpRequest<T, R>
   ): Promise<R | undefined> {
-    const response = await this.client.request(
-      this.convertToHttpOptions(command)
+    const requestOptions = this.convertToHttpOptions(command);
+    const response = await this.retryStrategy.acquire(() =>
+      this.client.request(requestOptions)
     );
 
     if (!command.expectReply && response.data instanceof Readable) {
