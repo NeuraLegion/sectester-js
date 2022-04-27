@@ -21,11 +21,12 @@ export class ScanFactory {
   }
 
   public async createScan(options: ScanSettings): Promise<Scan> {
-    const scanConfig = await this.buildScanConfig(options);
+    const target = new Target(options.target);
+    const config = await this.buildScanConfig({ ...options, target });
 
-    const { id } = await this.scans.createScan(scanConfig);
+    const { id } = await this.scans.createScan(config);
 
-    return new Scan(id, this.scans);
+    return new Scan({ id, scans: this.scans });
   }
 
   // TODO: consider refactoring
@@ -75,7 +76,7 @@ export class ScanFactory {
       throw new Error('Please provide a least one attack parameter location.');
     }
 
-    if (isNaN(poolSize) || (poolSize > 50 && poolSize < 1)) {
+    if (isNaN(poolSize) || poolSize > 50 || poolSize < 1) {
       throw new Error('Invalid pool size.');
     }
 
@@ -87,10 +88,6 @@ export class ScanFactory {
       throw new Error('Invalid target connection timeout.');
     }
 
-    if (!fileId) {
-      throw new Error('No HAR file configured.');
-    }
-
     return {
       fileId,
       smart,
@@ -100,7 +97,7 @@ export class ScanFactory {
       targetTimeout,
       module: Module.DAST,
       discoveryTypes: [Discovery.ARCHIVE],
-      name: name || `${target.method} ${target.url}`,
+      name: name || `${target.method ?? 'GET'} ${target.url}`,
       attackParamLocations: [...uniqueAttackParamLocations],
       tests: [...uniqueTestTypes],
       repeaters: repeaterId ? [repeaterId] : undefined
@@ -110,7 +107,7 @@ export class ScanFactory {
   private async createAndUploadHar(
     target: Target | TargetOptions
   ): Promise<string> {
-    const har = this.createHar(new Target(target));
+    const har = this.createHar(target);
     const filename = this.generateFilename(target.url);
     const { id } = await this.scans.uploadHar({
       har,
@@ -127,10 +124,10 @@ export class ScanFactory {
     return `${hostname}-${v4()}.har`;
   }
 
-  private createHarEntry(target: Target): Entry {
+  private createHarEntry(target: Target | TargetOptions): Entry {
     return {
       startedDateTime: new Date().toISOString(),
-      request: target.toHarRequest(),
+      request: new Target(target).toHarRequest(),
       response: {
         httpVersion: 'HTTP/1.1',
         status: 200,
@@ -155,7 +152,7 @@ export class ScanFactory {
     };
   }
 
-  private createHar(target: Target): Har {
+  private createHar(target: Target | TargetOptions): Har {
     return {
       log: {
         version: '1.2',

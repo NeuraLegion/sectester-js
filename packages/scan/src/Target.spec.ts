@@ -397,6 +397,48 @@ describe('Target', () => {
       });
     });
 
+    it('should set `params` to undefined if boundary is not defined', () => {
+      // arrange
+      const value = Buffer.from([0x01, 0x09, 0x09, 0x04]);
+      const form = new FormData();
+      form.append('file', value, {
+        filename: 'file.bin'
+      });
+
+      const target = new Target({
+        url: 'https://example.com/',
+        method: 'POST',
+        headers: {
+          'content-type': 'multipart/form-data'
+        },
+        body: form.getBuffer().toString()
+      });
+
+      // act
+      const result = target.toHarRequest();
+
+      // assert
+      expect(result).toEqual({
+        method: 'POST',
+        url: 'https://example.com/',
+        httpVersion: 'HTTP/0.9',
+        headers: [
+          {
+            name: 'content-type',
+            value: 'multipart/form-data'
+          }
+        ],
+        queryString: [],
+        postData: {
+          mimeType: 'multipart/form-data',
+          text: form.getBuffer().toString()
+        },
+        cookies: [],
+        headersSize: -1,
+        bodySize: -1
+      });
+    });
+
     it('should set `postData` from a plain object', () => {
       // arrange
       const value = { foo: 'bar' };
@@ -458,6 +500,41 @@ describe('Target', () => {
         queryString: [],
         postData: {
           mimeType: expect.stringMatching('application/json'),
+          text: JSON.stringify(value)
+        },
+        cookies: [],
+        headersSize: -1,
+        bodySize: -1
+      });
+    });
+
+    it('should recognize body as JSON by content-type (application/json-patch+json)', () => {
+      // arrange
+      const value = [{ op: 'replace', path: '/firstName', value: 'First' }];
+      const target = new Target({
+        url: 'https://example.com/',
+        method: 'POST',
+        headers: { 'content-type': 'application/json-patch+json' },
+        body: value
+      });
+
+      // act
+      const result = target.toHarRequest();
+
+      // assert
+      expect(result).toEqual({
+        method: 'POST',
+        url: 'https://example.com/',
+        httpVersion: 'HTTP/0.9',
+        headers: [
+          {
+            name: 'content-type',
+            value: 'application/json-patch+json'
+          }
+        ],
+        queryString: [],
+        postData: {
+          mimeType: 'application/json-patch+json',
           text: JSON.stringify(value)
         },
         cookies: [],

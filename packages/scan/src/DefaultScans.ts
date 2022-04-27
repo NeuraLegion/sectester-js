@@ -8,7 +8,7 @@ import {
 } from './commands';
 import { Issue, ScanConfig, ScanState } from './models';
 import { inject, injectable } from 'tsyringe';
-import { CommandDispatcher } from '@secbox/core';
+import { Command, CommandDispatcher } from '@secbox/core';
 
 @injectable()
 export class DefaultScans implements Scans {
@@ -17,34 +17,39 @@ export class DefaultScans implements Scans {
     private readonly commandDispatcher: CommandDispatcher
   ) {}
 
-  public async createScan(config: ScanConfig): Promise<{ id: string }> {
-    return (
-      (await this.commandDispatcher.execute(new CreateScan(config))) ??
-      ({} as { id: string })
-    );
+  public createScan(config: ScanConfig): Promise<{ id: string }> {
+    return this.sendCommand(new CreateScan(config));
   }
 
-  public async listIssues(id: string): Promise<Issue[]> {
-    const issues = await this.commandDispatcher.execute(new ListIssues(id));
-
-    return issues ?? [];
+  public listIssues(id: string): Promise<Issue[]> {
+    return this.sendCommand(new ListIssues(id));
   }
 
-  public stopScan(id: string): Promise<void> {
-    return this.commandDispatcher.execute(new StopScan(id));
+  public async stopScan(id: string): Promise<void> {
+    await this.commandDispatcher.execute(new StopScan(id));
   }
 
-  public async getScan(id: string): Promise<ScanState> {
-    return (
-      (await this.commandDispatcher.execute(new GetScan(id))) ??
-      ({} as ScanState)
-    );
+  public getScan(id: string): Promise<ScanState> {
+    return this.sendCommand(new GetScan(id));
   }
 
-  public async uploadHar(options: UploadHarOptions): Promise<{ id: string }> {
-    return (
-      (await this.commandDispatcher.execute(new UploadHar(options))) ??
-      ({} as { id: string })
-    );
+  public uploadHar(options: UploadHarOptions): Promise<{ id: string }> {
+    return this.sendCommand(new UploadHar(options));
+  }
+
+  private async sendCommand<T, R>(command: Command<T, R>): Promise<R> {
+    const result = await this.commandDispatcher.execute(command);
+
+    this.assertReply(result);
+
+    return result;
+  }
+
+  private assertReply<T>(
+    result: T | undefined
+  ): asserts result is NonNullable<T> {
+    if (!result) {
+      throw new Error('Something went wrong. Please try again later.');
+    }
   }
 }

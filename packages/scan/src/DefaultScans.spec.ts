@@ -7,59 +7,143 @@ import {
   UploadHar
 } from './commands';
 import { DefaultScans } from './DefaultScans';
-import { Module, ScanState, ScanStatus, TestType } from './models';
+import { HttpMethod, Module, ScanStatus, Severity, TestType } from './models';
 import { HttpCommandDispatcher } from '@secbox/bus';
 import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
+import { Har } from '@har-sdk/core';
 
 describe('HttpScans', () => {
-  const harFileContent =
-    '{"log":{"version":"1.2","creator":{"name":"test","version":"1.0"},"entries":[{"startedDateTime":"2022-04-18T09:09:35.585Z","time":-1,"request":{"url":"https://example.com","method":"GET","headers":[]},"response":{"status":200,"statusText":"Ok"},"cache":{},"timings":{"send":0,"receive":0,"wait":0}}]}}';
+  const id = 'roMq1UVuhPKkndLERNKnA8';
+  const har: Har = {
+    log: {
+      version: '1.2',
+      creator: { name: 'test', version: '1.0' },
+      entries: [
+        {
+          startedDateTime: '2022-04-18T09:09:35.585Z',
+          time: -1,
+          request: {
+            method: 'GET',
+            url: 'https://example.com/',
+            httpVersion: 'HTTP/0.9',
+            headers: [],
+            queryString: [],
+            cookies: [],
+            headersSize: -1,
+            bodySize: -1
+          },
+          response: {
+            status: 200,
+            statusText: 'OK',
+            httpVersion: 'HTTP/0.9',
+            headers: [],
+            cookies: [],
+            content: {
+              size: -1,
+              mimeType: 'text/plain'
+            },
+            redirectURL: '',
+            headersSize: -1,
+            bodySize: -1
+          },
+          cache: {},
+          timings: { send: 0, receive: 0, wait: 0 }
+        }
+      ]
+    }
+  };
 
   const mockedCommandDispatcher = mock<HttpCommandDispatcher>();
-  let httpScans!: DefaultScans;
+  let scans!: DefaultScans;
 
   beforeEach(() => {
-    httpScans = new DefaultScans(instance(mockedCommandDispatcher));
+    scans = new DefaultScans(instance(mockedCommandDispatcher));
   });
 
   afterEach(() => reset(mockedCommandDispatcher));
 
   describe('create', () => {
-    it('should execute CreateScan command', async () => {
-      const id = 'roMq1UVuhPKkndLERNKnA8';
+    it('should create a new scan', async () => {
       when(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).thenResolve(
         { id }
       );
 
-      await httpScans.createScan({
+      const result = await scans.createScan({
         name: 'test',
         tests: [TestType.DOM_XSS],
         module: Module.DAST
       });
 
       verify(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).once();
+      expect(result).toMatchObject({ id });
+    });
+
+    it('should raise an error if result is not defined', async () => {
+      when(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).thenResolve(
+        undefined
+      );
+
+      const result = scans.createScan({
+        name: 'test',
+        tests: [TestType.DOM_XSS],
+        module: Module.DAST
+      });
+
+      await expect(result).rejects.toThrow('Something went wrong');
     });
   });
 
   describe('listIssues', () => {
-    it('should execute ListIssues command', async () => {
-      const scanId = 'roMq1UVuhPKkndLERNKnA8';
+    it('should return a list of issues', async () => {
+      const issues = [
+        {
+          id: 'pDzxcEXQC8df1fcz1QwPf9',
+          order: 1,
+          details:
+            'Cross-site request forgery is a type of malicious website exploit.',
+          name: 'Database connection crashed',
+          severity: Severity.MEDIUM,
+          protocol: 'http',
+          remedy:
+            'The best way to protect against those kind of issues is making sure the Database resources are sufficient',
+          cvss: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L',
+          time: new Date(),
+          originalRequest: {
+            method: HttpMethod.GET,
+            url: 'https://brokencrystals.com/'
+          },
+          request: {
+            method: HttpMethod.GET,
+            url: 'https://brokencrystals.com/'
+          }
+        }
+      ];
       when(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).thenResolve(
-        []
+        issues
       );
 
-      await httpScans.listIssues(scanId);
+      const result = await scans.listIssues(id);
 
       verify(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).once();
+      expect(result).toEqual(issues);
+    });
+
+    it('should raise an error if result is not defined', async () => {
+      when(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).thenResolve(
+        undefined
+      );
+
+      const result = scans.listIssues(id);
+
+      await expect(result).rejects.toThrow('Something went wrong');
     });
   });
 
   describe('stopScan', () => {
-    it('should execute StopScan command', async () => {
-      const id = 'roMq1UVuhPKkndLERNKnA8';
+    it('should stop a scan', async () => {
       when(mockedCommandDispatcher.execute(anyOfClass(StopScan))).thenResolve();
 
-      await httpScans.stopScan(id);
+      await scans.stopScan(id);
 
       verify(mockedCommandDispatcher.execute(anyOfClass(StopScan))).once();
     });
@@ -67,31 +151,53 @@ describe('HttpScans', () => {
 
   describe('getScan', () => {
     it('should execute GetScan command', async () => {
-      const id = 'roMq1UVuhPKkndLERNKnA8';
-      when(mockedCommandDispatcher.execute(anyOfClass(GetScan))).thenResolve({
-        status: ScanStatus.DONE,
-        issuesBySeverity: []
-      } as ScanState);
+      const expected = {
+        status: ScanStatus.DONE
+      };
+      when(mockedCommandDispatcher.execute(anyOfClass(GetScan))).thenResolve(
+        expected
+      );
 
-      await httpScans.getScan(id);
+      const result = await scans.getScan(id);
+
       verify(mockedCommandDispatcher.execute(anyOfClass(GetScan))).once();
+      expect(result).toMatchObject(expected);
+    });
+
+    it('should raise an error if result is not defined', async () => {
+      when(mockedCommandDispatcher.execute(anyOfClass(GetScan))).thenResolve(
+        undefined
+      );
+
+      const result = scans.getScan(id);
+
+      await expect(result).rejects.toThrow('Something went wrong');
     });
   });
 
   describe('uploadHar', () => {
-    it('should execute UploadHar command', async () => {
-      const id = 'roMq1UVuhPKkndLERNKnA8';
+    it('should upload HAR file', async () => {
       when(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).thenResolve({
         id
       });
 
-      await httpScans.uploadHar({
+      await scans.uploadHar({
+        har,
         filename: 'test.json',
-        har: JSON.parse(harFileContent),
         discard: true
       });
 
       verify(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).once();
+    });
+
+    it('should raise an error if result is not defined', async () => {
+      when(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).thenResolve(
+        undefined
+      );
+
+      const result = scans.getScan(id);
+
+      await expect(result).rejects.toThrow('Something went wrong');
     });
   });
 });

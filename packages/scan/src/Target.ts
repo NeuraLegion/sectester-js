@@ -323,7 +323,9 @@ export class Target implements TargetOptions {
   private jsonPostData(body: object | string): PostData {
     const text = typeof body === 'object' ? JSON.stringify(body) : body;
 
-    this.headers = { ...this._headers, 'content-type': 'application/json' };
+    if (this.contentType === 'text/plain') {
+      this.headers = { ...this._headers, 'content-type': 'application/json' };
+    }
 
     return { text, mimeType: this.contentType };
   }

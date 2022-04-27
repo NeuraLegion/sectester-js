@@ -1,121 +1,172 @@
 import 'reflect-metadata';
-import { Scan } from './Scan';
-import { DefaultScans } from './DefaultScans';
-import { ScanStatus, Severity } from './models';
-import { instance, mock, reset, verify, when } from 'ts-mockito';
+import { Scan, ScanOptions } from './Scan';
+import { HttpMethod, ScanState, ScanStatus, Severity } from './models';
+import { Scans } from './Scans';
+import { instance, mock, reset, spy, verify, when } from 'ts-mockito';
+
+const findArg = <R>(
+  args: [unknown, unknown],
+  expected: 'function' | 'number'
+): R => (typeof args[0] === expected ? args[0] : args[1]) as R;
+
+const useFakeTimers = () => {
+  jest.useFakeTimers();
+
+  const mockedImplementation = jest
+    .spyOn(global, 'setTimeout')
+    .getMockImplementation();
+
+  jest
+    .spyOn(global, 'setTimeout')
+    .mockImplementation((...args: [unknown, unknown]) => {
+      // ADHOC: depending on implementation (promisify vs raw), the method signature will be different
+      const callback = findArg<(..._: unknown[]) => void>(args, 'function');
+      const ms = findArg<number>(args, 'number');
+      const timer = mockedImplementation?.(callback, ms);
+
+      jest.runAllTimers();
+
+      return timer as NodeJS.Timeout;
+    });
+};
 
 describe('Scan', () => {
-  const findArg = <R>(
-    args: [unknown, unknown],
-    expected: 'function' | 'number'
-  ): R => (typeof args[0] === expected ? args[0] : args[1]) as R;
-
-  const useFakeTimers = () => {
-    jest.useFakeTimers();
-
-    const mockedImplementation = jest
-      .spyOn(global, 'setTimeout')
-      .getMockImplementation();
-
-    jest
-      .spyOn(global, 'setTimeout')
-      .mockImplementation((...args: [unknown, unknown]) => {
-        // ADHOC: depending on implementation (promisify vs raw), the method signature will be different
-        const callback = findArg<(..._: unknown[]) => void>(args, 'function');
-        const ms = findArg<number>(args, 'number');
-        const timer = mockedImplementation?.(callback, ms);
-
-        jest.runAllTimers();
-
-        return timer as NodeJS.Timeout;
-      });
-  };
-
   const id = 'roMq1UVuhPKkndLERNKnA8';
-  const mosckedScans = mock<DefaultScans>();
+  const mockedScans = mock<Scans>();
+
   let scan!: Scan;
+  let options!: ScanOptions;
+  let spiedOptions!: ScanOptions;
 
   beforeEach(() => {
-    scan = new Scan(id, instance(mosckedScans));
+    useFakeTimers();
+    options = { id, scans: instance(mockedScans) };
+    spiedOptions = spy(options);
+    scan = new Scan(options);
   });
 
-  afterEach(() => reset<DefaultScans>(mosckedScans));
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.useRealTimers();
+    reset<Scans | ScanOptions>(mockedScans, spiedOptions);
+  });
+
   describe('issues', () => {
-    it('should call listIssues', async () => {
-      when(mosckedScans.listIssues(id)).thenResolve([]);
+    it('should return an empty list', async () => {
+      when(mockedScans.listIssues(id)).thenResolve([]);
 
-      await scan.issues();
+      const result = await scan.issues();
 
-      verify(mosckedScans.listIssues(id)).once();
+      expect(result).toEqual([]);
+      verify(mockedScans.listIssues(id)).once();
+    });
+
+    it('should return a cached result if scan is done', async () => {
+      when(mockedScans.listIssues(id))
+        .thenResolve([])
+        .thenResolve([
+          {
+            id: 'pDzxcEXQC8df1fcz1QwPf9',
+            order: 1,
+            details:
+              'Cross-site request forgery is a type of malicious website exploit.',
+            name: 'Database connection crashed',
+            severity: Severity.MEDIUM,
+            protocol: 'http',
+            remedy:
+              'The best way to protect against those kind of issues is making sure the Database resources are sufficient',
+            cvss: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L',
+            time: new Date(),
+            originalRequest: {
+              method: HttpMethod.GET,
+              url: 'https://brokencrystals.com/'
+            },
+            request: {
+              method: HttpMethod.GET,
+              url: 'https://brokencrystals.com/'
+            }
+          }
+        ]);
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.DONE });
+
+      const result = await scan.issues();
+
+      expect(result).toEqual([]);
     });
   });
 
   describe('status', () => {
-    afterEach(() => jest.useRealTimers());
-    it('should call getScan one time', async () => {
-      useFakeTimers();
-      when(mosckedScans.getScan(id)).thenResolve({
-        status: ScanStatus.DONE,
-        issuesBySeverity: []
-      });
+    it.each([
+      ScanStatus.DONE,
+      ScanStatus.STOPPED,
+      ScanStatus.DISRUPTED,
+      ScanStatus.FAILED
+    ])('should stop consuming on the %s status', async (status: ScanStatus) => {
+      const expected: ScanState = {
+        status
+      };
+      when(mockedScans.getScan(id)).thenResolve(expected);
 
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      for await (const _ of scan.status());
+      const result: ScanState[] = [];
 
-      verify(mosckedScans.getScan(id)).once();
+      for await (const state of scan.status()) {
+        result.push(state);
+      }
+
+      verify(mockedScans.getScan(id)).once();
+      expect(result).toEqual([expected]);
     });
 
-    it('should call getScan 3 times', async () => {
-      useFakeTimers();
-      when(mosckedScans.getScan(id))
+    it('should update a status multiple times util last value is consumed', async () => {
+      when(mockedScans.getScan(id))
         .thenResolve({
-          status: ScanStatus.RUNNING,
-          issuesBySeverity: []
+          status: ScanStatus.RUNNING
         })
         .thenResolve({
-          status: ScanStatus.RUNNING,
-          issuesBySeverity: []
+          status: ScanStatus.RUNNING
         })
         .thenResolve({
-          status: ScanStatus.DONE,
-          issuesBySeverity: []
+          status: ScanStatus.DONE
         });
 
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      for await (const _ of scan.status());
+      const result: ScanState[] = [];
 
-      verify(mosckedScans.getScan(id)).thrice();
+      for await (const state of scan.status()) {
+        result.push(state);
+      }
+
+      verify(mockedScans.getScan(id)).thrice();
+      expect(result).toEqual(
+        expect.arrayContaining([{ status: ScanStatus.DONE }])
+      );
     });
 
-    it('should call stopScan if getScan throw error', async () => {
-      useFakeTimers();
-      when(mosckedScans.getScan(id)).thenThrow();
-      when(mosckedScans.stopScan(id)).thenResolve();
+    it('should return the last consumed status', async () => {
+      when(mockedScans.getScan(id)).thenResolve({
+        status: ScanStatus.DONE
+      });
 
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      for await (const _ of scan.status());
+      const expected = await scan.status();
+      const result = await scan.status();
 
-      verify(mosckedScans.stopScan(id)).once;
+      expect(result).toEqual(expected);
     });
   });
 
-  describe('waitFor', () => {
-    afterEach(() => jest.useRealTimers());
-    it('should call getScan one time', async () => {
-      useFakeTimers();
-      when(mosckedScans.getScan(id)).thenResolve({
+  describe('expect', () => {
+    it('should satisfy expectation', async () => {
+      when(mockedScans.getScan(id)).thenResolve({
         status: ScanStatus.DONE,
         issuesBySeverity: [{ number: 1, type: Severity.HIGH }]
       });
 
-      await scan.waitFor({ expectation: Severity.HIGH });
+      await scan.expect(Severity.HIGH);
 
-      verify(mosckedScans.getScan(id)).once();
+      verify(mockedScans.getScan(id)).once();
     });
 
-    it('should call getScan three times', async () => {
-      useFakeTimers();
-      when(mosckedScans.getScan(id))
+    it('should satisfy expectation after a few iterations', async () => {
+      when(mockedScans.getScan(id))
         .thenResolve({
           status: ScanStatus.RUNNING,
           issuesBySeverity: [{ number: 1, type: Severity.LOW }]
@@ -129,35 +180,77 @@ describe('Scan', () => {
           issuesBySeverity: [{ number: 1, type: Severity.HIGH }]
         });
 
-      await scan.waitFor({ expectation: Severity.HIGH });
+      await scan.expect(Severity.HIGH);
 
-      verify(mosckedScans.getScan(id)).thrice();
+      verify(mockedScans.getScan(id)).thrice();
     });
 
-    it('should not to throw if timeout passed', async () => {
-      useFakeTimers();
-      const timeout = 10000;
-      when(mosckedScans.getScan(id)).thenResolve({
+    it('should terminate expectation due to timeout', async () => {
+      scan = new Scan({ ...options, timeout: 1 });
+      when(mockedScans.getScan(id)).thenResolve({
         status: ScanStatus.RUNNING,
         issuesBySeverity: [{ number: 1, type: Severity.LOW }]
       });
 
-      const promise = scan.waitFor({
-        expectation: Severity.HIGH,
-        timeout
-      });
+      await scan.expect(Severity.HIGH);
 
-      await expect(promise).resolves.not.toThrow();
+      expect(setTimeout).toHaveBeenCalled();
+    });
+
+    it('should use a custom expectation', async () => {
+      when(mockedScans.getScan(id)).thenResolve({
+        status: ScanStatus.RUNNING,
+        issuesBySeverity: [{ number: 1, type: Severity.LOW }]
+      });
+      const fn = jest.fn().mockReturnValue(true);
+
+      await scan.expect(fn);
+
+      expect(fn).toHaveBeenLastCalledWith(scan);
+    });
+
+    it('should handle an error that appears in a custom expectation', async () => {
+      when(mockedScans.getScan(id)).thenResolve({
+        status: ScanStatus.RUNNING,
+        issuesBySeverity: [{ number: 1, type: Severity.LOW }]
+      });
+      const fn = jest
+        .fn()
+        .mockImplementation(() => {
+          throw new Error('Something went wrong');
+        })
+        .mockImplementation(() => true);
+
+      await scan.expect(fn);
+
+      expect(fn).toHaveBeenLastCalledWith(scan);
+    });
+
+    it('should consider the `issuesBySeverity` as an empty array if it is not defined', async () => {
+      when(mockedScans.getScan(id))
+        .thenResolve({
+          status: ScanStatus.RUNNING
+        })
+        .thenResolve({
+          status: ScanStatus.RUNNING,
+          issuesBySeverity: [{ number: 1, type: Severity.LOW }]
+        });
+
+      await scan.expect(Severity.MEDIUM);
+
+      verify(mockedScans.getScan(id)).twice();
     });
   });
 
   describe('stop', () => {
-    it('should call stopScan', async () => {
-      when(mosckedScans.stopScan(id)).thenResolve();
+    it('should stop a scan', async () => {
+      when(mockedScans.stopScan(id)).thenResolve();
 
       await scan.stop();
 
-      verify(mosckedScans.stopScan(id)).once();
+      verify(mockedScans.stopScan(id)).once();
     });
+
+    it.todo('should do nothing if scan is already stopped');
   });
 });

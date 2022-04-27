@@ -1,80 +1,119 @@
 import { Scans } from './Scans';
-import { Issue, IssueGroup, ScanState, ScanStatus, Severity } from './models';
+import {
+  Issue,
+  IssueGroup,
+  ScanState,
+  ScanStatus,
+  Severity,
+  severityRanges
+} from './models';
 import { delay } from '@secbox/core';
 
+export interface ScanOptions {
+  id: string;
+  scans: Scans;
+  poolingInterval?: number;
+  timeout?: number;
+}
+
 export class Scan {
-  private state: ScanState = { status: ScanStatus.PENDING };
-
-  private readonly DELAY_TIME = 1000;
-
-  private readonly ACTIVITY_STATUSES: readonly ScanStatus[] = [
+  public readonly id: string;
+  private readonly ACTIVE_STATUSES: ReadonlySet<ScanStatus> = new Set([
     ScanStatus.PENDING,
     ScanStatus.RUNNING
-  ];
+  ]);
+  private readonly DONE_STATUSES: ReadonlySet<ScanStatus> = new Set([
+    ScanStatus.DISRUPTED,
+    ScanStatus.DONE,
+    ScanStatus.FAILED,
+    ScanStatus.STOPPED
+  ]);
+  private readonly scans: Scans;
+  private readonly poolingInterval: number;
+  private readonly timeout: number | undefined;
+  private state: ScanState = { status: ScanStatus.PENDING };
+  private _issues: Issue[] = [];
 
-  get active(): boolean {
-    return this.ACTIVITY_STATUSES.includes(this.state.status);
+  constructor({ id, scans, timeout, poolingInterval = 5 * 1000 }: ScanOptions) {
+    this.scans = scans;
+    this.id = id;
+    this.poolingInterval = poolingInterval;
+    this.timeout = timeout;
   }
 
-  constructor(public readonly id: string, private readonly scans: Scans) {}
+  get active(): boolean {
+    return this.ACTIVE_STATUSES.has(this.state.status);
+  }
+
+  get done(): boolean {
+    return this.DONE_STATUSES.has(this.state.status);
+  }
 
   public async issues(): Promise<Issue[]> {
-    return this.scans.listIssues(this.id);
+    if (!this.done) {
+      this._issues = await this.scans.listIssues(this.id);
+    }
+
+    return this._issues;
   }
 
   public async *status(): AsyncIterableIterator<ScanState> {
-    try {
-      while (this.active) {
-        await delay(this.DELAY_TIME);
-        const state = await this.scans.getScan(this.id);
+    while (this.active) {
+      await delay(this.poolingInterval);
 
-        this.state = state;
+      const state = await this.scans.getScan(this.id);
 
-        yield state;
-      }
-    } catch (err) {
-      await this.stop();
-      throw err;
+      this.state = state;
+
+      yield state;
     }
+
+    return this.state;
   }
 
-  public async waitFor(options: {
-    expectation: 'any' | Severity;
-    timeout?: number;
-  }): Promise<void> {
-    const { expectation, timeout } = options;
+  public async expect(
+    expectation: Severity | ((scan: Scan) => unknown)
+  ): Promise<void> {
     let timeoutPassed = false;
-    let timeoutDescriptor;
+    let timer: NodeJS.Timeout | undefined;
 
-    if (timeout) {
-      timeoutDescriptor = setTimeout(() => (timeoutPassed = true), timeout);
+    if (this.timeout) {
+      timer = setTimeout(() => (timeoutPassed = true), this.timeout);
     }
 
+    const predicate = () => {
+      try {
+        return typeof expectation === 'function'
+          ? expectation(this)
+          : this.satisfyExpectation(expectation);
+      } catch {
+        // noop
+      }
+    };
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    for await (const _ of this.status()) {
-      if (this.satisfyExpectation(expectation) || timeoutPassed) {
+    for await (const _status of this.status()) {
+      if (!this.active || (await predicate()) || timeoutPassed) {
         break;
       }
     }
 
-    if (timeoutDescriptor) {
-      clearTimeout(timeoutDescriptor);
+    if (timer) {
+      clearTimeout(timer);
     }
   }
 
   public async stop(): Promise<void> {
-    if (!this.active) {
-      return;
+    if (this.active) {
+      return this.scans.stopScan(this.id);
     }
-
-    return this.scans.stopScan(this.id);
   }
 
-  private satisfyExpectation(expectation: 'any' | Severity): boolean {
-    const issuesBySeverity = this.state?.issuesBySeverity ?? [];
+  private satisfyExpectation(severity: Severity): boolean {
+    const issueGroups = this.state.issuesBySeverity ?? [];
 
-    return issuesBySeverity.some((x: IssueGroup) =>
-      expectation !== 'any' ? x.type === expectation : !!x.number
+    return issueGroups.some((x: IssueGroup) =>
+      severityRanges.get(severity)?.includes(x.type)
     );
   }
 }
