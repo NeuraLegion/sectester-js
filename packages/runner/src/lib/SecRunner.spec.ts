@@ -1,7 +1,9 @@
 import 'reflect-metadata';
 import { SecRunner } from './SecRunner';
+import { SecScan } from './SecScan';
+import { TestType } from '../external';
 import { Configuration } from '@secbox/core';
-import { instance, mock, reset, when } from 'ts-mockito';
+import { instance, mock, reset, verify, when } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
 import { Repeater, RepeaterFactory, RepeatersManager } from '@secbox/repeater';
 
@@ -78,10 +80,17 @@ describe('SecRunner', () => {
       expect(secRunner.repeaterId).toBeDefined();
     });
 
-    it('should throw an error on initializing more than once', async () => {
+    it('should throw an error if called twice', async () => {
       await secRunner.init();
 
       await expect(secRunner.init()).rejects.toThrow('Already initialized');
+    });
+
+    it('should not throw an error on re-init after clearing', async () => {
+      await secRunner.init();
+      await secRunner.clear();
+
+      await expect(secRunner.init()).resolves.not.toThrowError();
     });
   });
 
@@ -90,7 +99,36 @@ describe('SecRunner', () => {
       await secRunner.init();
       await secRunner.clear();
 
+      verify(mockedRepeater.stop()).once();
+      verify(mockedRepeaterManager.deleteRepeater(repeaterId)).once();
       expect(secRunner.repeaterId).toBeUndefined();
+    });
+
+    it('should do nothing if not initialized', async () => {
+      await expect(secRunner.clear()).resolves.not.toThrowError();
+    });
+
+    it('should do nothing if called twice', async () => {
+      await secRunner.init();
+      await secRunner.clear();
+
+      await expect(secRunner.clear()).resolves.not.toThrowError();
+    });
+  });
+
+  describe('createScan', () => {
+    it('should create scan', async () => {
+      await secRunner.init();
+
+      expect(secRunner.createScan({ tests: [TestType.XSS] })).toBeInstanceOf(
+        SecScan
+      );
+    });
+
+    it('should throw an error if not initialize', () => {
+      expect(() => secRunner.createScan({ tests: [TestType.XSS] })).toThrow(
+        'Must be initialized first'
+      );
     });
   });
 });

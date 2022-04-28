@@ -44,9 +44,13 @@ export class SecRunner {
   }
 
   public createScan(options: SecScanOptions): SecScan {
+    if (!this.repeater) {
+      throw new Error('Must be initialized first.');
+    }
+
     return new SecScan({
       ...options,
-      repeaterId: this.repeater?.repeaterId
+      repeaterId: this.repeater.repeaterId
     });
   }
 }

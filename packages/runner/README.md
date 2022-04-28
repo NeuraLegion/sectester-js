@@ -19,12 +19,13 @@ describe('/api', () => {
 
   beforeEach(async () => {
     runner = new SecRunner({ cluster: 'app.neuralegion.com' });
+
+    await runner.init();
+
     scan = runner
       .createScan({ tests: [TestType.XSS] })
       // will not fail if the found issue severity is lower than the threshold
       .threshold(Severity.MEDIUM);
-
-    await runner.init();
   });
 
   afterEach(async () => {
