@@ -15,12 +15,16 @@ export class ScanFactory {
   }
 
   public async createScan(
-    options: ScanSettings | ScanSettingsOptions
+    settings: ScanSettings | ScanSettingsOptions,
+    options: {
+      timeout?: number;
+      poolingInterval?: number;
+    } = {}
   ): Promise<Scan> {
-    const config = await this.buildScanConfig(new ScanSettings(options));
+    const config = await this.buildScanConfig(new ScanSettings(settings));
     const { id } = await this.scans.createScan(config);
 
-    return new Scan({ id, scans: this.scans });
+    return new Scan({ id, scans: this.scans, ...options });
   }
 
   private async buildScanConfig({

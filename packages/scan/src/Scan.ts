@@ -82,19 +82,19 @@ export class Scan {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     for await (const _status of this.status()) {
-      if (this.done || (await predicate()) || timeoutPassed) {
+      if (this.done || (await predicate())) {
         break;
+      }
+
+      if (timeoutPassed) {
+        throw new Error(
+          `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
+        );
       }
     }
 
     if (timer) {
       clearTimeout(timer);
-    }
-
-    if (timeoutPassed) {
-      throw new Error(
-        `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
-      );
     }
   }
 
@@ -114,7 +114,9 @@ export class Scan {
     return this.state;
   }
 
-  private createPredicate(expectation: Severity | ((scan: Scan) => unknown)) {
+  private createPredicate(
+    expectation: Severity | ((scan: Scan) => unknown)
+  ): () => unknown {
     return () => {
       try {
         return typeof expectation === 'function'
