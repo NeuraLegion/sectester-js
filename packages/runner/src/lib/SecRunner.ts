@@ -1,6 +1,6 @@
 import { SecScanOptions } from './SecScanOptions';
 import { SecScan } from './SecScan';
-import { Configuration } from '@secbox/core';
+import { Configuration, ConfigurationOptions } from '@secbox/core';
 import { Repeater, RepeaterFactory, RepeatersManager } from '@secbox/repeater';
 
 export class SecRunner {
@@ -13,9 +13,9 @@ export class SecRunner {
     return this.repeater?.repeaterId;
   }
 
-  // TODO ConfigurationOptions
-  constructor(config: Configuration /* | ConfigurationOptions*/) {
-    this.configuration = config; // instanceof Configuration ? config : new Configuration(config);
+  constructor(config: Configuration | ConfigurationOptions) {
+    this.configuration =
+      config instanceof Configuration ? config : new Configuration(config);
     this.repeatersManager =
       this.configuration.container.resolve(RepeatersManager);
     this.repeaterFactory =

@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { SecRunner } from '@secbox/runner';
+import { SecRunner } from './SecRunner';
 import { Configuration } from '@secbox/core';
 import { instance, mock, reset, when } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
@@ -50,7 +50,9 @@ describe('SecRunner', () => {
       resolvableInstance(mockedRepeater)
     );
 
-    secRunner = new SecRunner(instance(mockedConfiguration));
+    const config = instance(mockedConfiguration);
+    Object.setPrototypeOf(config, Configuration.prototype);
+    secRunner = new SecRunner(config);
   });
 
   afterEach(() => {
