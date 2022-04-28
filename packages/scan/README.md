@@ -204,11 +204,11 @@ const target = new Target({
 });
 ```
 
-You can use `FormData` objects, such as [formdata-node](https://github.com/octet-stream/form-data) or [formdata-polyfill](https://github.com/octet-stream/form-data), as request body as well:
+You can use `FormData` objects, such as [form-data](https://www.npmjs.com/package/form-data), as request body as well:
 
 ```ts
 import { Target } from '@secbox/scan';
-import { FormData } from 'formdata-node';
+import FormData from 'form-data';
 
 const form = new FormData();
 form.set('greeting', 'Hello, world!');
