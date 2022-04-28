@@ -1,0 +1,138 @@
+import { AttackParamLocation, TestType } from './models';
+import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
+
+describe('ScanSettings', () => {
+  describe('constructor', () => {
+    it.each([
+      {
+        input: { tests: ['xxx' as unknown as TestType] },
+        expected: 'Unknown test type supplied'
+      },
+      { input: { tests: [] }, expected: 'Please provide a least one test' },
+      {
+        input: {
+          attackParamLocations: ['xxx' as AttackParamLocation]
+        },
+        expected: 'Unknown attack param location supplied'
+      },
+      {
+        input: {
+          attackParamLocations: []
+        },
+        expected: 'Please provide a least one attack parameter location'
+      },
+      {
+        input: {
+          poolSize: 51
+        },
+        expected: 'Invalid pool size'
+      },
+      {
+        input: {
+          poolSize: 0
+        },
+        expected: 'Invalid pool size'
+      },
+      {
+        input: {
+          slowEpTimeout: 1
+        },
+        expected: 'Invalid slow entry point timeout'
+      },
+      {
+        input: {
+          targetTimeout: 0
+        },
+        expected: 'Invalid target connection timeout'
+      },
+      {
+        input: {
+          targetTimeout: 121
+        },
+        expected: 'Invalid target connection timeout'
+      }
+    ])(
+      'should raise the error `$expected` when invalid config ($input) is supplied',
+      ({ input, expected }) => {
+        // arrange
+        const settings: ScanSettingsOptions = {
+          target: { url: 'https://example.com' },
+          tests: [TestType.XPATHI],
+          ...input
+        };
+
+        // act & assert
+        expect(() => new ScanSettings(settings)).toThrow(expected);
+      }
+    );
+
+    it('should create a settings with unique attack locations', () => {
+      // arrange
+      const settings: ScanSettingsOptions = {
+        target: { url: 'https://example.com' },
+        tests: [TestType.XPATHI],
+        attackParamLocations: [
+          AttackParamLocation.QUERY,
+          AttackParamLocation.QUERY
+        ]
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result).toMatchObject({
+        attackParamLocations: [AttackParamLocation.QUERY]
+      });
+    });
+
+    it('should create a settings with unique tests', () => {
+      // arrange
+      const settings: ScanSettingsOptions = {
+        target: { url: 'https://example.com' },
+        tests: [TestType.XPATHI, TestType.XPATHI]
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result).toMatchObject({
+        tests: [TestType.XPATHI]
+      });
+    });
+
+    it('should create a settings with custom name', () => {
+      // arrange
+      const settings: ScanSettingsOptions = {
+        name: 'my scan',
+        tests: [TestType.DOM_XSS],
+        target: { url: 'https://example.com' }
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result).toMatchObject({
+        name: 'my scan'
+      });
+    });
+
+    it('should create a settings with default name', () => {
+      // arrange
+      const settings: ScanSettingsOptions = {
+        tests: [TestType.DOM_XSS],
+        target: { url: 'https://example.com' }
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result).toMatchObject({
+        name: 'GET https://example.com/'
+      });
+    });
+  });
+});
