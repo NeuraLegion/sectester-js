@@ -1,6 +1,6 @@
 import { HttpMethod, isHttpMethod } from '../models';
 import { entriesToList } from '../utils';
-import { BODY_PARSERS } from './body-parsers';
+import { BodyParser } from './body-parsers';
 import {
   Header,
   normalizeUrl,
@@ -9,6 +9,7 @@ import {
   Request
 } from '@har-sdk/core';
 import { isPresent, isString } from '@secbox/core';
+import { container } from 'tsyringe';
 import { format } from 'url';
 
 export interface TargetOptions {
@@ -31,11 +32,15 @@ export interface TargetOptions {
 }
 
 export class Target implements TargetOptions {
+  private _serializeQuery: (
+    params: URLSearchParams | Record<string, string | string[]>
+  ) => string;
+
+  get serializeQuery() {
+    return this._serializeQuery;
+  }
+
   private _parsedURL!: URL;
-  private _serializeQuery?:
-    | ((params: URLSearchParams | Record<string, string | string[]>) => string)
-    | undefined;
-  private _headerValues = new Map<string, string | undefined>();
 
   private _url?: string;
 
@@ -106,6 +111,7 @@ export class Target implements TargetOptions {
     this._parsedURL.search = this.queryString;
   }
 
+  private _headerValues = new Map<string, string | undefined>();
   private _headerParameters?: Header[];
 
   get headerParameters() {
@@ -132,7 +138,10 @@ export class Target implements TargetOptions {
 
   get postData(): PostData | undefined {
     if (!this._postData && isPresent(this.body)) {
-      const parsedBody = BODY_PARSERS.find(x => x.canParse(this))?.parse(this);
+      const parsedBody = container
+        .resolveAll<BodyParser>(BodyParser)
+        .find(x => x.canParse(this))
+        ?.parse(this);
 
       if (parsedBody) {
         this.setContentTypeIfUnset(parsedBody.contentType);
@@ -186,20 +195,11 @@ export class Target implements TargetOptions {
     this.method = isHttpMethod(method) ? method : HttpMethod.GET;
     this.body = body;
     this.headers = headers;
-    this._serializeQuery = serializeQuery;
+    this._serializeQuery =
+      serializeQuery ??
+      ((params: URLSearchParams | string | Record<string, string | string[]>) =>
+        new URLSearchParams(params).toString());
     this.query = query ?? '';
-  }
-
-  public serializeQuery(
-    params: URLSearchParams | Record<string, string | string[]>
-  ): string {
-    return (
-      this._serializeQuery?.(params) ??
-      (params instanceof URLSearchParams
-        ? params
-        : new URLSearchParams(params)
-      ).toString()
-    );
   }
 
   public toHarRequest(): Request {

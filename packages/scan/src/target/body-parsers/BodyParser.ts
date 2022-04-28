@@ -12,3 +12,5 @@ export interface BodyParser {
 
   parse(target: Target): ParsedBody | undefined;
 }
+
+export const BodyParser: unique symbol = Symbol('BodyParser');

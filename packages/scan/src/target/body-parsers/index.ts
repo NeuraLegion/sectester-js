@@ -4,18 +4,23 @@ import { FormDataBodyParser } from './FormDataBodyParser';
 import { JsonBodyParser } from './JsonBodyParser';
 import { UrlEncodedBodyParser } from './UrlEncodedBodyParser';
 import { BodyParser } from './BodyParser';
+import { container } from 'tsyringe';
 
-export const BODY_PARSERS: readonly BodyParser[] = [
-  new FormDataBodyParser(),
-  new UrlEncodedBodyParser(),
-  new BinaryBodyParser(),
-  new TextBodyParser(),
-  new JsonBodyParser()
-];
+container
+  .register(BodyParser, {
+    useClass: FormDataBodyParser
+  })
+  .register(BodyParser, {
+    useClass: UrlEncodedBodyParser
+  })
+  .register(BodyParser, {
+    useClass: BinaryBodyParser
+  })
+  .register(BodyParser, {
+    useClass: TextBodyParser
+  })
+  .register(BodyParser, {
+    useClass: JsonBodyParser
+  });
 
 export * from './BodyParser';
-export * from './BinaryBodyParser';
-export * from './FormDataBodyParser';
-export * from './JsonBodyParser';
-export * from './TextBodyParser';
-export * from './UrlEncodedBodyParser';
