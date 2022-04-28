@@ -18,7 +18,7 @@ export class ScanFactory {
     settings: ScanSettings | ScanSettingsOptions,
     options: {
       timeout?: number;
-      poolingInterval?: number;
+      pollingInterval?: number;
     } = {}
   ): Promise<Scan> {
     const config = await this.buildScanConfig(new ScanSettings(settings));

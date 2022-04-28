@@ -12,7 +12,7 @@ import { delay } from '@secbox/core';
 export interface ScanOptions {
   id: string;
   scans: Scans;
-  poolingInterval?: number;
+  pollingInterval?: number;
   timeout?: number;
 }
 
@@ -29,15 +29,15 @@ export class Scan {
     ScanStatus.STOPPED
   ]);
   private readonly scans: Scans;
-  private readonly poolingInterval: number;
+  private readonly pollingInterval: number;
   private readonly timeout: number | undefined;
   private state: ScanState = { status: ScanStatus.PENDING };
   private _issues: Issue[] = [];
 
-  constructor({ id, scans, timeout, poolingInterval = 5 * 1000 }: ScanOptions) {
+  constructor({ id, scans, timeout, pollingInterval = 5 * 1000 }: ScanOptions) {
     this.scans = scans;
     this.id = id;
-    this.poolingInterval = poolingInterval;
+    this.pollingInterval = pollingInterval;
     this.timeout = timeout;
   }
 
@@ -61,7 +61,7 @@ export class Scan {
 
   public async *status(): AsyncIterableIterator<ScanState> {
     while (this.active) {
-      await delay(this.poolingInterval);
+      await delay(this.pollingInterval);
 
       yield this.refreshState();
     }
@@ -82,19 +82,22 @@ export class Scan {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     for await (const _status of this.status()) {
-      if (this.done || (await predicate())) {
-        break;
-      }
+      const preventFurtherPolling =
+        this.done || (await predicate()) || timeoutPassed;
 
-      if (timeoutPassed) {
-        throw new Error(
-          `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
-        );
+      if (preventFurtherPolling) {
+        break;
       }
     }
 
     if (timer) {
       clearTimeout(timer);
+    }
+
+    if (timeoutPassed) {
+      throw new Error(
+        `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
+      );
     }
   }
 
