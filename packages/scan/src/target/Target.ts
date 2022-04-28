@@ -1,7 +1,6 @@
 import { HttpMethod, isHttpMethod } from '../models';
 import { entriesToList } from '../utils';
 import { BODY_PARSERS } from './body-parsers';
-import FormData from 'form-data';
 import {
   Header,
   normalizeUrl,
@@ -19,7 +18,7 @@ export interface TargetOptions {
   query?: URLSearchParams | Record<string, string | string[]> | string;
   // The data to be sent as the request body.
   // The only required for POST, PUT, PATCH, and DELETE
-  body?: Buffer | FormData | URLSearchParams | string | unknown;
+  body?: unknown;
   // The request method to be used when making the request, GET by default
   method?: HttpMethod | string;
   // The headers
@@ -58,10 +57,14 @@ export class Target implements TargetOptions {
     delete this._queryParameters;
   }
 
-  private _method: HttpMethod | string;
+  private _method!: HttpMethod;
 
-  get method(): HttpMethod | string {
+  get method(): HttpMethod {
     return this._method;
+  }
+
+  set method(value: HttpMethod) {
+    this._method = value;
   }
 
   private _queryString?: string;
@@ -145,16 +148,15 @@ export class Target implements TargetOptions {
     return this._postData;
   }
 
-  private _body: FormData | URLSearchParams | string | unknown;
+  private _body?: unknown;
 
-  get body(): Buffer | FormData | URLSearchParams | string | unknown {
+  get body(): unknown {
     return this._body;
   }
 
-  private set body(
-    value: Buffer | FormData | URLSearchParams | string | unknown
-  ) {
+  private set body(value: unknown) {
     this._body = value;
+    delete this._postData;
   }
 
   get contentType(): string | undefined {
@@ -181,7 +183,7 @@ export class Target implements TargetOptions {
     method = HttpMethod.GET
   }: TargetOptions) {
     this.url = url;
-    this._method = isHttpMethod(method) ? method : HttpMethod.GET;
+    this.method = isHttpMethod(method) ? method : HttpMethod.GET;
     this.body = body;
     this.headers = headers;
     this._serializeQuery = serializeQuery;
