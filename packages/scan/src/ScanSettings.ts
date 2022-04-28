@@ -1,6 +1,6 @@
 import { AttackParamLocation, TestType } from './models';
-import { Target, TargetOptions } from './Target';
-import { checkBoundaries, contains } from './utils';
+import { Target, TargetOptions } from './target';
+import { checkBoundaries, contains } from '@secbox/core';
 
 export interface ScanSettingsOptions {
   // The list of tests to be performed against the target application

@@ -1,3 +1,5 @@
+import { isNumber } from './types';
+
 export interface NumBoundaries {
   min?: number;
   max?: number;
@@ -54,6 +56,3 @@ export const checkBoundaries = (
 
   return valid;
 };
-
-export const isNumber = (value: unknown): value is number =>
-  typeof value === 'number' && !isNaN(value);

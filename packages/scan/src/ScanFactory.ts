@@ -2,7 +2,7 @@ import { Scans } from './Scans';
 import { Scan } from './Scan';
 import { Discovery, Module, ScanConfig } from './models';
 import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
-import { Target, TargetOptions } from './Target';
+import { Target, TargetOptions } from './target';
 import { v4 } from 'uuid';
 import { Configuration } from '@secbox/core';
 import { Entry, Har } from '@har-sdk/core';

@@ -1,3 +1,2 @@
-export * from './enum';
-export * from './number';
 export * from './escape';
+export * from './entries-to-list';

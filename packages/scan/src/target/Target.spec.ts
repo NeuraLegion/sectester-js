@@ -72,7 +72,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `queryString` from `URLSearchParams`', () => {
+    it('should set `queryString` parsing a URLSearchParams', () => {
       // arrange
       const target = new Target({
         url: 'https://example.com',
@@ -95,7 +95,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `queryString` from `Record`', () => {
+    it('should set `queryString` parsing a record', () => {
       // arrange
       const target = new Target({
         url: 'https://example.com',
@@ -118,7 +118,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `queryString` when passed via URL', () => {
+    it('should set `queryString` parsing an URL', () => {
       // arrange
       const target = new Target({ url: 'https://example.com?foo=bar' });
 
@@ -138,7 +138,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `queryString` with the same key', () => {
+    it('should set `queryString` merging keys with the same name', () => {
       // arrange
       const target = new Target({
         url: 'https://example.com',
@@ -208,7 +208,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `headers` with the same key', () => {
+    it('should set `headers` merging keys with the same name', () => {
       // arrange
       const target = new Target({
         url: 'https://example.com',
@@ -302,7 +302,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `postData` from `FormData`', () => {
+    it('should set `postData` parsing a FormData', () => {
       // arrange
       const value = Buffer.from([0x01, 0x09, 0x09, 0x04]);
       const form = new FormData();
@@ -349,7 +349,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `postData` from multipart/form-data', () => {
+    it('should set `postData` parsing multipart/form-data', () => {
       // arrange
       const value = Buffer.from([0x01, 0x09, 0x09, 0x04]);
       const form = new FormData();
@@ -397,49 +397,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `params` to undefined if boundary is not defined', () => {
-      // arrange
-      const value = Buffer.from([0x01, 0x09, 0x09, 0x04]);
-      const form = new FormData();
-      form.append('file', value, {
-        filename: 'file.bin'
-      });
-
-      const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        headers: {
-          'content-type': 'multipart/form-data'
-        },
-        body: form.getBuffer().toString()
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          {
-            name: 'content-type',
-            value: 'multipart/form-data'
-          }
-        ],
-        queryString: [],
-        postData: {
-          mimeType: 'multipart/form-data',
-          text: form.getBuffer().toString()
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `postData` from a plain object', () => {
+    it('should set `postData` parsing a plain object', () => {
       // arrange
       const value = { foo: 'bar' };
       const target = new Target({
@@ -473,7 +431,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `postData` from JSON', () => {
+    it('should set `postData` parsing a JSON', () => {
       // arrange
       const value = { foo: 'bar' };
       const target = new Target({
@@ -508,7 +466,7 @@ describe('Target', () => {
       });
     });
 
-    it('should recognize body as JSON by content-type (application/json-patch+json)', () => {
+    it('should recognize a JSON by content-type', () => {
       // arrange
       const value = [{ op: 'replace', path: '/firstName', value: 'First' }];
       const target = new Target({
@@ -543,7 +501,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `postData` from `URLSearchParams`', () => {
+    it('should set `postData` parsing an URLSearchParams', () => {
       // arrange
       const value = new URLSearchParams('foo=bar');
       const target = new Target({
@@ -583,7 +541,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `postData` from form-urlencoded', () => {
+    it('should set `postData` parsing application/x-www-form-urlencoded', () => {
       // arrange
       const value = 'foo=bar';
       const target = new Target({
@@ -624,7 +582,7 @@ describe('Target', () => {
       });
     });
 
-    it('should set `postData` to empty string', () => {
+    it('should set `postData` to undefined', () => {
       // arrange
       const value = Symbol('foo');
       const target = new Target({
@@ -643,28 +601,18 @@ describe('Target', () => {
         httpVersion: 'HTTP/0.9',
         headers: [],
         queryString: [],
-        postData: {
-          mimeType: 'text/plain',
-          text: ''
-        },
         cookies: [],
         headersSize: -1,
         bodySize: -1
       });
     });
 
-    it.each([
-      { input: 'text', type: 'String' },
-      { input: 1, type: 'Number' },
-      { input: false, type: 'Boolean' },
-      { input: new Date(), type: 'Date' },
-      { input: Buffer.from('text'), type: 'Buffer' }
-    ])('should set `postData` from `$type`', ({ input }) => {
+    it('should set `postData` parsing a Buffer', () => {
       // arrange
       const target = new Target({
         url: 'https://example.com/',
         method: 'POST',
-        body: input
+        body: Buffer.from('text')
       });
 
       // act
@@ -675,16 +623,47 @@ describe('Target', () => {
         method: 'POST',
         url: 'https://example.com/',
         httpVersion: 'HTTP/0.9',
-        headers: [],
+        headers: [{ name: 'content-type', value: 'application/octet-stream' }],
         queryString: [],
         postData: {
-          mimeType: 'text/plain',
-          text: input.toString()
+          mimeType: 'application/octet-stream',
+          text: 'text'
         },
         cookies: [],
         headersSize: -1,
         bodySize: -1
       });
     });
+
+    it.each(['text', 1, false, new Date()])(
+      'should set `postData` serializing %o',
+      input => {
+        // arrange
+        const target = new Target({
+          url: 'https://example.com/',
+          method: 'POST',
+          body: input
+        });
+
+        // act
+        const result = target.toHarRequest();
+
+        // assert
+        expect(result).toEqual({
+          method: 'POST',
+          url: 'https://example.com/',
+          httpVersion: 'HTTP/0.9',
+          headers: [{ name: 'content-type', value: 'text/plain' }],
+          queryString: [],
+          postData: {
+            mimeType: 'text/plain',
+            text: input.toString()
+          },
+          cookies: [],
+          headersSize: -1,
+          bodySize: -1
+        });
+      }
+    );
   });
 });
