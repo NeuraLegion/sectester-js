@@ -50,6 +50,8 @@ export class Scan {
   }
 
   public async issues(): Promise<Issue[]> {
+    await this.refreshState();
+
     if (!this.done) {
       this._issues = await this.scans.listIssues(this.id);
     }
@@ -61,11 +63,7 @@ export class Scan {
     while (this.active) {
       await delay(this.poolingInterval);
 
-      const state = await this.scans.getScan(this.id);
-
-      this.state = state;
-
-      yield state;
+      yield this.refreshState();
     }
 
     return this.state;
@@ -75,13 +73,49 @@ export class Scan {
     expectation: Severity | ((scan: Scan) => unknown)
   ): Promise<void> {
     let timeoutPassed = false;
-    let timer: NodeJS.Timeout | undefined;
 
-    if (this.timeout) {
-      timer = setTimeout(() => (timeoutPassed = true), this.timeout);
+    const timer: NodeJS.Timeout | undefined = this.timeout
+      ? setTimeout(() => (timeoutPassed = true), this.timeout)
+      : undefined;
+
+    const predicate = this.createPredicate(expectation);
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    for await (const _status of this.status()) {
+      if (this.done || (await predicate()) || timeoutPassed) {
+        break;
+      }
     }
 
-    const predicate = () => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    if (timeoutPassed) {
+      throw new Error(
+        `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
+      );
+    }
+  }
+
+  public async stop(): Promise<void> {
+    await this.refreshState();
+
+    if (this.active) {
+      return this.scans.stopScan(this.id);
+    }
+  }
+
+  private async refreshState(): Promise<ScanState> {
+    if (!this.done) {
+      this.state = await this.scans.getScan(this.id);
+    }
+
+    return this.state;
+  }
+
+  private createPredicate(expectation: Severity | ((scan: Scan) => unknown)) {
+    return () => {
       try {
         return typeof expectation === 'function'
           ? expectation(this)
@@ -90,23 +124,6 @@ export class Scan {
         // noop
       }
     };
-
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    for await (const _status of this.status()) {
-      if (!this.active || (await predicate()) || timeoutPassed) {
-        break;
-      }
-    }
-
-    if (timer) {
-      clearTimeout(timer);
-    }
-  }
-
-  public async stop(): Promise<void> {
-    if (this.active) {
-      return this.scans.stopScan(this.id);
-    }
   }
 
   private satisfyExpectation(severity: Severity): boolean {

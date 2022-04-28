@@ -54,6 +54,7 @@ describe('Scan', () => {
   describe('issues', () => {
     it('should return an empty list', async () => {
       when(mockedScans.listIssues(id)).thenResolve([]);
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.RUNNING });
 
       const result = await scan.issues();
 
@@ -154,7 +155,7 @@ describe('Scan', () => {
   });
 
   describe('expect', () => {
-    it('should satisfy expectation', async () => {
+    it('should satisfy an expectation', async () => {
       when(mockedScans.getScan(id)).thenResolve({
         status: ScanStatus.DONE,
         issuesBySeverity: [{ number: 1, type: Severity.HIGH }]
@@ -165,7 +166,7 @@ describe('Scan', () => {
       verify(mockedScans.getScan(id)).once();
     });
 
-    it('should satisfy expectation after a few iterations', async () => {
+    it('should satisfy an expectation after a few iterations', async () => {
       when(mockedScans.getScan(id))
         .thenResolve({
           status: ScanStatus.RUNNING,
@@ -192,9 +193,10 @@ describe('Scan', () => {
         issuesBySeverity: [{ number: 1, type: Severity.LOW }]
       });
 
-      await scan.expect(Severity.HIGH);
+      const result = scan.expect(Severity.HIGH);
 
       expect(setTimeout).toHaveBeenCalled();
+      await expect(result).rejects.toThrow('The expectation was not satisfied');
     });
 
     it('should use a custom expectation', async () => {
@@ -245,12 +247,19 @@ describe('Scan', () => {
   describe('stop', () => {
     it('should stop a scan', async () => {
       when(mockedScans.stopScan(id)).thenResolve();
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.RUNNING });
 
       await scan.stop();
 
       verify(mockedScans.stopScan(id)).once();
     });
 
-    it.todo('should do nothing if scan is already stopped');
+    it('should do nothing if scan is already stopped', async () => {
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.DONE });
+
+      await scan.stop();
+
+      verify(mockedScans.stopScan(id)).never();
+    });
   });
 });
