@@ -134,8 +134,9 @@ export class Scan {
   private satisfyExpectation(severity: Severity): boolean {
     const issueGroups = this.state.issuesBySeverity ?? [];
 
-    return issueGroups.some((x: IssueGroup) =>
-      severityRanges.get(severity)?.includes(x.type)
+    return issueGroups.some(
+      (x: IssueGroup) =>
+        severityRanges.get(severity)?.includes(x.type) && x.number > 0
     );
   }
 }
