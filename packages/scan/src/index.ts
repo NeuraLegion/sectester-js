@@ -1,3 +1,5 @@
+import './register';
+
 export * from './models';
 export * from './target';
 export * from './Scan';
