@@ -7,7 +7,7 @@ export interface ScanSettingsOptions {
   tests: TestType[];
   // The target that will be attacked
   target: Target | TargetOptions;
-  // The Scan name
+  // The scan name
   name?: string;
   // ID of the repeater
   repeaterId?: string;

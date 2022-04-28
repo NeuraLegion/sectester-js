@@ -10,8 +10,8 @@ import { Entry, Har } from '@har-sdk/core';
 export class ScanFactory {
   private readonly scans: Scans;
 
-  constructor(private readonly sdkConfig: Configuration) {
-    this.scans = sdkConfig.container.resolve(Scans);
+  constructor(private readonly configuration: Configuration) {
+    this.scans = configuration.container.resolve(Scans);
   }
 
   public async createScan(
@@ -106,8 +106,8 @@ export class ScanFactory {
       log: {
         version: '1.2',
         creator: {
-          name: this.sdkConfig.name,
-          version: this.sdkConfig.version
+          name: this.configuration.name,
+          version: this.configuration.version
         },
         entries: [this.createHarEntry(target)]
       }
