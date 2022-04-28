@@ -2,16 +2,9 @@ export const escape = (
   str: string,
   chars: string = '^[]{}()\\\\.$*+?|'
 ): string => {
-  let foundChar = false;
-
-  const length = chars.length;
-
-  for (let i = 0; i < length; ++i) {
-    if (str.indexOf(chars.charAt(i)) !== -1) {
-      foundChar = true;
-      break;
-    }
-  }
+  const foundChar = [...chars].some(
+    (_, i: number) => str.indexOf(chars.charAt(i)) !== -1
+  );
 
   if (!foundChar) {
     return str;

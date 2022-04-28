@@ -69,7 +69,7 @@ describe('escape', () => {
       expected: 'file'
     }
   ])(
-    'should use custom chars list ($chars) to escape a string ($input)',
+    'should return $expected for $input if chars to be escaped is $chars',
     ({ input, chars, expected }) => {
       // act
       const result = escape(input, chars);
