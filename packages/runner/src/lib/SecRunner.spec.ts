@@ -116,16 +116,16 @@ describe('SecRunner', () => {
   });
 
   describe('createScan', () => {
+    const options = { tests: [TestType.XSS] };
+
     it('should create scan', async () => {
       await secRunner.init();
 
-      expect(secRunner.createScan({ tests: [TestType.XSS] })).toBeInstanceOf(
-        SecScan
-      );
+      expect(secRunner.createScan(options)).toBeInstanceOf(SecScan);
     });
 
-    it('should throw an error if not initialize', () => {
-      expect(() => secRunner.createScan({ tests: [TestType.XSS] })).toThrow(
+    it('should throw an error if not initialized', () => {
+      expect(() => secRunner.createScan(options)).toThrow(
         'Must be initialized first'
       );
     });
