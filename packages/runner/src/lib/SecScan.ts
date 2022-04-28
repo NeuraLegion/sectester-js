@@ -12,14 +12,16 @@ export class SecScan {
     this.scanRunner = this.configuration.container.resolve(ScanRunner);
   }
 
-  public run(target: TargetOptions): Promise<void> {
-    return this.scanRunner.run(
+  public async run(target: TargetOptions): Promise<void> {
+    await this.scanRunner.run(
       {
         ...this.settings,
         target
       },
       this._threshold
     );
+
+    // TODO print results? handle threshold?
   }
 
   public threshold(severity?: Severity): SecScan {

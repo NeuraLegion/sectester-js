@@ -10,6 +10,11 @@ npm i -s @secbox/runner
 
 ## Usage
 
+For access to API you need to obtain a NeuraLegion token. Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens) and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the knowledgebase.
+
+By default, it will be read from `BRIGHT_TOKEN` environment variable,
+but you can also pass it as part of `ConfigurationOptions`. Read more in `@secbox/core` package [documentation](https://github.com/NeuraLegion/secbox-sdk-js/tree/master/packages/core#credentials).
+
 ```ts
 import { SecRunner, SecScan, Severity, TestType } from '@secbox/runner';
 
