@@ -56,7 +56,7 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       timeout,
       params,
       headers: {
-        ...this.getBodyHeaders(data),
+        ...this.inferHeaders(data),
         'x-correlation-id': correlationId,
         'date': createdAt.toISOString()
       },
@@ -92,8 +92,8 @@ export class HttpCommandDispatcher implements CommandDispatcher {
     });
   }
 
-  private getBodyHeaders<T>(data: T): Record<string, unknown> {
-    let headers: Record<string, unknown> = {};
+  private inferHeaders<T>(data: T): Record<string, string | string[]> {
+    let headers: Record<string, string | string[]> = {};
 
     if (data instanceof FormData) {
       headers = data.getHeaders();
