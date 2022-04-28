@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { HttpMethod, isHttpMethod } from './HttpMethod';
 import { escape } from './utils';
 import { TargetOptions } from './TargetOptions';

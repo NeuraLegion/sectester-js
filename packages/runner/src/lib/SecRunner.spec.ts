@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { SecRunner } from './SecRunner';
 import { SecScan } from './SecScan';
 import { TestType } from '../external';

@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 export const escape = (
   str: string,
   chars: string = '^[]{}()\\\\.$*+?|'

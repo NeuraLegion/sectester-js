@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 export enum HttpMethod {
   GET = 'GET',
   PUT = 'PUT',

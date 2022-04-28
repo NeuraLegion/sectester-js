@@ -48,7 +48,7 @@ export class SecRunner {
       throw new Error('Must be initialized first.');
     }
 
-    return new SecScan({
+    return new SecScan(this.configuration, {
       ...options,
       repeaterId: this.repeater.repeaterId
     });

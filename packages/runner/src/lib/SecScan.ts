@@ -1,25 +1,19 @@
-import { ScanSettings, Severity, TargetOptions } from '../external';
-
-// TODO actual call
-const tmpRunScan = (
-  settings: ScanSettings,
-  threshold: Severity | undefined
-): Promise<void> => {
-  // eslint-disable-next-line no-console
-  console.log(
-    `Looking for ${settings.tests} vulnerability on ${settings.target.url} with threshold ${threshold}`
-  );
-
-  return Promise.resolve();
-};
+import { ScanRunner, ScanSettings, Severity, TargetOptions } from '../external';
+import { Configuration } from '@secbox/core';
 
 export class SecScan {
   private _threshold: Severity | undefined;
+  private scanRunner: ScanRunner;
 
-  constructor(private readonly settings: Omit<ScanSettings, 'target'>) {}
+  constructor(
+    private readonly configuration: Configuration,
+    private readonly settings: Omit<ScanSettings, 'target'>
+  ) {
+    this.scanRunner = this.configuration.container.resolve(ScanRunner);
+  }
 
   public run(target: TargetOptions): Promise<void> {
-    return tmpRunScan(
+    return this.scanRunner.run(
       {
         ...this.settings,
         target
