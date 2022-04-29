@@ -1,6 +1,6 @@
 # @secbox/scan
 
-The package defines a simple public API to manage scans, create, and send the reporters after the scan has been finished.
+The package defines a simple public API to manage scans and their expectation.
 
 ## Setup
 
