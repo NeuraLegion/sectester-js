@@ -30,6 +30,11 @@ const lowSeverityIssue: Partial<Issue> = {
   severity: Severity.LOW
 };
 
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const tableRowRegex = (...columnTexts: string[]) =>
+  new RegExp(columnTexts.map(x => escapeRegex(x)).join('[│ ]+'));
+
 describe('StdReporter', () => {
   let reporter!: Reporter;
 
@@ -129,6 +134,20 @@ describe('StdReporter', () => {
       expect(console.error).not.toHaveBeenCalled();
       expect(console.warn).not.toHaveBeenCalled();
       expect(console.log).not.toHaveBeenCalled();
+      /* eslint-enable no-console */
+    });
+
+    it('should print summary table header', async () => {
+      when(mockedScan.issues()).thenResolve([mediumSeverityIssue] as Issue[]);
+
+      await reporter.report(instance(mockedScan));
+
+      /* eslint-disable no-console */
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringMatching(
+          tableRowRegex('Severity', 'Name', 'Quantity', 'Targets')
+        )
+      );
       /* eslint-enable no-console */
     });
   });

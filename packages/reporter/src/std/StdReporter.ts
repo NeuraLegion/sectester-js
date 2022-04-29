@@ -67,14 +67,14 @@ export class StdReporter implements Reporter {
       [
         this.getHeaderConfig('severity', {
           formatter: x => this.colorize(x, x),
-          width: 10
+          width: 12
         }),
         this.getHeaderConfig('name'),
         this.getHeaderConfig('issues', {
           alias: 'Quantity',
           formatter: items => items.length,
           align: 'center',
-          width: 10
+          width: 12
         }),
         this.getHeaderConfig('issues', {
           alias: 'Targets',
