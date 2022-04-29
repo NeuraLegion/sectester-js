@@ -17,11 +17,19 @@ import { Reporter, StdReporter } from '@secboox/reporter';
 
 const reporter: Reporter = new StdReporter();
 ```
+
 You just need to call the `report` method to send findings to stdout:
 
 ```ts
 await reporter.report(scan);
 ```
+
+<details>
+<summary>Sample console output</summary>
+
+![[reporter-sample]](reporter-sample.png)
+
+</details>
 
 ## License
 
