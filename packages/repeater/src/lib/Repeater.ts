@@ -95,6 +95,10 @@ export class Repeater {
       })
     );
 
+    if (!res) {
+      throw new Error('Error registering repeater.');
+    }
+
     this.handleRegisterResult(res);
   }
 
@@ -136,13 +140,7 @@ export class Repeater {
     );
   }
 
-  private handleRegisterResult(
-    res: { payload: RegisterRepeaterResult } | undefined
-  ): void {
-    if (!res) {
-      throw new Error('Error registering repeater.');
-    }
-
+  private handleRegisterResult(res: { payload: RegisterRepeaterResult }): void {
     const { payload } = res;
 
     if ('error' in payload) {
