@@ -74,7 +74,7 @@ export class Repeater {
 
   public async stop(): Promise<void> {
     if (this.runningStatus !== RunningStatus.RUNNING) {
-      throw new Error('Cannot stop non-running repeater.');
+      return;
     }
 
     this._runningStatus = RunningStatus.OFF;

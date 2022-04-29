@@ -227,19 +227,17 @@ describe('Repeater', () => {
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
 
-    it('should throw an error on stop() without start()', async () => {
-      const res = repeater.stop();
-
-      await expect(res).rejects.toThrow('Cannot stop non-running repeater.');
+    it('should do nothing on stop() without start()', async () => {
+      await repeater.stop();
+      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
 
-    it('should throw an error on stop() twice', async () => {
+    it('should do nothing on second stop() call', async () => {
       await repeater.start();
       await repeater.stop();
+      await repeater.stop();
 
-      const res = repeater.stop();
-
-      await expect(res).rejects.toThrow('Cannot stop non-running repeater.');
+      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
 
     it('should stop() on process termination', async () => {
