@@ -82,6 +82,8 @@ export class Logger {
 
 container.register(Logger, {
   useFactory(child: DependencyContainer): Logger {
-    return new Logger(child.resolve(Configuration).logLevel);
+    return child.isRegistered(Configuration, true)
+      ? new Logger(child.resolve(Configuration).logLevel)
+      : new Logger();
   }
 });
