@@ -118,16 +118,16 @@ describe('Scan', () => {
       expect(result).toEqual([expected]);
     });
 
-    it('should update a status multiple times util last value is consumed', async () => {
+    it('should not query the status as soon as the final state reached', async () => {
       when(mockedScans.getScan(id))
         .thenResolve({
           status: ScanStatus.RUNNING
         })
         .thenResolve({
-          status: ScanStatus.RUNNING
+          status: ScanStatus.DONE
         })
         .thenResolve({
-          status: ScanStatus.DONE
+          status: ScanStatus.RUNNING
         });
 
       const result: ScanState[] = [];
@@ -136,7 +136,7 @@ describe('Scan', () => {
         result.push(state);
       }
 
-      verify(mockedScans.getScan(id)).thrice();
+      verify(mockedScans.getScan(id)).twice();
       expect(result).toEqual(
         expect.arrayContaining([{ status: ScanStatus.DONE }])
       );
