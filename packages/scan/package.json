@@ -1,6 +1,6 @@
 {
   "name": "@secbox/scan",
-  "version": "0.0.1",
+  "version": "0.10.0",
   "description": "The package defines a simple public API to manage scans and their expectations.",
   "repository": {
     "type": "git",
