@@ -1,0 +1,41 @@
+{
+  "name": "@secbox/scan",
+  "version": "0.0.1",
+  "description": "The package defines a simple public API to manage scans and their expectations.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
+  },
+  "engines": {
+    "node": ">=16",
+    "npm": "^8.1.0"
+  },
+  "author": {
+    "name": "Artem Derevnjuk",
+    "email": "artem.derevnjuk@neuralegion.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NeuraLegion/secbox-sdk-js/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "security",
+    "testing",
+    "e2e",
+    "test",
+    "typescript",
+    "appsec",
+    "pentesting",
+    "qa",
+    "brightsec",
+    "scan",
+    "dast"
+  ],
+  "peerDependencies": {
+    "@secbox/bus": ">=0.7.0 <1.0.0",
+    "@secbox/core": ">=0.7.0 <1.0.0"
+  }
+}

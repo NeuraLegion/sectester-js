@@ -11,7 +11,15 @@
         "tsConfig": "packages/bus/tsconfig.lib.json",
         "packageJson": "packages/bus/package.json",
         "main": "packages/bus/src/index.ts",
-        "assets": ["packages/bus/*.md", "LICENSE"]
+        "assets": [
+          "packages/bus/*.md",
+          {
+            "glob": "LICENSE",
+            "input": "",
+            "output": ""
+          }
+        ],
+        "buildableProjectDepsInPackageJsonType": "dependencies"
       }
     },
     "lint": {

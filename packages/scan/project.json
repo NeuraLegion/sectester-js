@@ -1,18 +1,18 @@
 {
-  "root": "packages/repeater",
-  "sourceRoot": "packages/repeater/src",
+  "root": "packages/scan",
+  "sourceRoot": "packages/scan/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nrwl/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/repeater",
-        "tsConfig": "packages/repeater/tsconfig.lib.json",
-        "packageJson": "packages/repeater/package.json",
-        "main": "packages/repeater/src/index.ts",
+        "outputPath": "dist/packages/scan",
+        "tsConfig": "packages/scan/tsconfig.lib.json",
+        "packageJson": "packages/scan/package.json",
+        "main": "packages/scan/src/index.ts",
         "assets": [
-          "packages/repeater/*.md",
+          "packages/scan/*.md",
           {
             "glob": "LICENSE",
             "input": "",
@@ -26,21 +26,21 @@
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/repeater/**/*.ts"]
+        "lintFilePatterns": ["packages/scan/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/repeater"],
+      "outputs": ["coverage/packages/scan"],
       "options": {
-        "jestConfig": "packages/repeater/jest.config.js",
+        "jestConfig": "packages/scan/jest.config.js",
         "passWithNoTests": true
       }
     },
     "publish": {
       "executor": "./tools/executors:publish",
       "options": {
-        "dist": "dist/packages/repeater"
+        "dist": "dist/packages/scan"
       }
     }
   },

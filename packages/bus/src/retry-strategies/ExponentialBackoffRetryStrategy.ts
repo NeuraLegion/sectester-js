@@ -1,5 +1,4 @@
-import { delay } from '../utils';
-import { RetryStrategy } from '@secbox/core';
+import { RetryStrategy, delay } from '@secbox/core';
 
 export interface ExponentialBackoffOptions {
   readonly maxDepth: number;

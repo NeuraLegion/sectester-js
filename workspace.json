@@ -3,6 +3,7 @@
   "projects": {
     "bus": "packages/bus",
     "core": "packages/core",
-    "repeater": "packages/repeater"
+    "repeater": "packages/repeater",
+    "scan": "packages/scan"
   }
 }
