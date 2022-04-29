@@ -31,6 +31,13 @@ describe('Repeater', () => {
   const mockedLogger = mock<Logger>();
   const mockedContainer = mock<DependencyContainer>();
 
+  const createRepater = () =>
+    new Repeater({
+      repeaterId,
+      bus: instance(mockedEventBus),
+      configuration: instance(mockedConfiguration)
+    });
+
   beforeEach(() => {
     when(mockedContainer.resolve(Logger)).thenReturn(instance(mockedLogger));
     when(mockedContainer.isRegistered(Logger, anything())).thenReturn(true);
@@ -43,20 +50,13 @@ describe('Repeater', () => {
 
     jest.useFakeTimers();
 
-    repeater = new Repeater({
-      repeaterId,
-      bus: instance(mockedEventBus),
-      configuration: instance(mockedConfiguration)
-    });
+    repeater = createRepater();
   });
 
   afterEach(() => {
-    reset<Configuration | EventBus | DependencyContainer | Logger>(
-      mockedConfiguration,
-      mockedEventBus,
-      mockedLogger,
-      mockedContainer
-    );
+    reset<
+      Configuration | EventBus | DependencyContainer | Logger | NodeJS.Process
+    >(mockedConfiguration, mockedEventBus, mockedLogger, mockedContainer);
 
     jest.useRealTimers();
   });
@@ -240,36 +240,44 @@ describe('Repeater', () => {
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
 
-    it('should stop() on process termination', async () => {
-      const spiedRepeater = spy(repeater);
+    describe('should handle process termination', () => {
+      const spiedProcess = spy(process);
 
-      await repeater.start();
-      process.emit('SIGTERM' as any);
+      let terminationCallback!: () => Promise<unknown>;
 
-      verify(spiedRepeater.stop()).once();
-      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
-    });
+      beforeEach(() => {
+        when(spiedProcess.on('SIGTERM', anything())).thenCall((_, callback) => {
+          terminationCallback = callback;
+        });
+        repeater = createRepater();
+      });
 
-    it('should not stop() not started repeater on process termination', () => {
-      const spiedRepeater = spy(repeater);
+      afterEach(() => reset(spiedProcess));
 
-      process.emit('SIGTERM' as any);
+      it('should stop() on process termination', async () => {
+        const spiedRepeater = spy(repeater);
 
-      verify(spiedRepeater.stop()).never();
-    });
+        await repeater.start();
+        process.emit('SIGTERM' as any);
+        await terminationCallback();
 
-    it('should log an error on failed stop() on process termination', async () => {
-      await repeater.start();
+        verify(spiedRepeater.stop()).once();
+        expect(repeater.runningStatus).toBe(RunningStatus.OFF);
+      });
 
-      when(
-        mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))
-      ).thenReject();
+      it('should log an error on failed stop() on process termination', async () => {
+        await repeater.start();
+        when(
+          mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))
+        ).thenReject();
 
-      process.emit('SIGTERM' as any);
-      jest.useRealTimers();
-      await new Promise(process.nextTick);
+        process.emit('SIGTERM' as any);
+        await terminationCallback();
+        jest.useRealTimers();
+        await new Promise(process.nextTick);
 
-      verify(mockedLogger.error(anyString())).once();
+        verify(mockedLogger.error(anyString())).once();
+      });
     });
   });
 
