@@ -27,7 +27,7 @@ await reporter.report(scan);
 <details>
 <summary>Sample console output</summary>
 
-![[reporter-sample]](reporter-sample.png)
+![reporter-sample](reporter-sample.png)
 
 </details>
 

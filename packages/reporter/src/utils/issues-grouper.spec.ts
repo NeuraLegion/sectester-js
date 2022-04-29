@@ -1,5 +1,5 @@
-import { Issue, Severity } from '../models';
 import { IssuesGrouper } from './issues-grouper';
+import { Issue, Severity } from '@secbox/scan';
 
 const issues = [
   {

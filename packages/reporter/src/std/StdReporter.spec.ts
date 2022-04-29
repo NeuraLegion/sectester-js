@@ -1,11 +1,12 @@
 import { Reporter } from '../lib';
-import { Issue, Scan, Severity } from '../models';
 import { StdReporter } from './StdReporter';
+import { HttpMethod, Issue, Scan, Severity } from '@secbox/scan';
 import { instance, mock, reset, when } from 'ts-mockito';
 
 const highSeverityIssue: Partial<Issue> = {
   name: 'Reflective Cross-site scripting (rXSS)',
   request: {
+    method: HttpMethod.GET,
     url: 'https://qa.brokencrystals.com/?artifical3160fc2b=%22%3Cdiv+OnCliCk%3Dalert%28576485%29%3E%3C%2Fdiv%3E'
   },
   severity: Severity.HIGH
@@ -14,6 +15,7 @@ const highSeverityIssue: Partial<Issue> = {
 const mediumSeverityIssue: Partial<Issue> = {
   name: 'Directory Listing',
   request: {
+    method: HttpMethod.GET,
     url: 'https://qa.brokencrystals.com/?'
   },
   severity: Severity.MEDIUM
@@ -22,6 +24,7 @@ const mediumSeverityIssue: Partial<Issue> = {
 const lowSeverityIssue: Partial<Issue> = {
   name: 'Misconfigured X-Content-Type-Options Header',
   request: {
+    method: HttpMethod.GET,
     url: 'https://qa.brokencrystals.com/'
   },
   severity: Severity.LOW

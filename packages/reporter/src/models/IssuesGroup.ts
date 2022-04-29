@@ -1,5 +1,4 @@
-import { Issue } from './Issue';
-import { Severity } from './Severity';
+import { Issue, Severity } from '@secbox/scan';
 
 export interface IssuesGroup {
   severity: Severity;

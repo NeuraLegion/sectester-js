@@ -1,6 +1,6 @@
 import { Reporter } from '../lib';
-import { Issue, Scan, Severity } from '../models';
 import { IssuesGrouper } from '../utils';
+import { Issue, Scan, Severity } from '@secbox/scan';
 import table, { Header } from 'tty-table';
 import chalk from 'chalk';
 
