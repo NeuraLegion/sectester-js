@@ -7,34 +7,32 @@ export interface NumBoundaries {
   exclusiveMax?: boolean;
 }
 
+type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
+  [Property in Key]-?: Type[Property];
+};
+
+type MaxBoundary = WithRequiredProperty<
+  Omit<NumBoundaries, 'min' | 'exclusiveMin'>,
+  'max'
+>;
+type MinBoundary = WithRequiredProperty<
+  Omit<NumBoundaries, 'max' | 'exclusiveMax'>,
+  'min'
+>;
+
 const checkMinimum = (
   value: number,
-  options: Omit<NumBoundaries, 'max' | 'exclusiveMax'> = {}
-): boolean => {
-  const exclusiveMin = !!options.exclusiveMin;
-  const min = options.min ?? Number.MIN_SAFE_INTEGER;
-
-  return exclusiveMin ? value > min : value >= min;
-};
+  { min, exclusiveMin = false }: MinBoundary
+): boolean => (exclusiveMin ? value > min : value >= min);
 
 const checkMaximum = (
   value: number,
-  options: Omit<NumBoundaries, 'min' | 'exclusiveMin'> = {}
-): boolean => {
-  const exclusiveMax = !!options.exclusiveMax;
-  const max = options.max ?? Number.MAX_SAFE_INTEGER;
-
-  return exclusiveMax ? value < max : value <= max;
-};
+  { max, exclusiveMax = false }: MaxBoundary
+): boolean => (exclusiveMax ? value < max : value <= max);
 
 export const checkBoundaries = (
   value: unknown,
-  options: {
-    min?: number;
-    max?: number;
-    exclusiveMin?: boolean;
-    exclusiveMax?: boolean;
-  } = {}
+  { min, max, exclusiveMax, exclusiveMin }: NumBoundaries = {}
 ) => {
   if (typeof value === 'string') {
     value = parseFloat(value);
@@ -46,12 +44,12 @@ export const checkBoundaries = (
 
   let valid = true;
 
-  if (isNumber(options.max)) {
-    valid = checkMaximum(value, options);
+  if (isNumber(max)) {
+    valid = checkMaximum(value, { max, exclusiveMax });
   }
 
-  if (valid && isNumber(options.min)) {
-    valid = checkMinimum(value, options);
+  if (valid && isNumber(min)) {
+    valid = checkMinimum(value, { min, exclusiveMin });
   }
 
   return valid;
