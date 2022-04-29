@@ -61,19 +61,26 @@ describe('StdReporter', () => {
       await reporter.report(instance(mockedScan));
 
       /* eslint-disable no-console */
-      expect(console.error).toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringMatching('Found 1 High severity issue')
+      );
       expect(console.warn).not.toHaveBeenCalled();
       /* eslint-enable no-console */
     });
 
     it('should log medium severity issue to stderr', async () => {
-      when(mockedScan.issues()).thenResolve([mediumSeverityIssue] as Issue[]);
+      when(mockedScan.issues()).thenResolve([
+        mediumSeverityIssue,
+        mediumSeverityIssue
+      ] as Issue[]);
 
       await reporter.report(instance(mockedScan));
 
       /* eslint-disable no-console */
       expect(console.error).not.toHaveBeenCalled();
-      expect(console.warn).toHaveBeenCalled();
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringMatching('Found 2 Medium severity issues')
+      );
       /* eslint-enable no-console */
     });
 
@@ -85,7 +92,9 @@ describe('StdReporter', () => {
       /* eslint-disable no-console */
       expect(console.error).not.toHaveBeenCalled();
       expect(console.warn).not.toHaveBeenCalled();
-      expect(console.log).toHaveBeenCalled();
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringMatching('Found 1 Low severity issue')
+      );
       /* eslint-enable no-console */
     });
 
@@ -99,9 +108,15 @@ describe('StdReporter', () => {
       await reporter.report(instance(mockedScan));
 
       /* eslint-disable no-console */
-      expect(console.error).toHaveBeenCalled();
-      expect(console.warn).toHaveBeenCalled();
-      expect(console.log).toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringMatching('Found 1 High severity issue')
+      );
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringMatching('Found 1 Medium severity issue')
+      );
+      expect(console.log).toHaveBeenCalledWith(
+        expect.stringMatching('Found 1 Low severity issue')
+      );
       /* eslint-enable no-console */
     });
 
