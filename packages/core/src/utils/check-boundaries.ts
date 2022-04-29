@@ -37,7 +37,7 @@ export const checkBoundaries = (
   } = {}
 ) => {
   if (typeof value === 'string') {
-    value = parseInt(value, 10);
+    value = parseFloat(value);
   }
 
   if (!isNumber(value)) {

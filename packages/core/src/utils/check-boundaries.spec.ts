@@ -16,6 +16,39 @@ describe('checkBoundaries', () => {
     },
     {
       input: {
+        value: Number.MAX_VALUE
+      },
+      expected: true
+    },
+    {
+      input: {
+        value: Number.MIN_VALUE
+      },
+      expected: true
+    },
+    {
+      input: {
+        value: Number.MIN_VALUE,
+        min: Number.MIN_SAFE_INTEGER
+      },
+      expected: true
+    },
+    {
+      input: {
+        value: 10.1
+      },
+      expected: true
+    },
+    {
+      input: {
+        value: '10.1',
+        min: 10,
+        max: 11
+      },
+      expected: true
+    },
+    {
+      input: {
         value: 10,
         max: 10
       },
@@ -95,7 +128,7 @@ describe('checkBoundaries', () => {
       },
       expected: true
     }
-  ])('should return $expected for $input.value', ({ input, expected }) => {
+  ])('should return $expected for $input', ({ input, expected }) => {
     // act
     const result = checkBoundaries(input.value, input);
 
