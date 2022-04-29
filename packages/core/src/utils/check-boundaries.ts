@@ -7,27 +7,22 @@ export interface NumBoundaries {
   exclusiveMax?: boolean;
 }
 
-type WithRequiredProperty<Type, Key extends keyof Type> = Type & {
-  [Property in Key]-?: Type[Property];
-};
-
-type MaxBoundary = WithRequiredProperty<
-  Omit<NumBoundaries, 'min' | 'exclusiveMin'>,
-  'max'
->;
-type MinBoundary = WithRequiredProperty<
-  Omit<NumBoundaries, 'max' | 'exclusiveMax'>,
-  'min'
->;
+type WithRequiredProperty<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 const checkMinimum = (
   value: number,
-  { min, exclusiveMin = false }: MinBoundary
+  {
+    min,
+    exclusiveMin = false
+  }: WithRequiredProperty<Pick<NumBoundaries, 'min' | 'exclusiveMin'>, 'min'>
 ): boolean => (exclusiveMin ? value > min : value >= min);
 
 const checkMaximum = (
   value: number,
-  { max, exclusiveMax = false }: MaxBoundary
+  {
+    max,
+    exclusiveMax = false
+  }: WithRequiredProperty<Pick<NumBoundaries, 'max' | 'exclusiveMax'>, 'max'>
 ): boolean => (exclusiveMax ? value < max : value <= max);
 
 export const checkBoundaries = (
