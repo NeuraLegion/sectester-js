@@ -191,7 +191,7 @@ const target = new Target({
 
 - type: `unknown`
 
-The data to be sent as the request body. The only required for `POST`, `PUT`, `PATCH`, and `DELETE`:
+The data to be sent as the request body. Makes sense only for `POST`, `PUT`, `PATCH`, and `DELETE`:
 
 ```ts
 import { Target } from '@secbox/scan';
