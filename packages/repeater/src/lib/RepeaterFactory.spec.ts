@@ -8,6 +8,7 @@ import { Configuration, EventBus } from '@secbox/core';
 import {
   anything,
   capture,
+  deepEqual,
   instance,
   mock,
   objectContaining,
@@ -145,6 +146,46 @@ describe('RepeaterFactory', () => {
           RequestRunnerOptions,
           objectContaining({
             useValue: requestRunnerOptions
+          })
+        )
+      ).once();
+
+      expect(res).toBeInstanceOf(Repeater);
+    });
+
+    it('should create repeater with default RequestRunnerOptions if options is not passed', async () => {
+      const factory = new RepeaterFactory(configuration);
+      when(
+        mockedContainer.register(RequestRunnerOptions, anything())
+      ).thenReturn();
+
+      const res = await factory.createRepeater();
+
+      verify(
+        mockedContainer.register(
+          RequestRunnerOptions,
+          deepEqual({
+            useValue: {
+              timeout: 30000,
+              maxContentLength: 100,
+              reuseConnection: false,
+              whitelistMimes: [
+                'text/html',
+                'text/plain',
+                'text/css',
+                'text/javascript',
+                'text/markdown',
+                'text/xml',
+                'application/javascript',
+                'application/x-javascript',
+                'application/json',
+                'application/xml',
+                'application/x-www-form-urlencoded',
+                'application/msgpack',
+                'application/ld+json',
+                'application/graphql'
+              ]
+            }
           })
         )
       ).once();
