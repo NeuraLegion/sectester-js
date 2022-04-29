@@ -1,31 +1,30 @@
-import { Reporter } from '../lib';
 import { StdReporter } from './StdReporter';
 import { HttpMethod, Issue, Scan, Severity } from '@secbox/scan';
 import { instance, mock, reset, when } from 'ts-mockito';
 
 const highSeverityIssue: Partial<Issue> = {
-  name: 'Reflective Cross-site scripting (rXSS)',
+  name: 'a',
   request: {
     method: HttpMethod.GET,
-    url: 'https://qa.brokencrystals.com/?artifical3160fc2b=%22%3Cdiv+OnCliCk%3Dalert%28576485%29%3E%3C%2Fdiv%3E'
+    url: 'x'
   },
   severity: Severity.HIGH
 };
 
 const mediumSeverityIssue: Partial<Issue> = {
-  name: 'Directory Listing',
+  name: 'b',
   request: {
     method: HttpMethod.GET,
-    url: 'https://qa.brokencrystals.com/?'
+    url: 'y'
   },
   severity: Severity.MEDIUM
 };
 
 const lowSeverityIssue: Partial<Issue> = {
-  name: 'Misconfigured X-Content-Type-Options Header',
+  name: 'c',
   request: {
     method: HttpMethod.GET,
-    url: 'https://qa.brokencrystals.com/'
+    url: 'z'
   },
   severity: Severity.LOW
 };
@@ -33,10 +32,10 @@ const lowSeverityIssue: Partial<Issue> = {
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const tableRowRegex = (...columnTexts: string[]) =>
-  new RegExp(columnTexts.map(x => escapeRegex(x)).join('[│ ]+'));
+  columnTexts.map(x => escapeRegex(x)).join('[ │]+');
 
 describe('StdReporter', () => {
-  let reporter!: Reporter;
+  let reporter!: StdReporter;
 
   const mockedScan = mock<Scan>();
 
@@ -149,6 +148,27 @@ describe('StdReporter', () => {
         )
       );
       /* eslint-enable no-console */
+    });
+
+    it('should print issues details in table form', async () => {
+      const issues = [
+        lowSeverityIssue,
+        mediumSeverityIssue,
+        highSeverityIssue
+      ] as Issue[];
+      when(mockedScan.issues()).thenResolve(issues);
+
+      await reporter.report(instance(mockedScan));
+
+      issues.forEach((issue: Issue) => {
+        /* eslint-disable no-console */
+        expect(console.log).toHaveBeenLastCalledWith(
+          expect.stringMatching(
+            tableRowRegex(issue.name, '1', `1.\u00A0${issue.request.url}`)
+          )
+        );
+        /* eslint-enable no-console */
+      });
     });
   });
 });
