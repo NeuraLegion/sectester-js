@@ -1,5 +1,4 @@
-import { Issue, IssuesGroup } from '../models';
-import { severityComparator } from '../models/Severity';
+import { Issue, IssuesGroup, severityComparator } from '../models';
 
 export class IssuesGrouper {
   public static group(issues: Issue[]): IssuesGroup[] {

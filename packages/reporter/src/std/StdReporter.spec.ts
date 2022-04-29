@@ -30,7 +30,7 @@ const lowSeverityIssue: Partial<Issue> = {
 describe('StdReporter', () => {
   let reporter!: Reporter;
 
-  const MockedScan = mock<Scan>();
+  const mockedScan = mock<Scan>();
 
   beforeEach(() => {
     /* eslint-disable no-console */
@@ -44,14 +44,14 @@ describe('StdReporter', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
-    reset<Scan | Console>(MockedScan);
+    reset<Scan>(mockedScan);
   });
 
   describe('report', () => {
     it('should log high severity issue to stderr', async () => {
-      when(MockedScan.issues()).thenResolve([highSeverityIssue] as Issue[]);
+      when(mockedScan.issues()).thenResolve([highSeverityIssue] as Issue[]);
 
-      await reporter.report(instance(MockedScan));
+      await reporter.report(instance(mockedScan));
 
       /* eslint-disable no-console */
       expect(console.error).toHaveBeenCalled();
@@ -60,9 +60,9 @@ describe('StdReporter', () => {
     });
 
     it('should log medium severity issue to stderr', async () => {
-      when(MockedScan.issues()).thenResolve([mediumSeverityIssue] as Issue[]);
+      when(mockedScan.issues()).thenResolve([mediumSeverityIssue] as Issue[]);
 
-      await reporter.report(instance(MockedScan));
+      await reporter.report(instance(mockedScan));
 
       /* eslint-disable no-console */
       expect(console.error).not.toHaveBeenCalled();
@@ -71,9 +71,9 @@ describe('StdReporter', () => {
     });
 
     it('should log low severity issue to stdout', async () => {
-      when(MockedScan.issues()).thenResolve([lowSeverityIssue] as Issue[]);
+      when(mockedScan.issues()).thenResolve([lowSeverityIssue] as Issue[]);
 
-      await reporter.report(instance(MockedScan));
+      await reporter.report(instance(mockedScan));
 
       /* eslint-disable no-console */
       expect(console.error).not.toHaveBeenCalled();
@@ -83,13 +83,13 @@ describe('StdReporter', () => {
     });
 
     it('should log mixed severity issues to stdout', async () => {
-      when(MockedScan.issues()).thenResolve([
+      when(mockedScan.issues()).thenResolve([
         lowSeverityIssue,
         mediumSeverityIssue,
         highSeverityIssue
       ] as Issue[]);
 
-      await reporter.report(instance(MockedScan));
+      await reporter.report(instance(mockedScan));
 
       /* eslint-disable no-console */
       expect(console.error).toHaveBeenCalled();
@@ -99,9 +99,9 @@ describe('StdReporter', () => {
     });
 
     it('should not log anything if there are no issues', async () => {
-      when(MockedScan.issues()).thenResolve([]);
+      when(mockedScan.issues()).thenResolve([]);
 
-      await reporter.report(instance(MockedScan));
+      await reporter.report(instance(mockedScan));
 
       /* eslint-disable no-console */
       expect(console.error).not.toHaveBeenCalled();
