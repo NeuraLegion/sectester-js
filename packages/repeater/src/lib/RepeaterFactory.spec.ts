@@ -131,23 +131,7 @@ describe('RepeaterFactory', () => {
       const requestRunnerOptions = {
         timeout: 10000,
         maxContentLength: 200,
-        reuseConnection: false,
-        whitelistMimes: [
-          'text/html',
-          'text/plain',
-          'text/css',
-          'text/javascript',
-          'text/markdown',
-          'text/xml',
-          'application/javascript',
-          'application/x-javascript',
-          'application/json',
-          'application/xml',
-          'application/x-www-form-urlencoded',
-          'application/msgpack',
-          'application/ld+json',
-          'application/graphql'
-        ]
+        whitelistMimes: ['text/html']
       };
 
       const res = await factory.createRepeater({

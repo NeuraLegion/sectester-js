@@ -1,3 +1,4 @@
+import { Container } from '../models';
 import { DependencyContainer, inject, injectable } from 'tsyringe';
 import { Configuration, EventBus, RetryStrategy } from '@secbox/core';
 import { RMQEventBus, RMQEventBusConfig } from '@secbox/bus';
@@ -6,7 +7,7 @@ import { RMQEventBus, RMQEventBusConfig } from '@secbox/bus';
 export class EventBusFactory {
   constructor(
     @inject(Configuration) private readonly config: Configuration,
-    @inject('container') private readonly container: DependencyContainer
+    @inject(Container) private readonly container: DependencyContainer
   ) {}
 
   public async create(
