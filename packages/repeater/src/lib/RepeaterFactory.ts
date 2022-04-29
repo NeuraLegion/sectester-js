@@ -70,9 +70,7 @@ export class RepeaterFactory {
       optionsToRegister = { ...optionsToRegister, ...options };
     }
 
-    container.register(RequestRunnerOptions, {
-      useValue: { ...optionsToRegister }
-    });
+    container.register(RequestRunnerOptions, { useValue: optionsToRegister });
   }
 
   private performContainer(): DependencyContainer {
