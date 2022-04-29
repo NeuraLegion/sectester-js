@@ -10,6 +10,8 @@ npm i -s @secbox/reporter
 
 ## Usage
 
+The package provides only one implementation of the `Reporter` that lets to get results to stdout, i.e. `StdReporter`:
+
 ```ts
 import { Reporter, StdReporter } from '@secboox/reporter';
 
