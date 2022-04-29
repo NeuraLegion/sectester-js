@@ -1,6 +1,6 @@
 # @secbox/scan
 
-The package defines a simple public API to manage scans and their expectation.
+The package defines a simple public API to manage scans and their expectations.
 
 ## Setup
 

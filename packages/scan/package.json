@@ -1,7 +1,7 @@
 {
   "name": "@secbox/scan",
   "version": "0.0.1",
-  "description": "The package defines a simple public API to manage scans and their expectation.",
+  "description": "The package defines a simple public API to manage scans and their expectations.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
