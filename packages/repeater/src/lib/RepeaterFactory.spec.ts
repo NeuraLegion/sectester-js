@@ -37,6 +37,7 @@ describe('RepeaterFactory', () => {
   const repeaterId = 'fooId';
 
   const mockedContainer = mock<DependencyContainer>();
+  const mockedChildeContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();
   const mockedEventBus = mock<EventBus>();
   const mockedEventBusFactory = mock<EventBusFactory>();
@@ -45,17 +46,17 @@ describe('RepeaterFactory', () => {
   const configuration = instance(mockedConfiguration);
 
   beforeEach(() => {
-    when(mockedContainer.resolve<EventBusFactory>(EventBusFactory)).thenReturn(
-      instance(mockedEventBusFactory)
-    );
     when(
-      mockedContainer.resolve<RepeatersManager>(RepeatersManager)
+      mockedChildeContainer.resolve<EventBusFactory>(EventBusFactory)
+    ).thenReturn(instance(mockedEventBusFactory));
+    when(
+      mockedChildeContainer.resolve<RepeatersManager>(RepeatersManager)
     ).thenReturn(instance(mockedRepeaterManager));
 
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
 
     when(mockedContainer.createChildContainer()).thenReturn(
-      instance(mockedContainer)
+      instance(mockedChildeContainer)
     );
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -79,6 +80,7 @@ describe('RepeaterFactory', () => {
       | RepeatersManager
     >(
       mockedContainer,
+      mockedChildeContainer,
       mockedConfiguration,
       mockedEventBus,
       mockedEventBusFactory,
@@ -126,7 +128,7 @@ describe('RepeaterFactory', () => {
     it('should create repeater and apply RequestRunnerOptions', async () => {
       const factory = new RepeaterFactory(configuration);
       when(
-        mockedContainer.register(RequestRunnerOptions, anything())
+        mockedChildeContainer.register(RequestRunnerOptions, anything())
       ).thenReturn();
 
       const requestRunnerOptions = {
@@ -142,7 +144,7 @@ describe('RepeaterFactory', () => {
       });
 
       verify(
-        mockedContainer.register(
+        mockedChildeContainer.register(
           RequestRunnerOptions,
           objectContaining({
             useValue: requestRunnerOptions
@@ -156,13 +158,13 @@ describe('RepeaterFactory', () => {
     it('should create repeater with default RequestRunnerOptions if options is not passed', async () => {
       const factory = new RepeaterFactory(configuration);
       when(
-        mockedContainer.register(RequestRunnerOptions, anything())
+        mockedChildeContainer.register(RequestRunnerOptions, anything())
       ).thenReturn();
 
       const res = await factory.createRepeater();
 
       verify(
-        mockedContainer.register(
+        mockedChildeContainer.register(
           RequestRunnerOptions,
           deepEqual({
             useValue: {
