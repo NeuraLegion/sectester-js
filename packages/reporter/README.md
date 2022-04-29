@@ -16,6 +16,10 @@ The package provides only one implementation of the `Reporter` that lets to get 
 import { Reporter, StdReporter } from '@secboox/reporter';
 
 const reporter: Reporter = new StdReporter();
+```
+You just need to call the `report` method to send findings to stdout:
+
+```ts
 await reporter.report(scan);
 ```
 
