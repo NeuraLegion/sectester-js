@@ -49,17 +49,15 @@ export class StdReporter implements Reporter {
     severity: Severity
   ): string | undefined {
     const filtered = issues.filter(issue => issue.severity === severity);
-    if (!filtered.length) {
-      return undefined;
+    if (filtered.length) {
+      return this.colorize(
+        `Found ${filtered.length} ${severity} severity ${this.pluralize(
+          'issue',
+          filtered.length
+        )}.`,
+        severity
+      );
     }
-
-    return this.colorize(
-      `Found ${filtered.length} ${severity} severity ${this.pluralize(
-        'issue',
-        filtered.length
-      )}.`,
-      severity
-    );
   }
 
   private renderDetailsTable(issues: Issue[]): string {
