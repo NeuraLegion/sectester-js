@@ -33,11 +33,15 @@ describe('StdReporter', () => {
   const mockedScan = mock<Scan>();
 
   beforeEach(() => {
-    /* eslint-disable no-console */
-    console.log = jest.fn();
-    console.warn = jest.fn();
-    console.error = jest.fn();
-    /* eslint-enable no-console */
+    jest.spyOn(console, 'error').mockImplementation(() => {
+      /* noop */
+    });
+    jest.spyOn(console, 'warn').mockImplementation(() => {
+      /* noop */
+    });
+    jest.spyOn(console, 'log').mockImplementation(() => {
+      /* noop */
+    });
 
     reporter = new StdReporter();
   });
