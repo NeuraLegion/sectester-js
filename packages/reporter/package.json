@@ -1,0 +1,39 @@
+{
+  "name": "@secbox/reporter",
+  "version": "0.0.0",
+  "description": "Provide an abstraction for generating test results as part of the particular test frameworks.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
+  },
+  "engines": {
+    "node": ">=16",
+    "npm": "^8.1.0"
+  },
+  "author": {
+    "name": "Artem Derevnjuk",
+    "email": "artem.derevnjuk@neuralegion.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NeuraLegion/secbox-sdk-js/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "security",
+    "testing",
+    "e2e",
+    "test",
+    "typescript",
+    "appsec",
+    "pentesting",
+    "qa",
+    "brightsec",
+    "reporter"
+  ],
+  "peerDependencies": {
+    "@secbox/scan": ">=0.10.0 <1.0.0"
+  }
+}
