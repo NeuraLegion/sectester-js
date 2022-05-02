@@ -44,31 +44,44 @@ The `createRepeater` method accepts the options described below:
 | :--------------------- | ------------------------------------------------------------------------------------------------------ |
 | `namePrefix`           | Enter a name prefix that will be used as a constant part of the unique name. By default, `secbox-sdk`. |
 | `description`          | Set a short description of the Repeater.                                                               |
-| `requestRunnerOptions` | Request runner settings.                                                                               |
+| `requestRunnerOptions` | Custom the request runner settings that will be used to execute requests to your application.          |
 
-By default `requestRunnerOptions` is specified with next parameters:
+The default `requestRunnerOptions` is as follows:
+
+```js
+{
+  timeout: 30000,
+  maxContentLength: 100,
+  reuseConnection: false,
+  whitelistMimes: [
+    'text/html',
+    'text/plain',
+    'text/css',
+    'text/javascript',
+    'text/markdown',
+    'text/xml',
+    'application/javascript',
+    'application/x-javascript',
+    'application/json',
+    'application/xml',
+    'application/x-www-form-urlencoded',
+    'application/msgpack',
+    'application/ld+json',
+    'application/graphql'
+  ]
+};
+```
+
+The `RequestRunnerOptions` exposes the following options that can used to customize the request runner's behavior:
 
 ```ts
-{
-    timeout: 30000,
-    maxContentLength: 100,
-    reuseConnection: false,
-    whitelistMimes: [
-        'text/html',
-        'text/plain',
-        'text/css',
-        'text/javascript',
-        'text/markdown',
-        'text/xml',
-        'application/javascript',
-        'application/x-javascript',
-        'application/json',
-        'application/xml',
-        'application/x-www-form-urlencoded',
-        'application/msgpack',
-        'application/ld+json',
-        'application/graphql'
-    ]
+export interface RequestRunnerOptions {
+  timeout?: number;
+  proxyUrl?: string;
+  headers?: Record<string, string | string[]>;
+  whitelistMimes?: string[];
+  maxContentLength?: number;
+  reuseConnection?: boolean;
 }
 ```
 
