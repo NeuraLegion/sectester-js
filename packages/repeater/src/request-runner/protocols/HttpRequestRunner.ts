@@ -8,7 +8,8 @@ import request from 'request-promise';
 import { Response as IncomingResponse } from 'request';
 import { SocksProxyAgent } from 'socks-proxy-agent';
 import { inject, injectable } from 'tsyringe';
-import { parse } from 'content-type';
+import { parse as contentTypeParse } from 'content-type';
+import { parse } from 'url';
 import http, { OutgoingMessage } from 'http';
 import https, { AgentOptions } from 'https';
 
@@ -30,7 +31,7 @@ export class HttpRequestRunner implements RequestRunner {
   ) {
     if (this.options.proxyUrl) {
       this.proxy = new SocksProxyAgent({
-        ...new URL(this.options.proxyUrl)
+        ...parse(this.options.proxyUrl)
       });
     }
 
@@ -165,7 +166,7 @@ export class HttpRequestRunner implements RequestRunner {
     let type = res.headers['content-type'] || 'text/plain';
 
     try {
-      ({ type } = parse(type));
+      ({ type } = contentTypeParse(type));
     } catch {
       // noop
     }
