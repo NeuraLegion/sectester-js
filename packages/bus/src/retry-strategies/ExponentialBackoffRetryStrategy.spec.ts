@@ -1,5 +1,18 @@
 import { ExponentialBackoffRetryStrategy } from './ExponentialBackoffRetryStrategy';
 
+class TestError extends Error {
+  constructor(
+    options:
+      | { code: number | string }
+      | { isAxiosError?: boolean; response?: { status: number } }
+  ) {
+    super('Something went wrong.');
+    Object.assign(this, options);
+    this.name = new.target.name;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 describe('ExponentialBackoffRetryStrategy', () => {
   const findArg = <R>(
     args: [unknown, unknown],
@@ -32,58 +45,102 @@ describe('ExponentialBackoffRetryStrategy', () => {
     jest.resetAllMocks();
   });
 
-  it('should not retry if function does not throw error', async () => {
-    const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 1 });
-    const input = jest.fn().mockResolvedValue(undefined);
+  describe('acquire', () => {
+    it('should not retry if function does not throw error', async () => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 1
+      });
+      const input = jest.fn().mockResolvedValue(undefined);
 
-    await retryStrategy.acquire(input);
+      await retryStrategy.acquire(input);
 
-    expect(input).toHaveBeenCalledTimes(1);
-  });
+      expect(input).toHaveBeenCalledTimes(1);
+    });
 
-  it('should return a result execution immediately', async () => {
-    const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 1 });
-    const input = jest.fn().mockReturnValue(undefined);
+    it('should return a result execution immediately', async () => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 1
+      });
+      const input = jest.fn().mockReturnValue(undefined);
 
-    await retryStrategy.acquire(input);
+      await retryStrategy.acquire(input);
 
-    expect(input).toHaveBeenCalledTimes(1);
-  });
+      expect(input).toHaveBeenCalledTimes(1);
+    });
 
-  it('should prevent retries if error does not have a correct code', async () => {
-    const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 1 });
-    const input = jest.fn().mockRejectedValue(new Error('Unhandled error'));
+    it('should prevent retries if error does not have a correct code', async () => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 1
+      });
+      const input = jest.fn().mockRejectedValue(new Error('Unhandled error'));
 
-    const result = retryStrategy.acquire(input);
+      const result = retryStrategy.acquire(input);
 
-    await expect(result).rejects.toThrow('Unhandled error');
-    expect(input).toHaveBeenCalledTimes(1);
-  });
+      await expect(result).rejects.toThrow('Unhandled error');
+      expect(input).toHaveBeenCalledTimes(1);
+    });
 
-  it('should retry two times and throw an error', async () => {
-    const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 2 });
-    const error = new Error('Unhandled error');
-    (error as any).code = 'ECONNRESET';
-    const input = jest.fn().mockRejectedValue(error);
+    it.each([
+      ...[
+        'ECONNRESET',
+        'ENETDOWN',
+        'ENETUNREACH',
+        'ETIMEDOUT',
+        'ECONNREFUSED',
+        'ENOTFOUND',
+        'EAI_AGAIN'
+      ].map((code: string) => new TestError({ code })),
+      ...[405, 406, 404, 313, 312, 311, 320].map(
+        (code: number) => new TestError({ code })
+      ),
+      ...Array(12)
+        .fill(500)
+        .map(
+          (_: unknown, idx: number) =>
+            new TestError({
+              isAxiosError: true,
+              response: { status: 500 + idx }
+            })
+        )
+    ])('should retry on the error (%j)', async (error: Error) => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 2
+      });
+      const input = jest.fn().mockRejectedValue(error);
 
-    const result = retryStrategy.acquire(input);
+      const result = retryStrategy.acquire(input);
 
-    await expect(result).rejects.toThrow(error);
-    expect(input).toHaveBeenCalledTimes(3);
-  });
+      await expect(result).rejects.toThrow(error);
+      expect(input).toHaveBeenCalledTimes(3);
+    });
 
-  it('should return a result execution after a two retries', async () => {
-    const retryStrategy = new ExponentialBackoffRetryStrategy({ maxDepth: 2 });
-    const error = new Error('Unhandled error');
-    (error as any).code = 'ECONNRESET';
-    const input = jest
-      .fn()
-      .mockRejectedValueOnce(error)
-      .mockRejectedValueOnce(error)
-      .mockResolvedValue(undefined);
+    it('should return a result execution after a two retries', async () => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 2
+      });
+      const error = new TestError({ code: 'ECONNRESET' });
+      const input = jest
+        .fn()
+        .mockRejectedValueOnce(error)
+        .mockRejectedValueOnce(error)
+        .mockResolvedValue(undefined);
 
-    await retryStrategy.acquire(input);
+      await retryStrategy.acquire(input);
 
-    expect(input).toHaveBeenCalledTimes(3);
+      expect(input).toHaveBeenCalledTimes(3);
+    });
+
+    it('should throw error without retries if axios error has no response', async () => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 2
+      });
+      const error = new TestError({ isAxiosError: true });
+      const input = jest.fn().mockRejectedValueOnce(error);
+
+      const result = retryStrategy.acquire(input);
+
+      expect(input).toHaveBeenCalledTimes(1);
+      await expect(result).rejects.toThrow();
+    });
   });
 });
