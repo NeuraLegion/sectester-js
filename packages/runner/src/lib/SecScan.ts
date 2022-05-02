@@ -1,21 +1,23 @@
 import { Configuration } from '@secbox/core';
+import { Reporter } from '@secbox/reporter';
 import {
   ScanFactory,
   ScanSettingsOptions,
   Severity,
   TargetOptions
 } from '@secbox/scan';
-import { StdReporter } from '@secbox/reporter';
 
 export class SecScan {
   private readonly scanFactory: ScanFactory;
-  private _threshold: Severity | undefined;
+  private readonly reporter: Reporter;
+  private _threshold = Severity.LOW;
 
   constructor(
     private readonly configuration: Configuration,
     private readonly settings: Omit<ScanSettingsOptions, 'target'>
   ) {
     this.scanFactory = this.configuration.container.resolve(ScanFactory);
+    this.reporter = this.configuration.container.resolve(Reporter);
   }
 
   public async run(target: TargetOptions): Promise<void> {
@@ -29,7 +31,7 @@ export class SecScan {
 
       const issues = await scan.issues();
       if (issues.length) {
-        await new StdReporter().report(scan);
+        await this.reporter.report(scan);
         throw new Error('Target is vulnerable');
       }
     } finally {
@@ -37,7 +39,7 @@ export class SecScan {
     }
   }
 
-  public threshold(severity?: Severity): SecScan {
+  public threshold(severity: Severity): SecScan {
     this._threshold = severity;
 
     return this;

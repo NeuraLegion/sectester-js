@@ -10,6 +10,7 @@ import {
   ConfigurationOptions
 } from '@secbox/core';
 import { Repeater, RepeaterFactory, RepeatersManager } from '@secbox/repeater';
+import { Reporter, StdReporter } from '@secbox/reporter';
 import { ScanFactory } from '@secbox/scan';
 
 export class SecRunner {
@@ -87,6 +88,10 @@ export class SecRunner {
 
     configuration.container.register(ScanFactory, {
       useValue: new ScanFactory(configuration)
+    });
+
+    configuration.container.register(Reporter, {
+      useClass: StdReporter
     });
   }
 }
