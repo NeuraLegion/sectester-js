@@ -4,4 +4,4 @@ export interface EventBusFactory {
   create(repeaterId: string): Promise<EventBus>;
 }
 
-export const EventBusFactory = Symbol('EventBusFactory');
+export const EventBusFactory: unique symbol = Symbol('EventBusFactory');
