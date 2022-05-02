@@ -30,6 +30,9 @@ describe('ScanFactory', () => {
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
     when(mockedConfiguration.name).thenReturn('test');
     when(mockedConfiguration.version).thenReturn('1.0');
+    when(mockedContainer.createChildContainer()).thenReturn(
+      instance(mockedContainer)
+    );
     when(mockedContainer.resolve<Scans>(Scans)).thenReturn(
       instance(mockedScans)
     );

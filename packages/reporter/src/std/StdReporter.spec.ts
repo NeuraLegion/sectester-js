@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { StdReporter } from './StdReporter';
 import { HttpMethod, Issue, Scan, Severity } from '@secbox/scan';
 import { instance, mock, reset, when } from 'ts-mockito';

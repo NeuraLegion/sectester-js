@@ -125,7 +125,7 @@ describe('RepeaterFactory', () => {
       expect(res).toBeInstanceOf(Repeater);
     });
 
-    it('should create repeater and apply RequestRunnerOptions', async () => {
+    it('should register custom request runner options', async () => {
       const factory = new RepeaterFactory(configuration);
       when(
         mockedChildeContainer.register(RequestRunnerOptions, anything())
@@ -137,7 +137,7 @@ describe('RepeaterFactory', () => {
         whitelistMimes: ['text/html']
       };
 
-      const res = await factory.createRepeater({
+      await factory.createRepeater({
         namePrefix: 'foo',
         description: 'description',
         requestRunnerOptions
@@ -151,17 +151,15 @@ describe('RepeaterFactory', () => {
           })
         )
       ).once();
-
-      expect(res).toBeInstanceOf(Repeater);
     });
 
-    it('should create repeater with default RequestRunnerOptions if options is not passed', async () => {
+    it('should register default request runner options', async () => {
       const factory = new RepeaterFactory(configuration);
       when(
         mockedChildeContainer.register(RequestRunnerOptions, anything())
       ).thenReturn();
 
-      const res = await factory.createRepeater();
+      await factory.createRepeater();
 
       verify(
         mockedChildeContainer.register(
@@ -191,8 +189,6 @@ describe('RepeaterFactory', () => {
           })
         )
       ).once();
-
-      expect(res).toBeInstanceOf(Repeater);
     });
   });
 });
