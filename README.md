@@ -2,7 +2,7 @@
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/ca77b676cf791e045aee/maintainability)](https://codeclimate.com/github/NeuraLegion/secbox-sdk-js/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/ca77b676cf791e045aee/test_coverage)](https://codeclimate.com/github/NeuraLegion/secbox-sdk-js/test_coverage)
-![Build Status](https://github.com/NeuraLegion/secbox-sdk-js/actions/workflows/auto-build.yml/badge.svg?branch=master)
+![Build Status](https://github.com/NeuraLegion/secbox-sdk-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
 ![NPM Downloads](https://img.shields.io/npm/dw/@secbox/core)
 
 ## Installation
