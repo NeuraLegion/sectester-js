@@ -27,7 +27,6 @@ export class HttpRequestRunner implements RequestRunner {
   constructor(
     @inject(RequestRunnerOptions)
     private readonly options: RequestRunnerOptions,
-    @inject(Logger)
     private readonly logger: Logger
   ) {
     if (this.options.proxyUrl) {

@@ -1,3 +1,3 @@
 import './register';
 
-export { RepeatersManager } from './RepeatersManager';
+export * from './RepeatersManager';

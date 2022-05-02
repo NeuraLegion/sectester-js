@@ -29,7 +29,6 @@ export class WsRequestRunner implements RequestRunner {
   constructor(
     @inject(RequestRunnerOptions)
     private readonly options: RequestRunnerOptions,
-    @inject(Logger)
     private readonly logger: Logger
   ) {
     this.agent = this.options.proxyUrl

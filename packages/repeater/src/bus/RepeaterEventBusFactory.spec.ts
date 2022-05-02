@@ -1,29 +1,45 @@
 import 'reflect-metadata';
-import { EventBusFactory } from './EventBusFactory';
-import { Configuration, Credentials } from '@secbox/core';
+import { RepeaterEventBusFactory } from './RepeaterEventBusFactory';
+import { Configuration, Credentials, RetryStrategy } from '@secbox/core';
 import { instance, mock, reset, when } from 'ts-mockito';
 import { RMQEventBus } from '@secbox/bus';
-import { container } from 'tsyringe';
+import { DependencyContainer } from 'tsyringe';
 
-describe('EventBusFactory', () => {
+describe('RepeaterEventBusFactory', () => {
   const token = 'dummmmy.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0';
+  const mockedContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();
+  const mockedRetryStrategy = mock<RetryStrategy>();
 
+  let container!: DependencyContainer;
   let configuration!: Configuration;
+  let retryStrategy!: RetryStrategy;
 
   beforeEach(() => {
+    container = instance(mockedContainer);
     configuration = instance(mockedConfiguration);
+    retryStrategy = instance(mockedRetryStrategy);
 
-    when(mockedConfiguration.container).thenReturn(container);
+    when(mockedContainer.resolve(Configuration)).thenReturn(configuration);
   });
 
-  afterEach(() => reset(mockedConfiguration));
+  afterEach(() =>
+    reset<DependencyContainer | Configuration | RetryStrategy>(
+      mockedConfiguration,
+      mockedContainer,
+      mockedRetryStrategy
+    )
+  );
 
   describe('create', () => {
     it('should throw an error on missing credentials', async () => {
       when(mockedConfiguration.credentials).thenReturn();
 
-      const factory = new EventBusFactory(configuration);
+      const factory = new RepeaterEventBusFactory(
+        container,
+        configuration,
+        retryStrategy
+      );
 
       const res = factory.create('fooId');
 
@@ -37,7 +53,11 @@ describe('EventBusFactory', () => {
       when(mockedConfiguration.credentials).thenReturn(
         new Credentials({ token })
       );
-      const factory = new EventBusFactory(configuration);
+      const factory = new RepeaterEventBusFactory(
+        container,
+        configuration,
+        retryStrategy
+      );
 
       const res = factory.create('id');
 

@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+import './register';
+
 export * from './bus';
 export * from './configuration';
 export * from './credentials-provider';

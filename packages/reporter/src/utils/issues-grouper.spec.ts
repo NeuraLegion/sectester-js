@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { IssuesGrouper } from './issues-grouper';
 import { Issue, Severity } from '@secbox/scan';
 

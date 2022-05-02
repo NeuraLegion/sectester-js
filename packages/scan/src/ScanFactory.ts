@@ -6,12 +6,15 @@ import { Target, TargetOptions } from './target';
 import { v4 } from 'uuid';
 import { Configuration } from '@secbox/core';
 import { Entry, Har } from '@har-sdk/core';
+import { DependencyContainer } from 'tsyringe';
 
 export class ScanFactory {
   private readonly scans: Scans;
+  private readonly container: DependencyContainer;
 
   constructor(private readonly configuration: Configuration) {
-    this.scans = configuration.container.resolve(Scans);
+    this.container = this.configuration.container.createChildContainer();
+    this.scans = this.container.resolve(Scans);
   }
 
   public async createScan(
