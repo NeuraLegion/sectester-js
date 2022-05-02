@@ -2,24 +2,34 @@ import { Severity, severityComparator, severityToNumber } from './Severity';
 
 describe('Severity', () => {
   describe('severityComparator', () => {
-    it.each([
-      { input: { a: Severity.LOW, b: Severity.LOW }, expected: 0 },
-      { input: { a: Severity.MEDIUM, b: Severity.MEDIUM }, expected: 0 },
-      { input: { a: Severity.HIGH, b: Severity.HIGH }, expected: 0 },
-      { input: { a: Severity.HIGH, b: Severity.LOW }, expected: -2 },
-      { input: { a: Severity.HIGH, b: Severity.MEDIUM }, expected: -1 },
-      { input: { a: Severity.LOW, b: Severity.HIGH }, expected: 2 },
-      { input: { a: Severity.MEDIUM, b: Severity.HIGH }, expected: 1 },
-      { input: { a: Severity.MEDIUM, b: Severity.LOW }, expected: -1 },
-      { input: { a: Severity.LOW, b: Severity.MEDIUM }, expected: 1 }
-    ])(
-      'should return a distance (i.e $expected) between $input.a and $input.b',
+    it.each(
+      [
+        { input: { a: Severity.LOW, b: Severity.LOW }, expected: 0 },
+        { input: { a: Severity.MEDIUM, b: Severity.MEDIUM }, expected: 0 },
+        { input: { a: Severity.HIGH, b: Severity.HIGH }, expected: 0 },
+        { input: { a: Severity.HIGH, b: Severity.LOW }, expected: -1 },
+        { input: { a: Severity.HIGH, b: Severity.MEDIUM }, expected: -1 },
+        { input: { a: Severity.LOW, b: Severity.HIGH }, expected: 1 },
+        { input: { a: Severity.MEDIUM, b: Severity.HIGH }, expected: 1 },
+        { input: { a: Severity.MEDIUM, b: Severity.LOW }, expected: -1 },
+        { input: { a: Severity.LOW, b: Severity.MEDIUM }, expected: 1 }
+      ].map(item => ({
+        ...item,
+        expectedLabel:
+          item.expected === 0
+            ? 'zero'
+            : item.expected > 0
+            ? 'positive'
+            : 'negative'
+      }))
+    )(
+      'should return $expectedLabel comparing $input.a and $input.b',
       ({ input, expected }) => {
         // act
         const result = severityComparator(input.a, input.b);
 
         // assert
-        expect(result).toEqual(expected);
+        expect(Math.sign(result)).toBe(expected);
       }
     );
   });
