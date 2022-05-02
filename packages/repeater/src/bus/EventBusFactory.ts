@@ -1,4 +1,4 @@
-import { EventBus } from '@secbox/core';
+import { EventBus } from '@sec-tester/core';
 
 export interface EventBusFactory {
   create(repeaterId: string): Promise<EventBus>;

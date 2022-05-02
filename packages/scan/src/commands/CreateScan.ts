@@ -1,5 +1,5 @@
 import { ScanConfig } from '../models';
-import { HttpRequest } from '@secbox/bus';
+import { HttpRequest } from '@sec-tester/bus';
 
 export class CreateScan extends HttpRequest<ScanConfig, { id: string }> {
   constructor(payload: ScanConfig) {

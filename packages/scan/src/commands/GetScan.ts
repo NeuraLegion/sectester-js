@@ -1,5 +1,5 @@
 import { ScanState } from '../models';
-import { HttpRequest } from '@secbox/bus';
+import { HttpRequest } from '@sec-tester/bus';
 
 export class GetScan extends HttpRequest<undefined, ScanState> {
   constructor(id: string) {

@@ -1,4 +1,4 @@
-# How to contribute to SecBox SDKs
+# How to contribute to Sec Tester SDKs
 
 ## Your First Contribution
 

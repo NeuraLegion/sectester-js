@@ -6,7 +6,7 @@ import {
   RepeaterStatusEvent
 } from '../bus';
 import { RepeaterStatus } from '../models';
-import { Configuration, EventBus, Logger } from '@secbox/core';
+import { Configuration, EventBus, Logger } from '@sec-tester/core';
 import { gt } from 'semver';
 import chalk from 'chalk';
 import Timer = NodeJS.Timer;
@@ -146,7 +146,7 @@ export class Repeater {
     } else {
       if (gt(payload.version, this.configuration.version)) {
         this.logger?.warn(
-          '%s: A new Repeater version (%s) is available, please update @secbox.',
+          '%s: A new Repeater version (%s) is available, please update @sec-tester.',
           chalk.yellow('(!) IMPORTANT'),
           payload.version
         );
@@ -168,7 +168,7 @@ export class Repeater {
         throw new Error(
           `${chalk.red(
             '(!) CRITICAL'
-          )}: The current running version is no longer supported, please update @secbox.`
+          )}: The current running version is no longer supported, please update @sec-tester.`
         );
     }
   }

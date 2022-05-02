@@ -1,7 +1,7 @@
 import { BodyParser, ParsedBody } from './BodyParser';
 import { Target } from '../Target';
 import { escape } from '../../utils';
-import { isFormData, isString } from '@secbox/core';
+import { isFormData, isString } from '@sec-tester/core';
 import { Param } from '@har-sdk/core';
 
 export class FormDataBodyParser implements BodyParser {

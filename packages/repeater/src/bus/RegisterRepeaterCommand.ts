@@ -1,4 +1,4 @@
-import { Command } from '@secbox/core';
+import { Command } from '@sec-tester/core';
 
 export interface RegisterRepeaterCommandPayload {
   version: string;

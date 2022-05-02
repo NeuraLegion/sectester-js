@@ -1,4 +1,4 @@
-import { Command } from '@secbox/core';
+import { Command } from '@sec-tester/core';
 import { Method } from 'axios';
 
 export interface HttpOptions<T> {

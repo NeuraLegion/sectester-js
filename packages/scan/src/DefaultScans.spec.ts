@@ -8,7 +8,7 @@ import {
 } from './commands';
 import { DefaultScans } from './DefaultScans';
 import { HttpMethod, Module, ScanStatus, Severity, TestType } from './models';
-import { HttpCommandDispatcher } from '@secbox/bus';
+import { HttpCommandDispatcher } from '@sec-tester/bus';
 import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
 import { Har } from '@har-sdk/core';
 

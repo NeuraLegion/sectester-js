@@ -1,7 +1,7 @@
 import { BodyParser, ParsedBody } from './BodyParser';
 import { Target } from '../Target';
 import { entriesToList } from '../../utils';
-import { isString, isURLSearchParams } from '@secbox/core';
+import { isString, isURLSearchParams } from '@sec-tester/core';
 
 export class UrlEncodedBodyParser implements BodyParser {
   private readonly MIME_TYPE_REGEXP =

@@ -1,4 +1,4 @@
-import { HttpRequest } from '@secbox/bus';
+import { HttpRequest } from '@sec-tester/bus';
 
 export class DeleteRepeaterRequest extends HttpRequest {
   constructor(payload: { repeaterId: string }) {

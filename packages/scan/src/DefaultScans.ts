@@ -8,7 +8,7 @@ import {
 } from './commands';
 import { Issue, ScanConfig, ScanState } from './models';
 import { inject, injectable } from 'tsyringe';
-import { Command, CommandDispatcher } from '@secbox/core';
+import { Command, CommandDispatcher } from '@sec-tester/core';
 
 @injectable()
 export class DefaultScans implements Scans {

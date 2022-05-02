@@ -1,5 +1,5 @@
 {
-  "npmScope": "secbox",
+  "npmScope": "sec-tester",
   "affected": {
     "defaultBase": "master"
   },

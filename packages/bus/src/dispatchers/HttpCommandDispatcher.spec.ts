@@ -1,7 +1,7 @@
 import { HttpRequest } from '../commands';
 import { HttpCommandDispatcher } from './HttpCommandDispatcher';
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
-import { RetryStrategy } from '@secbox/core';
+import { RetryStrategy } from '@sec-tester/core';
 import {
   anyFunction,
   instance,

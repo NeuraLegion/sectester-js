@@ -1,6 +1,6 @@
 import { ExponentialBackoffRetryStrategy } from './ExponentialBackoffRetryStrategy';
 import { container } from 'tsyringe';
-import { RetryStrategy } from '@secbox/core';
+import { RetryStrategy } from '@sec-tester/core';
 
 container.register(RetryStrategy, {
   useFactory() {

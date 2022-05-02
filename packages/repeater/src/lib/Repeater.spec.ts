@@ -5,7 +5,7 @@ import {
   RepeaterRegisteringError,
   RepeaterStatusEvent
 } from '../bus';
-import { Configuration, EventBus, Logger } from '@secbox/core';
+import { Configuration, EventBus, Logger } from '@sec-tester/core';
 import {
   anyOfClass,
   anyString,

@@ -1,11 +1,11 @@
-# @secbox/core
+# @sec-tester/core
 
 The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.
 
 ## Setup
 
 ```bash
-npm i -s @secbox/core
+npm i -s @sec-tester/core
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ npm i -s @secbox/core
 First, you need to generate a new instance of `Configuration`.
 
 ```ts
-import { Configuration } from '@secbox/core';
+import { Configuration } from '@sec-tester/core';
 
 const config = new Configuration({
   cluster: 'app.neuralegion.com',
@@ -60,7 +60,7 @@ The default configuration is as follows:
 Set the application name (domain name), that is used to establish connection with.
 
 ```ts
-import { Configuration } from '@secbox/core';
+import { Configuration } from '@sec-tester/core';
 
 const config = new Configuration({
   cluster: 'app.neuralegion.com'
@@ -74,7 +74,7 @@ const config = new Configuration({
 What level of logs to report. Any logs of a higher level than the setting are shown.
 
 ```ts
-import { Configuration, LogLevel } from '@secbox/core';
+import { Configuration, LogLevel } from '@sec-tester/core';
 
 const config = new Configuration({
   cluster: 'app.neuralegion.com',
@@ -89,7 +89,7 @@ const config = new Configuration({
 Set credentials to access the application.
 
 ```ts
-import { Configuration } from '@secbox/core';
+import { Configuration } from '@sec-tester/core';
 
 const config = new Configuration({
   credentials: {
@@ -104,7 +104,7 @@ More info about [setting up an API key](https://docs.neuralegion.com/docs/manage
 
 - type: `CredentialProvider[]`
 
-Allows you to provide credentials and load it in runtime. The configuration will invoke one provider at a time and only continue to the next if no credentials have been located. For example, if the process finds values defined via the `BRIGHT_TOKEN` environment variables, the file at `.secboxrc` will not be read.
+Allows you to provide credentials and load it in runtime. The configuration will invoke one provider at a time and only continue to the next if no credentials have been located. For example, if the process finds values defined via the `BRIGHT_TOKEN` environment variables, the file at `.sectesterrc` will not be read.
 
 #### EnvCredentialProvider
 
@@ -113,7 +113,7 @@ Use this provider to read credentials from the following environment variable: `
 If the `BRIGHT_TOKEN` environment variable is not set or contains a falsy value, it will return undefined.
 
 ```ts
-import { Configuration, EnvCredentialProvider } from '@secbox/core';
+import { Configuration, EnvCredentialProvider } from '@sec-tester/core';
 
 const credentialsProvider = new EnvCredentialProvider();
 const config = new Configuration({
@@ -135,7 +135,7 @@ to allow clients to perform operations on it using a visitor class (see `Dispatc
 For instance, you can dispatch a message in a way that is more approach you or convenient from the client's perspective.
 
 ```ts
-import { CommandDispatcher } from '@secbox/core';
+import { CommandDispatcher } from '@sec-tester/core';
 
 const dispatcher = container.resolve(CommandDispatcher);
 

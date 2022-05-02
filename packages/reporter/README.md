@@ -1,11 +1,11 @@
-# @secbox/reporter
+# @sec-tester/reporter
 
 Provide an abstraction for generating test results as part of the particular test frameworks.
 
 ## Setup
 
 ```bash
-npm i -s @secbox/reporter
+npm i -s @sec-tester/reporter
 ```
 
 ## Usage

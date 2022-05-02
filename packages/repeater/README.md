@@ -1,4 +1,4 @@
-# @secbox/repeater
+# @sec-tester/repeater
 
 Package to manage repeaters and their lifecycle.
 
@@ -8,12 +8,12 @@ More info about [repeaters](https://docs.brightsec.com/docs/on-premises-repeater
 ## Setup
 
 ```bash
-npm i -s @secbox/repeater
+npm i -s @sec-tester/repeater
 ```
 
 ## Usage
 
-To establish a secure connection between the Bright cloud engine and a target on a local network, you just need to use the `RepeaterFactory` constructed with [`Configuration` instance](https://github.com/NeuraLegion/secbox-sdk-js/tree/master/packages/core#configuration) as constructor argument.
+To establish a secure connection between the Bright cloud engine and a target on a local network, you just need to use the `RepeaterFactory` constructed with [`Configuration` instance](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#configuration) as constructor argument.
 
 ```ts
 const configuration = new Configuration({
@@ -42,7 +42,7 @@ The `createRepeater` method accepts the options described below:
 
 | Option                 | Description                                                                                            |
 | :--------------------- | ------------------------------------------------------------------------------------------------------ |
-| `namePrefix`           | Enter a name prefix that will be used as a constant part of the unique name. By default, `secbox-sdk`. |
+| `namePrefix`           | Enter a name prefix that will be used as a constant part of the unique name. By default, `sec-tester`. |
 | `description`          | Set a short description of the Repeater.                                                               |
 | `requestRunnerOptions` | Custom the request runner settings that will be used to execute requests to your application.          |
 
@@ -107,8 +107,8 @@ The two most viable options are running before all the tests vs running before e
 Below you can find the implementation of before-each strategy:
 
 ```ts
-import { Configuration } from '@secbox/core';
-import { RepeaterFactory, Repeater } from '@secbox/repeater';
+import { Configuration } from '@sec-tester/core';
+import { RepeaterFactory, Repeater } from '@sec-tester/repeater';
 
 describe('Scan', () => {
   let repeater!: Repeater;

@@ -8,7 +8,7 @@ import {
   QueryString,
   Request
 } from '@har-sdk/core';
-import { isPresent, isString } from '@secbox/core';
+import { isPresent, isString } from '@sec-tester/core';
 import { container } from 'tsyringe';
 import { format } from 'url';
 

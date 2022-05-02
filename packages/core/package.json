@@ -1,10 +1,10 @@
 {
-  "name": "@secbox/core",
+  "name": "@sec-tester/core",
   "version": "0.13.0",
   "description": "The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
+    "url": "git+https://github.com/NeuraLegion/sec-tester-js.git"
   },
   "engines": {
     "node": ">=16",
@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NeuraLegion/secbox-sdk-js/issues"
+    "url": "https://github.com/NeuraLegion/sec-tester-js/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -32,7 +32,7 @@
     "qa",
     "brightsec"
   ],
-  "secbox": {
+  "secTester": {
     "repeaterVersion": "8.8.0"
   }
 }

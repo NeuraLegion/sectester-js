@@ -4,7 +4,7 @@ import { Discovery, Module, ScanConfig } from './models';
 import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
 import { Target, TargetOptions } from './target';
 import { v4 } from 'uuid';
-import { Configuration } from '@secbox/core';
+import { Configuration } from '@sec-tester/core';
 import { Entry, Har } from '@har-sdk/core';
 import { DependencyContainer } from 'tsyringe';
 

@@ -1,10 +1,10 @@
 {
-  "name": "@secbox/bus",
+  "name": "@sec-tester/bus",
   "version": "0.13.0",
   "description": "The package includes a simplified implementation of the `EventBus`, one based on `RabbitMQ`, to establish synchronous and asynchronous communication between services and agents.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
+    "url": "git+https://github.com/NeuraLegion/sec-tester-js.git"
   },
   "engines": {
     "node": ">=16",
@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NeuraLegion/secbox-sdk-js/issues"
+    "url": "https://github.com/NeuraLegion/sec-tester-js/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -36,6 +36,6 @@
     "bus"
   ],
   "peerDependencies": {
-    "@secbox/core": ">=0.3.0"
+    "@sec-tester/core": ">=0.3.0"
   }
 }

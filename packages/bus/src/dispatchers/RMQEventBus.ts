@@ -10,7 +10,7 @@ import {
   NoResponse,
   NoSubscriptionsFound,
   RetryStrategy
-} from '@secbox/core';
+} from '@sec-tester/core';
 import type { Channel, ConsumeMessage } from 'amqplib';
 import { autoInjectable, DependencyContainer, inject } from 'tsyringe';
 import type {
