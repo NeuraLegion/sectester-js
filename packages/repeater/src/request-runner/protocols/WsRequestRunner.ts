@@ -9,7 +9,6 @@ import { inject, injectable } from 'tsyringe';
 import { SocksProxyAgent } from 'socks-proxy-agent';
 import { once } from 'events';
 import { IncomingMessage } from 'http';
-import { parse } from 'url';
 import { promisify } from 'util';
 
 interface WSMessage {
@@ -29,12 +28,11 @@ export class WsRequestRunner implements RequestRunner {
   constructor(
     @inject(RequestRunnerOptions)
     private readonly options: RequestRunnerOptions,
-    @inject(Logger)
     private readonly logger: Logger
   ) {
     this.agent = this.options.proxyUrl
       ? new SocksProxyAgent({
-          ...parse(this.options.proxyUrl)
+          ...new URL(this.options.proxyUrl)
         })
       : undefined;
   }

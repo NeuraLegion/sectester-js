@@ -1,6 +1,4 @@
-import { Configuration } from '../configuration';
 import chalk from 'chalk';
-import { container, DependencyContainer } from 'tsyringe';
 import { format } from 'util';
 
 export enum LogLevel {
@@ -79,11 +77,3 @@ export class Logger {
       .padEnd(this.MAX_FORMATTED_LEVEL_LENGTH, ' ');
   }
 }
-
-container.register(Logger, {
-  useFactory(child: DependencyContainer): Logger {
-    return child.isRegistered(Configuration, true)
-      ? new Logger(child.resolve(Configuration).logLevel)
-      : new Logger();
-  }
-});
