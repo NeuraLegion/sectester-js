@@ -1,7 +1,9 @@
 import { RetryStrategy, delay } from '@secbox/core';
+import { AxiosError } from 'axios';
+import ErrnoException = NodeJS.ErrnoException;
 
 export interface ExponentialBackoffOptions {
-  readonly maxDepth: number;
+  maxDepth: number;
 }
 
 export class ExponentialBackoffRetryStrategy implements RetryStrategy {
@@ -41,10 +43,26 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
     }
   }
 
-  private shouldRetry(err: any): boolean {
-    return (
-      this.NO_OPERATIONAL_ERROR_CODES.includes(+err.code) ||
-      this.NO_OPERATIONAL_ERRORS.includes(err.code)
-    );
+  private shouldRetry(err: unknown): boolean {
+    const axiosError = (err as AxiosError).isAxiosError
+      ? (err as AxiosError)
+      : undefined;
+
+    if (axiosError) {
+      const httpStatus = axiosError.response?.status ?? 200;
+
+      return httpStatus >= 500;
+    }
+
+    const code = (err as ErrnoException).code;
+
+    if (code) {
+      return (
+        this.NO_OPERATIONAL_ERRORS.includes(code) ||
+        this.NO_OPERATIONAL_ERROR_CODES.includes(+code)
+      );
+    }
+
+    return false;
   }
 }
