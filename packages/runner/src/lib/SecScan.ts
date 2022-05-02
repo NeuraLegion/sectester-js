@@ -24,10 +24,17 @@ export class SecScan {
       target
     });
 
-    await scan.expect(this._threshold || (() => true));
-    // TODO handle corner-cases?
+    try {
+      await scan.expect(this._threshold || (() => true));
 
-    await new StdReporter().report(scan);
+      const issues = await scan.issues();
+      if (issues.length) {
+        await new StdReporter().report(scan);
+        throw new Error('Target is vulnerable');
+      }
+    } finally {
+      await scan.stop();
+    }
   }
 
   public threshold(severity?: Severity): SecScan {
