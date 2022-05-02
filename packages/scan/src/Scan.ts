@@ -80,8 +80,8 @@ export class Scan {
 
     const predicate = this.createPredicate(expectation);
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    for await (const _status of this.status()) {
+    let status: ScanStatus | undefined;
+    for await ({ status } of this.status()) {
       const preventFurtherPolling =
         this.done || (await predicate()) || timeoutPassed;
 
@@ -92,6 +92,10 @@ export class Scan {
 
     if (timer) {
       clearTimeout(timer);
+    }
+
+    if (this.done && status !== ScanStatus.DONE) {
+      throw new Error(`Scan failed with status ${status}.`);
     }
 
     if (timeoutPassed) {
