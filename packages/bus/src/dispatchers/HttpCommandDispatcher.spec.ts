@@ -2,7 +2,15 @@ import { HttpRequest } from '../commands';
 import { HttpCommandDispatcher } from './HttpCommandDispatcher';
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { RetryStrategy } from '@secbox/core';
-import { anyFunction, instance, mock, reset, spy, when } from 'ts-mockito';
+import {
+  anyFunction,
+  instance,
+  mock,
+  reset,
+  spy,
+  verify,
+  when
+} from 'ts-mockito';
 import nock from 'nock';
 
 describe('HttpCommandDispatcher', () => {
@@ -199,6 +207,23 @@ describe('HttpCommandDispatcher', () => {
 
       // assert
       expect(result).toBeUndefined();
+    });
+
+    it('should apply a retry strategy', async () => {
+      // arrange
+      const command = new HttpRequest({
+        payload: { foo: 'bar' },
+        url: '/api/test',
+        method: 'POST',
+        expectReply: false
+      });
+      nock(baseUrl).post('/api/test').reply(204);
+
+      // act
+      await axiosDispatcher.execute(command);
+
+      // assert
+      verify(mockedRetryStrategy.acquire(anyFunction())).once();
     });
   });
 });

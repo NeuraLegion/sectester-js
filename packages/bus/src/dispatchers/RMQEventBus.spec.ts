@@ -519,6 +519,28 @@ describe('RMQEventBus', () => {
         )
       ).once();
     });
+
+    it('should apply a retry strategy', async () => {
+      // arrange
+      const message = new ConcreteEvent({ foo: 'bar' });
+
+      when(
+        mockedChannelWrapper.publish(
+          anyString(),
+          anyString(),
+          anything(),
+          anything()
+        )
+      ).thenReturn();
+
+      await rmq.init();
+
+      // act
+      await rmq.publish(message);
+
+      // assert
+      verify(mockedRetryStrategy.acquire(anyFunction())).once();
+    });
   });
 
   describe('subscribe', () => {
