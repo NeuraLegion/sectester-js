@@ -1,6 +1,15 @@
 import { SecScan } from './SecScan';
-import { ScanRunner, Severity, TargetOptions, TestType } from '../external';
+import { resolvableInstance } from './SecRunner.spec';
 import {
+  Scan,
+  ScanFactory,
+  Severity,
+  TargetOptions,
+  TestType
+} from '@secbox/scan';
+import {
+  anyFunction,
+  anything,
   instance,
   mock,
   objectContaining,
@@ -16,21 +25,30 @@ describe('SecScan', () => {
 
   const mockedContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();
-  const mockedScanRunner = mock<ScanRunner>();
+  const mockedScanFactory = mock<ScanFactory>();
+  const mockedScan = mock<Scan>();
 
   beforeEach(() => {
-    when(mockedContainer.resolve<ScanRunner>(ScanRunner)).thenReturn(
-      instance(mockedScanRunner)
+    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
+
+    when(mockedContainer.resolve<ScanFactory>(ScanFactory)).thenReturn(
+      instance(mockedScanFactory)
     );
 
-    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
+    when(mockedScanFactory.createScan(anything())).thenResolve(
+      resolvableInstance(mockedScan)
+    );
+
+    when(mockedScan.expect(anything())).thenResolve();
+    when(mockedScan.issues()).thenResolve([]);
   });
 
   afterEach(() => {
-    reset<DependencyContainer | Configuration | ScanRunner>(
+    reset<DependencyContainer | Configuration | ScanFactory | Scan>(
       mockedContainer,
       mockedConfiguration,
-      mockedScanRunner
+      mockedScanFactory,
+      mockedScan
     );
   });
 
@@ -44,28 +62,24 @@ describe('SecScan', () => {
 
   describe('run', () => {
     const target: TargetOptions = { url: 'http://foo.bar' };
-    let scan!: SecScan;
-
-    beforeEach(() => {
-      scan = new SecScan(instance(mockedConfiguration), { tests });
-    });
 
     it('should run scan with default threshold', async () => {
-      await scan.run(target);
+      const secScan = new SecScan(instance(mockedConfiguration), { tests });
+      await secScan.run(target);
 
-      verify(
-        mockedScanRunner.run(objectContaining({ target }), undefined)
-      ).once();
+      verify(mockedScanFactory.createScan(objectContaining({ target }))).once();
+      verify(mockedScan.expect(anyFunction())).once();
     });
 
     it('should run scan with latest set threshold', async () => {
-      scan.threshold(Severity.MEDIUM);
-      scan.threshold(Severity.HIGH);
-      await scan.run({ url: 'http://foo.bar' });
+      const secScan = new SecScan(instance(mockedConfiguration), { tests });
 
-      verify(
-        mockedScanRunner.run(objectContaining({ target }), Severity.HIGH)
-      ).once();
+      secScan.threshold(Severity.MEDIUM);
+      secScan.threshold(Severity.HIGH);
+      await secScan.run({ url: 'http://foo.bar' });
+
+      verify(mockedScanFactory.createScan(objectContaining({ target }))).once();
+      verify(mockedScan.expect(Severity.HIGH)).once();
     });
   });
 });

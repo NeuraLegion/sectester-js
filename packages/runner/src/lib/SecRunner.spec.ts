@@ -1,12 +1,13 @@
 import { SecRunner } from './SecRunner';
 import { SecScan } from './SecScan';
-import { TestType } from '../external';
 import { Configuration } from '@secbox/core';
+import { TestType } from '@secbox/scan';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
 import { Repeater, RepeaterFactory, RepeatersManager } from '@secbox/repeater';
 
-const resolvableInstance = <T extends object>(m: T): T =>
+// eslint-disable-next-line jest/no-export
+export const resolvableInstance = <T extends object>(m: T): T =>
   new Proxy<T>(instance(m), {
     get(target, prop, receiver) {
       if (

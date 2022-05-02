@@ -1,7 +1,7 @@
-import { ScanSettings } from '../external';
+import { ScanSettingsOptions } from '@secbox/scan';
 
 export type SecScanOptions = Pick<
-  ScanSettings,
+  ScanSettingsOptions,
   | 'name'
   | 'tests'
   | 'smart'
