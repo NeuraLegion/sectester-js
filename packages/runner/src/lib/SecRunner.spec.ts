@@ -44,6 +44,8 @@ describe('SecRunner', () => {
 
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
 
+    when(mockedConfiguration.loadCredentials()).thenResolve();
+
     when(mockedRepeater.repeaterId).thenReturn(repeaterId);
     when(mockedRepeater.start()).thenResolve();
     when(mockedRepeater.stop()).thenResolve();
