@@ -10,6 +10,8 @@ npm i -s @secbox/runner
 
 ## Usage
 
+### Step-by-step guide
+
 1.  Setup credentials:
 
     - Obtain a NeuraLegion token (either personal or organization API key), which is required for the access to NeuraLegion API. Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens) and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the [NeuraLegion knowledgebase](https://docs.brightsec.com).
@@ -49,13 +51,13 @@ npm i -s @secbox/runner
 
 </details>
 
-4. Run scan:
+4. Run `SecScan`:
 
    - call `run(target: TargetOptions)` method of `SecScan` instance. Scanning is performed via [repeater](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/repeater), that is created automatically behind the scene.
 
-   - Returned promise is resolved if scan finishes w/o any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error)
+     - Returns promise that is resolved if scan finishes w/o any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error)
 
-   - If any vulnerabilities are found - they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/reporter).
+     - If any vulnerabilities are found - they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/reporter).
 
 ### Usage sample
 
