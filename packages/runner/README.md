@@ -26,30 +26,28 @@ npm i -s @secbox/runner
 
 3.  Setup `SecScan`:
 
-        * Create `SecScan` instance by calling `createScan(opts: SecScanOptions)` of `SecRunner` instance providing at least list of `tests`
+    - Create `SecScan` instance by calling `createScan(opts: SecScanOptions)` of `SecRunner` instance providing at least list of `tests`
 
-          <details>
-          <summary>Advanced scan options</summary>
+    - _Optional._ Set a severity threshold via `threshold(severity: Severity)` method of `SecScan` instance.
+      If it is set, found issues with severity lower than specified will not cause scan to stop.
 
-          | Name                   | Mandatory | Default                     | Description                                                                                                                           |
-          | ---------------------- |-----------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-          | `tests`                | Yes       | N/A                         | The list of tests to be performed against the target application. [See full list](https://docs.brightsec.com/docs/vulnerability-guide)|
-          | `smart`                | No        | true                        | Enabled by default to minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc.      |
-          | `skipStaticParams`     | No        | true                        | Detects if a parameter has any effect on the target behavior when changed, and skip testing static parameters.                        |
-          | `poolSize`             | No        | 10                          | Sets the maximum concurrent requests for the scan, to control the load on your server.                                                |
-          | `attackParamLocations` | No        | ['body', 'query', 'fragment'] | Defines which part of the request to attack. Additionally available values are 'header' and 'path'                                  |
-          | `slowEpTimeout`        | No        | 1000                        | Skip entry-points that take longer to respond than specified ms value                                                                 |
-          | `name`                 | No        | *endpoint name*             | The scan name. Default one will look like `GET https://example.com/`.                                                                 |
+    - _Optional._ Set scan timeout in milliseconds via `timeout(value: number)` method of `SecScan` instance.
+      If it is set, scanning will be aborted by after specified timeout.
 
-          </details>
+<details>
+<summary>Advanced scan options</summary>
 
-        * *Optional.* Set a severity threshold via `threshold(severity: Severity)` method of `SecScan` instance.
+| Name                   | Mandatory | Default                       | Description                                                                                                                            |
+| ---------------------- | --------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests`                | Yes       | N/A                           | The list of tests to be performed against the target application. [See full list](https://docs.brightsec.com/docs/vulnerability-guide) |
+| `smart`                | No        | true                          | Enabled by default to minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc.       |
+| `skipStaticParams`     | No        | true                          | Detects if a parameter has any effect on the target behavior when changed, and skip testing static parameters.                         |
+| `poolSize`             | No        | 10                            | Sets the maximum concurrent requests for the scan, to control the load on your server.                                                 |
+| `attackParamLocations` | No        | ['body', 'query', 'fragment'] | Defines which part of the request to attack. Additionally available values are 'header' and 'path'                                     |
+| `slowEpTimeout`        | No        | 1000                          | Skip entry-points that take longer to respond than specified ms value                                                                  |
+| `name`                 | No        | _endpoint name_               | The scan name. Default one will look like `GET https://example.com/`.                                                                  |
 
-    If it is set, found issues with severity lower than specified will not cause scan to stop.
-
-        * *Optional.* Set scan timeout in milliseconds via `timeout(value: number)` method of `SecScan` instance.
-
-    If it is set, scanning will be aborted by after specified timeout.
+</details>
 
 4.  Run scan:
     - call `run(target: TargetOptions)` method of `SecScan` instance. Scanning is performed via [repeater](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/repeater), that is created automatically behind the scene.
