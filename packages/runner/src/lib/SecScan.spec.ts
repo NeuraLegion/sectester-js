@@ -39,9 +39,6 @@ describe('SecScan', () => {
     when(mockedScanFactory.createScan(anything())).thenResolve(
       resolvableInstance(mockedScan)
     );
-
-    when(mockedScan.expect(anything())).thenResolve();
-    when(mockedScan.issues()).thenResolve([]);
   });
 
   afterEach(() => {
@@ -77,6 +74,9 @@ describe('SecScan', () => {
     });
 
     it('should run scan with default threshold', async () => {
+      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.issues()).thenResolve([]);
+
       await secScan.run(target);
 
       verify(mockedScanFactory.createScan(objectContaining({ target }))).once();
@@ -84,6 +84,9 @@ describe('SecScan', () => {
     });
 
     it('should run scan with latest set threshold', async () => {
+      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.issues()).thenResolve([]);
+
       secScan.threshold(Severity.MEDIUM);
       secScan.threshold(Severity.HIGH);
       await secScan.run(target);
@@ -93,6 +96,7 @@ describe('SecScan', () => {
     });
 
     it('should throw an error on found issues', async () => {
+      when(mockedScan.expect(anything())).thenResolve();
       when(mockedScan.issues()).thenResolve(issues);
 
       const res = secScan.run(target);
@@ -101,6 +105,9 @@ describe('SecScan', () => {
     });
 
     it('should stop scan after resolved expectation', async () => {
+      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.issues()).thenResolve([]);
+
       await secScan.run(target);
 
       verify(mockedScan.stop()).once();
@@ -116,6 +123,7 @@ describe('SecScan', () => {
     });
 
     it('should report if issues are found', async () => {
+      when(mockedScan.expect(anything())).thenResolve();
       when(mockedScan.issues()).thenResolve(issues);
 
       const res = secScan.run(target);
@@ -125,6 +133,9 @@ describe('SecScan', () => {
     });
 
     it('should not report if there are not issues', async () => {
+      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.issues()).thenResolve([]);
+
       await secScan.run(target);
 
       verify(mockedReporter.report(anything())).never();
