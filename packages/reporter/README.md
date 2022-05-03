@@ -1,5 +1,10 @@
 # @sec-tester/reporter
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/maintainability)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/test_coverage)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/test_coverage)
+![Build Status](https://github.com/NeuraLegion/sec-tester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
+![NPM Downloads](https://img.shields.io/npm/dw/@sec-tester/core)
+
 Provide an abstraction for generating test results as part of the particular test frameworks.
 
 ## Setup
