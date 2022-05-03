@@ -1,9 +1,13 @@
 import { SecScanOptions } from './SecScanOptions';
 import { SecScan } from './SecScan';
-import { Configuration, ConfigurationOptions } from '@secbox/core';
-import { Repeater, RepeaterFactory, RepeatersManager } from '@secbox/repeater';
-import { Reporter, StdReporter } from '@secbox/reporter';
-import { ScanFactory } from '@secbox/scan';
+import { Configuration, ConfigurationOptions } from '@sec-tester/core';
+import {
+  Repeater,
+  RepeaterFactory,
+  RepeatersManager
+} from '@sec-tester/repeater';
+import { Reporter, StdReporter } from '@sec-tester/reporter';
+import { ScanFactory } from '@sec-tester/scan';
 
 export class SecRunner {
   private readonly configuration: Configuration;

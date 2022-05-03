@@ -34,6 +34,6 @@
     "reporter"
   ],
   "peerDependencies": {
-    "@sec-tester/scan": ">=0.10.0 <1.0.0"
+    "@sec-tester/scan": ">=0.13.0 <1.0.0"
   }
 }

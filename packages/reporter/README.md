@@ -13,7 +13,7 @@ npm i -s @sec-tester/reporter
 The package provides only one implementation of the `Reporter` that lets to get results to stdout, i.e. `StdReporter`:
 
 ```ts
-import { Reporter, StdReporter } from '@secboox/reporter';
+import { Reporter, StdReporter } from '@sec-tester/reporter';
 
 const reporter: Reporter = new StdReporter();
 ```

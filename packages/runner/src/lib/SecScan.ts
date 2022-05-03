@@ -1,10 +1,10 @@
-import { Reporter } from '@secbox/reporter';
+import { Reporter } from '@sec-tester/reporter';
 import {
   ScanFactory,
   ScanSettingsOptions,
   Severity,
   TargetOptions
-} from '@secbox/scan';
+} from '@sec-tester/scan';
 
 export class SecScan {
   private _threshold = Severity.LOW;

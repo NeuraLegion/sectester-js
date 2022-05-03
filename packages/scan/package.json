@@ -35,7 +35,7 @@
     "dast"
   ],
   "peerDependencies": {
-    "@sec-tester/bus": ">=0.7.0 <1.0.0",
-    "@sec-tester/core": ">=0.7.0 <1.0.0"
+    "@sec-tester/bus": ">=0.13.0 <1.0.0",
+    "@sec-tester/core": ">=0.13.0 <1.0.0"
   }
 }

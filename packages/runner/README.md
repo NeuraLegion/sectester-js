@@ -1,11 +1,11 @@
-# @secbox/runner
+# @sec-tester/runner
 
 Run scanning for vulnerabilities just from your unit tests on CI phase.
 
 ## Setup
 
 ```bash
-npm i -s @secbox/runner
+npm i -s @sec-tester/runner
 ```
 
 ## Step-by-step guide
@@ -18,12 +18,12 @@ and [organization](https://docs.brightsec.com/docs/manage-your-organization#mana
 
 Then put obtained token into `BRIGHT_TOKEN` environment variable to make it accessible by default [`EnvCredentialProvider`](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#envcredentialprovider).
 
-> Refer to `@secbox/core` package [documentation](https://github.com/NeuraLegion/secbox-sdk-js/tree/master/packages/core#credentials) for the details on alternative ways of configuring credential providers.
+> Refer to `@sec-tester/core` package [documentation](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#credentials) for the details on alternative ways of configuring credential providers.
 
 Once it is done, create a configuration object. Single required option is NeuraLegion `cluster` domain you are going to use, e.g. `app.neuralegion.com` as the main one:
 
 ```ts
-import { Confiruration } from '@secbox/core';
+import { Confiruration } from '@sec-tester/core';
 
 const configuration = new Confiruration({ cluster: 'app.neuralegion.com' });
 ```
@@ -33,8 +33,8 @@ const configuration = new Confiruration({ cluster: 'app.neuralegion.com' });
 To set up a runner, create `SecRunner` instance passing a previously created configuration as follows:
 
 ```ts
-import { Confiruration } from '@secbox/core';
-import { SecRunner } from '@secbox/runner';
+import { Confiruration } from '@sec-tester/core';
+import { SecRunner } from '@sec-tester/runner';
 
 const configuration = new Confiruration({ cluster: 'app.neuralegion.com' });
 const runner = new SecRunner(configuration);
@@ -113,7 +113,7 @@ In that case after 30 seconds, if the scan isn't finishing or finding any vulner
 ### Usage sample
 
 ```ts
-import { SecRunner, SecScan, Severity, TestType } from '@secbox/runner';
+import { SecRunner, SecScan, Severity, TestType } from '@sec-tester/runner';
 
 describe('/api', () => {
   let runner!: SecRunner;

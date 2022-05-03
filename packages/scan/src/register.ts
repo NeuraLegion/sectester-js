@@ -2,7 +2,7 @@ import { Scans } from './Scans';
 import { DefaultScans } from './DefaultScans';
 import { ScanFactory } from './ScanFactory';
 import { container, DependencyContainer } from 'tsyringe';
-import { Configuration } from '@secbox/core';
+import { Configuration } from '@sec-tester/core';
 
 container.register(Scans, { useClass: DefaultScans });
 
