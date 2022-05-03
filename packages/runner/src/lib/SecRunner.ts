@@ -1,14 +1,6 @@
 import { SecScanOptions } from './SecScanOptions';
 import { SecScan } from './SecScan';
-import {
-  HttpCommandDispatcher,
-  HttpCommandDispatcherConfig
-} from '@secbox/bus';
-import {
-  CommandDispatcher,
-  Configuration,
-  ConfigurationOptions
-} from '@secbox/core';
+import { Configuration, ConfigurationOptions } from '@secbox/core';
 import { Repeater, RepeaterFactory, RepeatersManager } from '@secbox/repeater';
 import { Reporter, StdReporter } from '@secbox/reporter';
 import { ScanFactory } from '@secbox/scan';
@@ -70,17 +62,6 @@ export class SecRunner {
 
   private async initConfiguration(configuration: Configuration): Promise<void> {
     await configuration.loadCredentials();
-
-    configuration.container.register(HttpCommandDispatcherConfig, {
-      useValue: {
-        baseUrl: configuration.api,
-        token: configuration.credentials?.token as string
-      }
-    });
-
-    configuration.container.register(CommandDispatcher, {
-      useClass: HttpCommandDispatcher
-    });
 
     configuration.container.register(RepeaterFactory, {
       useValue: new RepeaterFactory(configuration)
