@@ -54,10 +54,14 @@ export class SecRunner {
       throw new Error('Must be initialized first.');
     }
 
-    return new SecScan(this.configuration, {
-      ...options,
-      repeaterId: this.repeater.repeaterId
-    });
+    return new SecScan(
+      {
+        ...options,
+        repeaterId: this.repeater.repeaterId
+      },
+      this.configuration.container.resolve<ScanFactory>(ScanFactory),
+      this.configuration.container.resolve<Reporter>(Reporter)
+    );
   }
 
   private async initConfiguration(configuration: Configuration): Promise<void> {

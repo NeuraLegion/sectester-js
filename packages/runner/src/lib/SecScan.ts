@@ -1,4 +1,3 @@
-import { Configuration } from '@secbox/core';
 import { Reporter } from '@secbox/reporter';
 import {
   ScanFactory,
@@ -8,17 +7,13 @@ import {
 } from '@secbox/scan';
 
 export class SecScan {
-  private readonly scanFactory: ScanFactory;
-  private readonly reporter: Reporter;
   private _threshold = Severity.LOW;
 
   constructor(
-    private readonly configuration: Configuration,
-    private readonly settings: Omit<ScanSettingsOptions, 'target'>
-  ) {
-    this.scanFactory = this.configuration.container.resolve(ScanFactory);
-    this.reporter = this.configuration.container.resolve(Reporter);
-  }
+    private readonly settings: Omit<ScanSettingsOptions, 'target'>,
+    private readonly scanFactory: ScanFactory,
+    private readonly reporter: Reporter
+  ) {}
 
   public async run(target: TargetOptions): Promise<void> {
     const scan = await this.scanFactory.createScan({

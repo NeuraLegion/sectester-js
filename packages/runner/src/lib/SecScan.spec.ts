@@ -30,16 +30,11 @@ describe('SecScan', () => {
   const mockedScan = mock<Scan>();
   const mockedReporter = mock<Reporter>();
 
+  const reporter = instance(mockedReporter);
+  const scanFactory = instance(mockedScanFactory);
+
   beforeEach(() => {
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
-
-    when(mockedContainer.resolve<ScanFactory>(ScanFactory)).thenReturn(
-      instance(mockedScanFactory)
-    );
-
-    when(mockedContainer.resolve<Reporter>(Reporter)).thenReturn(
-      instance(mockedReporter)
-    );
 
     when(mockedScanFactory.createScan(anything())).thenResolve(
       resolvableInstance(mockedScan)
@@ -62,7 +57,7 @@ describe('SecScan', () => {
   describe('constructor', () => {
     it('should create instance', () => {
       expect(
-        () => new SecScan(instance(mockedConfiguration), { tests })
+        () => new SecScan({ tests }, scanFactory, reporter)
       ).not.toThrowError();
     });
   });
@@ -78,7 +73,7 @@ describe('SecScan', () => {
     let secScan!: SecScan;
 
     beforeEach(() => {
-      secScan = new SecScan(instance(mockedConfiguration), { tests });
+      secScan = new SecScan({ tests }, scanFactory, reporter);
     });
 
     it('should run scan with default threshold', async () => {
