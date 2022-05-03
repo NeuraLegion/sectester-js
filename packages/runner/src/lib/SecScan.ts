@@ -27,7 +27,7 @@ export class SecScan {
     });
 
     try {
-      await scan.expect(this._threshold || (() => true));
+      await scan.expect(this._threshold);
 
       const issues = await scan.issues();
       if (issues.length) {
