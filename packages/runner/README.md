@@ -8,56 +8,106 @@ Run scanning for vulnerabilities just from your unit tests on CI phase.
 npm i -s @secbox/runner
 ```
 
-## Usage
+## Step-by-step guide
 
-### Step-by-step guide
+### Configure SDK
 
-1.  Setup credentials:
+To start writing tests, first obtain a NeuraLegion token (either personal or organization API key), which is required for the access to NeuraLegion API.
+Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens)
+and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the [NeuraLegion knowledgebase](https://docs.brightsec.com).
 
-    - Obtain a NeuraLegion token (either personal or organization API key), which is required for the access to NeuraLegion API. Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens) and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the [NeuraLegion knowledgebase](https://docs.brightsec.com).
+Then put obtained token into `BRIGHT_TOKEN` environment variable to make it accessible by default [`EnvCredentialProvider`](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#envcredentialprovider).
 
-    - Put obtained token into `BRIGHT_TOKEN` environment variable to make it accesible by default [`EnvCredentialProvider`](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#envcredentialprovider). Or refer to `@secbox/core` package [documentation](https://github.com/NeuraLegion/secbox-sdk-js/tree/master/packages/core#credentials) for the details on alternative ways of configuring credential providers.
+> Refer to `@secbox/core` package [documentation](https://github.com/NeuraLegion/secbox-sdk-js/tree/master/packages/core#credentials) for the details on alternative ways of configuring credential providers.
 
-2.  Setup `SecRunner`:
+Once it is done, create a configuration object. Single required option is NeuraLegion `cluster` domain you are going to use, e.g. `app.neuralegion.com` as the main one:
 
-    - Create `SecRunner` instance, providing either `ConfigurationOptions` or `Confiruration` instance as constructor argument.
-      Single required option is NeuraLegion `cluster` domain you are going to use, e.g. `app.neuralegion.com` as the main one.
-      See other available advanced config options [here](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#options).
+```ts
+import { Confiruration } from '@secbox/core';
 
-    - Initialize `SecRunner` instance by calling `init()`.
+const configuration = new Confiruration({ cluster: 'app.neuralegion.com' });
+```
 
-3.  Setup `SecScan`:
+### Setup runner
 
-    - Create `SecScan` instance by calling `createScan(opts: SecScanOptions)` of `SecRunner` instance providing at least list of `tests`
+To set up a runner, create `SecRunner` instance passing a previously created configuration as follows:
 
-    - _Optional._ Set a severity threshold via `threshold(severity: Severity)` method of `SecScan` instance.
-      If it is set, found issues with severity lower than specified will not cause scan to stop.
+```ts
+import { Confiruration } from '@secbox/core';
+import { SecRunner } from '@secbox/runner';
 
-    - _Optional._ Set scan timeout in milliseconds via `timeout(value: number)` method of `SecScan` instance.
-      If it is set, scanning will be aborted by after specified timeout.
+const configuration = new Confiruration({ cluster: 'app.neuralegion.com' });
+const runner = new SecRunner(configuration);
 
-<details>
-<summary>Advanced scan options</summary>
+// or
 
-| Name                   | Mandatory | Default                       | Description                                                                                                                            |
-| ---------------------- | --------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `tests`                | Yes       | N/A                           | The list of tests to be performed against the target application. [See full list](https://docs.brightsec.com/docs/vulnerability-guide) |
-| `smart`                | No        | true                          | Enabled by default to minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc.       |
-| `skipStaticParams`     | No        | true                          | Detects if a parameter has any effect on the target behavior when changed, and skip testing static parameters.                         |
-| `poolSize`             | No        | 10                            | Sets the maximum concurrent requests for the scan, to control the load on your server.                                                 |
-| `attackParamLocations` | No        | ['body', 'query', 'fragment'] | Defines which part of the request to attack. Additionally available values are 'header' and 'path'                                     |
-| `slowEpTimeout`        | No        | 1000                          | Skip entry-points that take longer to respond than specified ms value                                                                  |
-| `name`                 | No        | _endpoint name_               | The scan name. Default one will look like `GET https://example.com/`.                                                                  |
+const runner2 = new SecRunner({ cluster: 'app.neuralegion.com' });
+```
 
-</details>
+After that, you have to initialize a `SecRunner` instance:
 
-4. Run `SecScan`:
+```ts
+await runner.init();
+```
 
-   - call `run(target: TargetOptions)` method of `SecScan` instance. Scanning is performed via [repeater](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/repeater), that is created automatically behind the scene.
+The runner is now ready to perform your tests, but you have to create a scan.
 
-     - Returns promise that is resolved if scan finishes w/o any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error)
+To dispose a runner, you just need to call the `clear` method:
 
-     - If any vulnerabilities are found - they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/reporter).
+```ts
+await runner.clear();
+```
+
+### Starting scan
+
+To start scanning your application, first you have to create a `SecScan` instance, as shown below:
+
+```ts
+const scan = runner.createScan({ tests: [TestType.XSS] });
+```
+
+Below you will find a list of parameters that can be used to configure a `Scan`:
+
+| Option                 | Description                                                                                                                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide)                                               |
+| `smart`                | Determine whether scan is smart or simple. Use automatic smart decisions such as: parameter skipping, detection phases, etc. to minimize scan time. Enabled by default.                       |
+| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default. |
+| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                      |
+| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                     |
+| `slowEpTimeout`        | Skip entry-points that take longer to respond than specified ms value. By default, 1000ms.                                                                                                    |
+| `targetTimeout`        | Measure timeout responses from the target application globally, and stop the scan if the target is unresponsive for longer than the specified time. By default, 5s.                           |
+| `name`                 | The scan name. The endpoint by default, e.g. `GET https://example.com/`.                                                                                                                      |
+
+Finally, run a scan against your application:
+
+```ts
+await scan.run({
+  method: 'POST',
+  url: 'https://localhost:8000/api/orders',
+  body: { subject: 'Test', body: "<script>alert('xss')</script>" }
+});
+```
+
+The `run` method takes a single argument (for details, see [here](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/scan#defining-a-target-for-attack)), and returns promise that is resolved if scan finishes without any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error).
+
+If any vulnerabilities are found, they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/reporter).
+
+In general, each found issue will cause the scan to stop. To control this behavior you can set a severity threshold using the `threshold` method:
+
+```ts
+scan.threshold(Severity.HIGH);
+```
+
+Now found issues with severity lower than `HIGH` will not cause the scan to stop.
+
+Due to configuration issues, let's say the scan might take much more time than you expect. In this case, you can provide a timeout (in milliseconds) for specifying how long to wait before aborting.
+
+```ts
+scan.timeout(30000);
+```
+
+After 30 seconds, if the scan isn't finishing or finding any vulnerability, it will throw an error.
 
 ### Usage sample
 
