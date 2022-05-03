@@ -49,10 +49,13 @@ npm i -s @secbox/runner
 
 </details>
 
-4.  Run scan:
-    - call `run(target: TargetOptions)` method of `SecScan` instance. Scanning is performed via [repeater](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/repeater), that is created automatically behind the scene.
-    - Returned promise is resolved if scan finishes w/o any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error)
-    - If any vulnerabilities are found - they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/reporter).
+4. Run scan:
+
+   - call `run(target: TargetOptions)` method of `SecScan` instance. Scanning is performed via [repeater](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/repeater), that is created automatically behind the scene.
+
+   - Returned promise is resolved if scan finishes w/o any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error)
+
+   - If any vulnerabilities are found - they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/reporter).
 
 ### Usage sample
 
