@@ -1,6 +1,6 @@
 {
   "name": "@secbox/repeater",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Package for managing repeaters, which are mandatory for scanning targets on a local network.",
   "repository": {
     "type": "git",
