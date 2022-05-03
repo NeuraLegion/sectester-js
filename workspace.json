@@ -5,6 +5,7 @@
     "core": "packages/core",
     "repeater": "packages/repeater",
     "reporter": "packages/reporter",
+    "runner": "packages/runner",
     "scan": "packages/scan"
   }
 }

@@ -35,6 +35,7 @@
       "@secbox/core": ["packages/core/src/index.ts"],
       "@secbox/repeater": ["packages/repeater/src/index.ts"],
       "@secbox/reporter": ["packages/reporter/src/index.ts"],
+      "@secbox/runner": ["packages/runner/src/index.ts"],
       "@secbox/scan": ["packages/scan/src/index.ts"]
     }
   },

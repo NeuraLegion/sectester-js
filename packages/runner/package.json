@@ -1,7 +1,7 @@
 {
-  "name": "@secbox/core",
-  "version": "0.12.0",
-  "description": "The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.",
+  "name": "@secbox/runner",
+  "version": "0.0.0",
+  "description": "Run scanning for vulnerabilities just from your unit tests on CI phase.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
@@ -32,7 +32,11 @@
     "qa",
     "brightsec"
   ],
-  "secbox": {
-    "repeaterVersion": "8.8.0"
+  "peerDependencies": {
+    "@secbox/bus": ">=0.12.0 <1.0.0",
+    "@secbox/core": ">=0.12.0 <1.0.0",
+    "@secbox/repeater": ">=0.12.0 <1.0.0",
+    "@secbox/reporter": ">=0.12.0 <1.0.0",
+    "@secbox/scan": ">=0.12.0 <1.0.0"
   }
 }
