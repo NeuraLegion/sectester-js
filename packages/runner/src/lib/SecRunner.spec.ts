@@ -33,6 +33,8 @@ describe('SecRunner', () => {
   const mockedRepeaterManager = mock<RepeatersManager>();
   const mockedRepeater = mock<Repeater>();
 
+  const container = instance(mockedContainer);
+
   beforeEach(() => {
     when(
       mockedContainer.resolve<RepeatersManager>(RepeatersManager)
@@ -42,7 +44,9 @@ describe('SecRunner', () => {
       instance(mockedRepeaterFactory)
     );
 
-    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
+    when(mockedContainer.createChildContainer()).thenReturn(container);
+
+    when(mockedConfiguration.container).thenReturn(container);
 
     when(mockedConfiguration.loadCredentials()).thenResolve();
 
