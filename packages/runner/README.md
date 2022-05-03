@@ -1,7 +1,5 @@
 # @secbox/runner
 
-Top level @secbox module for usage in test frameworks.
-
 Run scanning for vulnerabilities just from your unit tests on CI phase.
 
 ## Setup

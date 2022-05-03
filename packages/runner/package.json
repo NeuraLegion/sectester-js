@@ -1,7 +1,7 @@
 {
   "name": "@secbox/runner",
   "version": "0.0.0",
-  "description": "Top level @secbox module for usage in test frameworks",
+  "description": "Run scanning for vulnerabilities just from your unit tests on CI phase.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
