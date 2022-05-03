@@ -101,13 +101,14 @@ scan.threshold(Severity.HIGH);
 
 Now found issues with severity lower than `HIGH` will not cause the scan to stop.
 
-Due to configuration issues, let's say the scan might take much more time than you expect. In this case, you can provide a timeout (in milliseconds) for specifying how long to wait before aborting.
+Sometimes either due to scan configuration issues or target misbehave, the scan might take much more time than you expect.
+In this case, you can provide a timeout (in milliseconds) for specifying maximum scan running time:
 
 ```ts
 scan.timeout(30000);
 ```
 
-After 30 seconds, if the scan isn't finishing or finding any vulnerability, it will throw an error.
+In that case after 30 seconds, if the scan isn't finishing or finding any vulnerability, it will throw an error.
 
 ### Usage sample
 
