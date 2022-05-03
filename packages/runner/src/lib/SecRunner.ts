@@ -67,14 +67,6 @@ export class SecRunner {
   private async initConfiguration(configuration: Configuration): Promise<void> {
     await configuration.loadCredentials();
 
-    configuration.container.register(RepeaterFactory, {
-      useValue: new RepeaterFactory(configuration)
-    });
-
-    configuration.container.register(ScanFactory, {
-      useValue: new ScanFactory(configuration)
-    });
-
     configuration.container.register(Reporter, {
       useClass: StdReporter
     });
