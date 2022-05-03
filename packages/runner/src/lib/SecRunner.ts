@@ -43,9 +43,9 @@ export class SecRunner {
         await this.repeatersManager.deleteRepeater(this.repeater.repeaterId);
       }
     } finally {
-      this.repeater = undefined;
-      this.repeatersManager = undefined;
-      this.repeaterFactory = undefined;
+      delete this.repeater;
+      delete this.repeatersManager;
+      delete this.repeaterFactory;
     }
   }
 
