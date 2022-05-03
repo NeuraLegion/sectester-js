@@ -1,8 +1,16 @@
 import { ScanConfig } from '../models';
 import { HttpRequest } from '@sec-tester/bus';
 
-export class CreateScan extends HttpRequest<ScanConfig, { id: string }> {
-  constructor(payload: ScanConfig) {
+export type CreateScanPayload = ScanConfig & {
+  info: {
+    source: 'utlib';
+    client: { name: string; version: string };
+    provider: string | null;
+  };
+};
+
+export class CreateScan extends HttpRequest<CreateScanPayload, { id: string }> {
+  constructor(payload: CreateScanPayload) {
     super({
       payload,
       url: '/api/v1/scans',
