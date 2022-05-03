@@ -71,7 +71,7 @@ Below you will find a list of parameters that can be used to configure a `Scan`:
 | Option                 | Description                                                                                                                                                                                   |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide)                                               |
-| `smart`                | Determine whether scan is smart or simple. Use automatic smart decisions such as: parameter skipping, detection phases, etc. to minimize scan time. Enabled by default.                       |
+| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                |
 | `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default. |
 | `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                      |
 | `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                     |
@@ -93,7 +93,7 @@ The `run` method takes a single argument (for details, see [here](https://github
 
 If any vulnerabilities are found, they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/reporter).
 
-In general, each found issue will cause the scan to stop. To control this behavior you can set a severity threshold using the `threshold` method:
+By default, each found issue will cause the scan to stop. To control this behavior you can set a severity threshold using the `threshold` method:
 
 ```ts
 scan.threshold(Severity.HIGH);
