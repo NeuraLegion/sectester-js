@@ -31,7 +31,9 @@ describe('/api', () => {
     scan = runner
       .createScan({ tests: [TestType.XSS] })
       // will not fail if the found issue severity is lower than the threshold
-      .threshold(Severity.MEDIUM);
+      .threshold(Severity.MEDIUM)
+      // set the scan timeout (ms)
+      .timeout(360000);
   });
 
   afterEach(async () => {

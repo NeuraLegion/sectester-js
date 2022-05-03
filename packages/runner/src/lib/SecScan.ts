@@ -8,6 +8,7 @@ import {
 
 export class SecScan {
   private _threshold = Severity.LOW;
+  private _timeout: number | undefined;
 
   constructor(
     private readonly settings: Omit<ScanSettingsOptions, 'target'>,
@@ -16,10 +17,15 @@ export class SecScan {
   ) {}
 
   public async run(target: TargetOptions): Promise<void> {
-    const scan = await this.scanFactory.createScan({
-      ...this.settings,
-      target
-    });
+    const scan = await this.scanFactory.createScan(
+      {
+        ...this.settings,
+        target
+      },
+      {
+        timeout: this._timeout
+      }
+    );
 
     try {
       await scan.expect(this._threshold);
@@ -36,6 +42,12 @@ export class SecScan {
 
   public threshold(severity: Severity): SecScan {
     this._threshold = severity;
+
+    return this;
+  }
+
+  public timeout(value: number): SecScan {
+    this._timeout = value;
 
     return this;
   }

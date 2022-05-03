@@ -10,6 +10,7 @@ import {
 } from '@secbox/scan';
 import {
   anything,
+  deepEqual,
   instance,
   mock,
   objectContaining,
@@ -36,7 +37,7 @@ describe('SecScan', () => {
   beforeEach(() => {
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
 
-    when(mockedScanFactory.createScan(anything())).thenResolve(
+    when(mockedScanFactory.createScan(anything(), anything())).thenResolve(
       resolvableInstance(mockedScan)
     );
   });
@@ -79,7 +80,9 @@ describe('SecScan', () => {
 
       await secScan.run(target);
 
-      verify(mockedScanFactory.createScan(objectContaining({ target }))).once();
+      verify(
+        mockedScanFactory.createScan(objectContaining({ target }), anything())
+      ).once();
       verify(mockedScan.expect(Severity.LOW)).once();
     });
 
@@ -91,8 +94,25 @@ describe('SecScan', () => {
       secScan.threshold(Severity.HIGH);
       await secScan.run(target);
 
-      verify(mockedScanFactory.createScan(objectContaining({ target }))).once();
+      verify(
+        mockedScanFactory.createScan(objectContaining({ target }), anything())
+      ).once();
       verify(mockedScan.expect(Severity.HIGH)).once();
+    });
+
+    it('should run scan with provided timeout', async () => {
+      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.issues()).thenResolve([]);
+
+      secScan.timeout(42);
+      await secScan.run(target);
+
+      verify(
+        mockedScanFactory.createScan(
+          objectContaining({ target }),
+          deepEqual({ timeout: 42 })
+        )
+      ).once();
     });
 
     it('should throw an error on found issues', async () => {
