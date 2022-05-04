@@ -1,10 +1,10 @@
 {
-  "name": "@secbox/reporter",
+  "name": "@sec-tester/reporter",
   "version": "0.13.0",
   "description": "Provide an abstraction for generating test results as part of the particular test frameworks.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
+    "url": "git+https://github.com/NeuraLegion/sec-tester-js.git"
   },
   "engines": {
     "node": ">=16",
@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NeuraLegion/secbox-sdk-js/issues"
+    "url": "https://github.com/NeuraLegion/sec-tester-js/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -34,6 +34,6 @@
     "reporter"
   ],
   "peerDependencies": {
-    "@secbox/scan": ">=0.10.0 <1.0.0"
+    "@sec-tester/scan": ">=0.13.0 <1.0.0"
   }
 }

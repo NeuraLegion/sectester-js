@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { RepeaterEventBusFactory } from './RepeaterEventBusFactory';
-import { Configuration, Credentials, RetryStrategy } from '@secbox/core';
+import { Configuration, Credentials, RetryStrategy } from '@sec-tester/core';
 import { instance, mock, reset, when } from 'ts-mockito';
-import { RMQEventBus } from '@secbox/bus';
+import { RMQEventBus } from '@sec-tester/bus';
 import { DependencyContainer } from 'tsyringe';
 
 describe('RepeaterEventBusFactory', () => {

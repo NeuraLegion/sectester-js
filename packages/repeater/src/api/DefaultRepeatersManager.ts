@@ -5,7 +5,7 @@ import {
   ListRepeatersRequest
 } from './commands';
 import { inject, injectable } from 'tsyringe';
-import { CommandDispatcher } from '@secbox/core';
+import { CommandDispatcher } from '@sec-tester/core';
 
 @injectable()
 export class DefaultRepeatersManager implements RepeatersManager {

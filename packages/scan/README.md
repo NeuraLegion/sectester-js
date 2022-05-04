@@ -1,11 +1,16 @@
-# @secbox/scan
+# @sec-tester/scan
+
+[![Maintainability](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/maintainability)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/test_coverage)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/test_coverage)
+![Build Status](https://github.com/NeuraLegion/sec-tester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
+![NPM Downloads](https://img.shields.io/npm/dw/@sec-tester/core)
 
 The package defines a simple public API to manage scans and their expectations.
 
 ## Setup
 
 ```bash
-npm i -s @secbox/scan
+npm i -s @sec-tester/scan
 ```
 
 ## Usage
@@ -13,8 +18,8 @@ npm i -s @secbox/scan
 To start scanning your application, you have to create a `ScanFactory` as follows:
 
 ```ts
-import { Configuration } from '@secbox/core';
-import { ScanFactory } from '@secbox/scan';
+import { Configuration } from '@sec-tester/core';
+import { ScanFactory } from '@sec-tester/scan';
 
 const config = new Configuration({
   cluster: 'app.neuralegion.com'
@@ -26,7 +31,7 @@ const scanFactory = new ScanFactory(config);
 To create a new scan, you have to define a target first (for details, see [here](#defining-a-target-for-attack)):
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com'
@@ -68,7 +73,7 @@ The target can accept the following options:
 The server URL that will be used for the request. Usually the `url` represents a WHATWG URL:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com'
@@ -78,7 +83,7 @@ const target = new Target({
 If `url` contains a query string, they will be parsed as search params:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com?foo=bar'
@@ -90,7 +95,7 @@ console.log(target.queryString); // foo=bar
 If you pass a `query` parameter, it will override these which obtained from `url`:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com?foo=bar',
@@ -107,7 +112,7 @@ console.log(target.queryString); // bar=foo
 The request method to be used when making the request, `GET` by default:
 
 ```ts
-import { Target, HttpMethod } from '@secbox/scan';
+import { Target, HttpMethod } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com',
@@ -122,7 +127,7 @@ const target = new Target({
 The query parameters to be sent with the request:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com',
@@ -138,7 +143,7 @@ console.log(target.queryString); // hello=world&foo=123
 If you need to pass an array, you can do it using a `URLSearchParams` instance:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com',
@@ -156,7 +161,7 @@ console.log(target.queryString); // key=a&key=b
 It is possible to define a custom serializer for query parameters:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 import { stringify } from 'qs';
 
 const target = new Target({
@@ -177,7 +182,7 @@ console.log(target.queryString); // a[0]=b&a[1]=c&a[2]=d
 The HTTP headers to be sent:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com',
@@ -194,7 +199,7 @@ const target = new Target({
 The data to be sent as the request body. Makes sense only for `POST`, `PUT`, `PATCH`, and `DELETE`:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com',
@@ -207,7 +212,7 @@ const target = new Target({
 You can use `FormData` objects, such as [form-data](https://www.npmjs.com/package/form-data), as request body as well:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 import FormData from 'form-data';
 
 const form = new FormData();
@@ -222,7 +227,7 @@ const target = new Target({
 It is possible to set a form as body using an instance of `URLSearchParams`:
 
 ```ts
-import { Target } from '@secbox/scan';
+import { Target } from '@sec-tester/scan';
 
 const target = new Target({
   url: 'https://example.com',

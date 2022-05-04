@@ -3,7 +3,7 @@ import { RequestRunnerOptions } from '../request-runner';
 import { RepeaterOptions } from './RepeaterOptions';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
-import { Configuration } from '@secbox/core';
+import { Configuration } from '@sec-tester/core';
 import { v4 as uuidv4 } from 'uuid';
 import { DependencyContainer, injectable } from 'tsyringe';
 
@@ -48,7 +48,7 @@ export class RepeaterFactory {
 
   public async createRepeater(
     { namePrefix, description, requestRunnerOptions }: RepeaterOptions = {
-      namePrefix: `secbox-sdk`
+      namePrefix: `sec-tester`
     }
   ): Promise<Repeater> {
     this.registerRequestRunnerOptions(requestRunnerOptions);

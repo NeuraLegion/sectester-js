@@ -8,7 +8,7 @@ import {
   EventHandler,
   NoResponse,
   RetryStrategy
-} from '@secbox/core';
+} from '@sec-tester/core';
 import {
   anyFunction,
   anyOfClass,

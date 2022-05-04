@@ -14,7 +14,7 @@ import {
   verify,
   when
 } from 'ts-mockito';
-import { Configuration } from '@secbox/core';
+import { Configuration } from '@sec-tester/core';
 import { DependencyContainer } from 'tsyringe';
 
 describe('ScanFactory', () => {

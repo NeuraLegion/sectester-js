@@ -1,4 +1,4 @@
-import { HttpRequest } from '@secbox/bus';
+import { HttpRequest } from '@sec-tester/bus';
 
 interface CreateRepeaterRequestPayload {
   name: string;

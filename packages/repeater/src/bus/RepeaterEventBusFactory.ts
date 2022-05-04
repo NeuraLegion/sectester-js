@@ -1,7 +1,7 @@
 import { EventBusFactory } from './EventBusFactory';
 import { autoInjectable, DependencyContainer, inject } from 'tsyringe';
-import { Configuration, EventBus, RetryStrategy } from '@secbox/core';
-import { RMQEventBus, RMQEventBusConfig } from '@secbox/bus';
+import { Configuration, EventBus, RetryStrategy } from '@sec-tester/core';
+import { RMQEventBus, RMQEventBusConfig } from '@sec-tester/bus';
 
 @autoInjectable()
 export class RepeaterEventBusFactory implements EventBusFactory {

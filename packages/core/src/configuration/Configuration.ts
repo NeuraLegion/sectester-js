@@ -6,7 +6,7 @@ import {
 } from '../credentials-provider';
 import { first } from '../utils';
 import { LogLevel } from '../logger';
-import { name, secbox } from '../../package.json';
+import { name, secTester } from '../../package.json';
 import { container, injectable } from 'tsyringe';
 
 export interface ConfigurationOptions {
@@ -58,7 +58,7 @@ export class Configuration {
   }
 
   get version(): string {
-    return secbox.repeaterVersion;
+    return secTester.repeaterVersion;
   }
 
   get name() {

@@ -6,7 +6,7 @@ import {
 } from './commands';
 import { DefaultRepeatersManager } from './DefaultRepeatersManager';
 import { RepeatersManager } from './RepeatersManager';
-import { CommandDispatcher } from '@secbox/core';
+import { CommandDispatcher } from '@sec-tester/core';
 import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
 
 describe('DefaultRepeatersManager', () => {

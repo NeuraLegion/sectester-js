@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { IssuesGrouper } from './issues-grouper';
-import { Issue, Severity } from '@secbox/scan';
+import { Issue, Severity } from '@sec-tester/scan';
 
 const issues = [
   {

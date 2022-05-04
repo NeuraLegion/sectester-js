@@ -1,5 +1,5 @@
 import { IssuesGroup } from '../models';
-import { Issue, severityComparator } from '@secbox/scan';
+import { Issue, severityComparator } from '@sec-tester/scan';
 
 export class IssuesGrouper {
   public static group(issues: Issue[]): IssuesGroup[] {

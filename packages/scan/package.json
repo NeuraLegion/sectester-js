@@ -1,10 +1,10 @@
 {
-  "name": "@secbox/scan",
+  "name": "@sec-tester/scan",
   "version": "0.13.0",
   "description": "The package defines a simple public API to manage scans and their expectations.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeuraLegion/secbox-sdk-js.git"
+    "url": "git+https://github.com/NeuraLegion/sec-tester-js.git"
   },
   "engines": {
     "node": ">=16",
@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NeuraLegion/secbox-sdk-js/issues"
+    "url": "https://github.com/NeuraLegion/sec-tester-js/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -35,7 +35,7 @@
     "dast"
   ],
   "peerDependencies": {
-    "@secbox/bus": ">=0.7.0 <1.0.0",
-    "@secbox/core": ">=0.7.0 <1.0.0"
+    "@sec-tester/bus": ">=0.13.0 <1.0.0",
+    "@sec-tester/core": ">=0.13.0 <1.0.0"
   }
 }

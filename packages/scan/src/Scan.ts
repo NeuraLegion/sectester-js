@@ -7,7 +7,7 @@ import {
   Severity,
   severityRanges
 } from './models';
-import { delay } from '@secbox/core';
+import { delay } from '@sec-tester/core';
 
 export interface ScanOptions {
   id: string;

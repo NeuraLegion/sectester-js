@@ -1,4 +1,4 @@
-import { RetryStrategy, delay } from '@secbox/core';
+import { RetryStrategy, delay } from '@sec-tester/core';
 import { AxiosError } from 'axios';
 import ErrnoException = NodeJS.ErrnoException;
 

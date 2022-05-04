@@ -5,7 +5,7 @@ import { Protocol } from '../../models';
 import 'reflect-metadata';
 import { reset, spy, when } from 'ts-mockito';
 import { Server } from 'ws';
-import { Logger, LogLevel } from '@secbox/core';
+import { Logger, LogLevel } from '@sec-tester/core';
 import { once } from 'events';
 
 describe('WsRequestRunner', () => {

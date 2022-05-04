@@ -1,10 +1,14 @@
 import { SecRunner } from './SecRunner';
 import { SecScan } from './SecScan';
-import { Configuration } from '@secbox/core';
-import { TestType } from '@secbox/scan';
+import { Configuration } from '@sec-tester/core';
+import { TestType } from '@sec-tester/scan';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
-import { Repeater, RepeaterFactory, RepeatersManager } from '@secbox/repeater';
+import {
+  Repeater,
+  RepeaterFactory,
+  RepeatersManager
+} from '@sec-tester/repeater';
 
 // eslint-disable-next-line jest/no-export
 export const resolvableInstance = <T extends object>(m: T): T =>

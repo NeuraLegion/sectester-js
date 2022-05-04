@@ -1,9 +1,9 @@
-# SecBox SDK for JavaScript
+# Sec Tester SDK for JavaScript
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/ca77b676cf791e045aee/maintainability)](https://codeclimate.com/github/NeuraLegion/secbox-sdk-js/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/ca77b676cf791e045aee/test_coverage)](https://codeclimate.com/github/NeuraLegion/secbox-sdk-js/test_coverage)
-![Build Status](https://github.com/NeuraLegion/secbox-sdk-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
-![NPM Downloads](https://img.shields.io/npm/dw/@secbox/core)
+[![Maintainability](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/maintainability)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/test_coverage)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/test_coverage)
+![Build Status](https://github.com/NeuraLegion/sec-tester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
+![NPM Downloads](https://img.shields.io/npm/dw/@sec-tester/core)
 
 ## Installation
 
@@ -101,7 +101,7 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 
 > ⚡ We use [husky](https://github.com/typicode/husky), [commitlint](https://github.com/conventional-changelog/commitlint#readme) and [lint-staged](https://github.com/okonet/lint-staged), they will help you to follow these rules.
 
-- [How to contribute to SecBox SDKs](./CONTRIBUTING.md)
+- [How to contribute to Sec Tester SDKs](./CONTRIBUTING.md)
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 - [Angular Git Commit Guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
 
@@ -110,7 +110,7 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 Issue the following command to generate a new package:
 
 ```bash
-$ nx generate @nrwl/node:lib ${lib} --importPath=@secbox/${lib}
+$ nx generate @nrwl/node:lib ${lib} --importPath=@sec-tester/${lib}
 ```
 
 > ⚡ It is important to have a clean git working directory before invoking a generator so that you can easily revert changes and re-invoke the generator with different inputs.

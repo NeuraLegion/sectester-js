@@ -1,11 +1,16 @@
-# @secbox/bus
+# @sec-tester/bus
+
+[![Maintainability](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/maintainability)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/test_coverage)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/test_coverage)
+![Build Status](https://github.com/NeuraLegion/sec-tester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
+![NPM Downloads](https://img.shields.io/npm/dw/@sec-tester/core)
 
 The package includes a simplified implementation of the `EventBus`, one based on `RabbitMQ`, to establish synchronous and asynchronous communication between services and agents.
 
 ## Setup
 
 ```bash
-npm i -s @secbox/bus
+npm i -s @sec-tester/bus
 ```
 
 ## Usage
@@ -15,7 +20,7 @@ npm i -s @secbox/bus
 To use the RabbitMQ Event Bus, pass the following options object to the constructor method:
 
 ```ts
-import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@secbox/bus';
+import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@sec-tester/bus';
 
 const config = new Configuration({
   cluster: 'app.neuralegion.com'
@@ -65,7 +70,7 @@ In case of unrecoverable or operational errors, you will get an exception while 
 To subscribe an event handler to the particular event, you should use the `@bind()` decorator as follows:
 
 ```ts
-import { bind, EventHandler } from '@secbox/core';
+import { bind, EventHandler } from '@sec-tester/core';
 import { injectable } from 'tsyringe';
 
 @bind(IssueDetected)
@@ -118,7 +123,7 @@ The `publish()` method takes just a single argument, an instance of the derived 
 
 > ⚡ The class name should match one defined event in the application. Otherwise, you should override it by passing the expected name via the constructor.
 
-For more information, please see `@secbox/core`.
+For more information, please see `@sec-tester/core`.
 
 #### Executing RPC methods
 
@@ -168,7 +173,7 @@ The `HttpCommandDispatcher` is an alternative way to execute the commands over H
 import {
   HttpCommandDispatcher,
   HttpCommandDispatcherConfig
-} from '@secbox/bus';
+} from '@sec-tester/bus';
 
 const options: HttpCommandDispatcherConfig = {
   baseUrl: 'https://app.neuralegion.com',
@@ -217,7 +222,7 @@ Below you will find a list of parameters that can be used to configure a command
 | `correlationId` | Used to ensure atomicity while working with EventBus. By default, random UUID.             |
 | `createdAt`     | The exact date and time the command was created.                                           |
 
-For more information, please see `@secbox/core`.
+For more information, please see `@sec-tester/core`.
 
 #### Retry Strategy
 
