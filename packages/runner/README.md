@@ -118,7 +118,8 @@ In that case after 30 seconds, if the scan isn't finishing or finding any vulner
 ### Usage sample
 
 ```ts
-import { SecRunner, SecScan, Severity, TestType } from '@sec-tester/runner';
+import { SecRunner, SecScan } from '@sec-tester/runner';
+import { Severity, TestType } from '@sec-tester/scan';
 
 describe('/api', () => {
   let runner!: SecRunner;
