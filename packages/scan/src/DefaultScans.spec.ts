@@ -8,9 +8,19 @@ import {
 } from './commands';
 import { DefaultScans } from './DefaultScans';
 import { HttpMethod, Module, ScanStatus, Severity, TestType } from './models';
-import { HttpCommandDispatcher } from '@sec-tester/bus';
-import { anyOfClass, instance, mock, reset, verify, when } from 'ts-mockito';
+import {
+  anyOfClass,
+  instance,
+  mock,
+  objectContaining,
+  reset,
+  spy,
+  verify,
+  when
+} from 'ts-mockito';
 import { Har } from '@har-sdk/core';
+import { CommandDispatcher, Configuration } from '@sec-tester/core';
+import ci from 'ci-info';
 
 describe('HttpScans', () => {
   const id = 'roMq1UVuhPKkndLERNKnA8';
@@ -53,14 +63,25 @@ describe('HttpScans', () => {
     }
   };
 
-  const mockedCommandDispatcher = mock<HttpCommandDispatcher>();
+  const mockedCi = spy<typeof ci>(ci);
+  const mockedCommandDispatcher = mock<CommandDispatcher>();
+  const mockedConfiguration = mock<Configuration>();
   let scans!: DefaultScans;
 
   beforeEach(() => {
-    scans = new DefaultScans(instance(mockedCommandDispatcher));
+    scans = new DefaultScans(
+      instance(mockedConfiguration),
+      instance(mockedCommandDispatcher)
+    );
   });
 
-  afterEach(() => reset(mockedCommandDispatcher));
+  afterEach(() =>
+    reset<Configuration | CommandDispatcher | typeof ci>(
+      mockedCommandDispatcher,
+      mockedCi,
+      mockedConfiguration
+    )
+  );
 
   describe('create', () => {
     it('should create a new scan', async () => {
@@ -76,6 +97,38 @@ describe('HttpScans', () => {
 
       verify(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).once();
       expect(result).toMatchObject({ id });
+    });
+
+    it('should pass a creation info in a payload', async () => {
+      when(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).thenResolve(
+        { id }
+      );
+      when(mockedConfiguration.name).thenReturn('library');
+      when(mockedConfiguration.version).thenReturn('v1.1.1');
+      when(mockedCi.name).thenReturn('some CI');
+
+      await scans.createScan({
+        name: 'test',
+        tests: [TestType.DOM_XSS],
+        module: Module.DAST
+      });
+
+      verify(
+        mockedCommandDispatcher.execute(
+          objectContaining({
+            payload: {
+              info: {
+                source: 'utlib',
+                provider: 'some CI',
+                client: {
+                  name: 'library',
+                  version: 'v1.1.1'
+                }
+              }
+            }
+          })
+        )
+      ).once();
     });
 
     it('should raise an error if result is not defined', async () => {

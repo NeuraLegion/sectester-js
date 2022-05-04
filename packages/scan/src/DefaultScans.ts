@@ -8,17 +8,31 @@ import {
 } from './commands';
 import { Issue, ScanConfig, ScanState } from './models';
 import { inject, injectable } from 'tsyringe';
-import { Command, CommandDispatcher } from '@sec-tester/core';
+import { Command, CommandDispatcher, Configuration } from '@sec-tester/core';
+import ci from 'ci-info';
 
 @injectable()
 export class DefaultScans implements Scans {
   constructor(
+    private readonly configuration: Configuration,
     @inject(CommandDispatcher)
     private readonly commandDispatcher: CommandDispatcher
   ) {}
 
   public createScan(config: ScanConfig): Promise<{ id: string }> {
-    return this.sendCommand(new CreateScan(config));
+    return this.sendCommand(
+      new CreateScan({
+        ...config,
+        info: {
+          source: 'utlib',
+          provider: ci.name,
+          client: {
+            name: this.configuration.name,
+            version: this.configuration.version
+          }
+        }
+      })
+    );
   }
 
   public listIssues(id: string): Promise<Issue[]> {
