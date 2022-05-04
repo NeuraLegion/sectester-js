@@ -83,8 +83,6 @@ export class HttpCommandDispatcher implements CommandDispatcher {
         authorization: `api-key ${token}`
       },
       transitional: {
-        forcedJSONParsing: false,
-        silentJSONParsing: false,
         clarifyTimeoutError: true
       }
     };
