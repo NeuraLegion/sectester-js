@@ -36,6 +36,6 @@
     "bus"
   ],
   "peerDependencies": {
-    "@sec-tester/core": ">=0.13.0"
+    "@sec-tester/core": ">=0.13.0 <1.0.0"
   }
 }
