@@ -1,6 +1,6 @@
 {
   "name": "@sec-tester/bus",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "description": "The package includes a simplified implementation of the `EventBus`, one based on `RabbitMQ`, to establish synchronous and asynchronous communication between services and agents.",
   "repository": {
     "type": "git",
