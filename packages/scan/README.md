@@ -41,6 +41,8 @@ const target = new Target({
 The factory exposes the `createScan` method that returns a new [Scan instance](#managing-a-scan):
 
 ```ts
+import { TestType } from '@sec-tester/scan';
+
 const scan = await scanFactory.createScan({
   target,
   tests: [TestType.HEADER_SECURITY]
@@ -133,7 +135,7 @@ const target = new Target({
   url: 'https://example.com',
   query: {
     hello: 'world',
-    foo: 123
+    foo: '123'
   }
 });
 
@@ -239,17 +241,17 @@ const target = new Target({
 
 The `Scan` provides a lightweight API to revise and control the status of test execution.
 
-For instance, to get a list of found issues, you can use the `listIssues` method:
+For instance, to get a list of found issues, you can use the `issues` method:
 
 ```ts
-const issues = await scan.listIssues();
+const issues = await scan.issues();
 ```
 
 To wait for certain conditions you can use the `expect` method:
 
 ```ts
 await scan.expect(Severity.HIGH);
-const issues = await scan.listIssues();
+const issues = await scan.issues();
 ```
 
 > It returns control as soon as a scan is done, timeout is gone, or an expectation is satisfied.

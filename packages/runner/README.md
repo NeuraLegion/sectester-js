@@ -28,9 +28,9 @@ Then put obtained token into `BRIGHT_TOKEN` environment variable to make it acce
 Once it is done, create a configuration object. Single required option is NeuraLegion `cluster` domain you are going to use, e.g. `app.neuralegion.com` as the main one:
 
 ```ts
-import { Confiruration } from '@sec-tester/core';
+import { Configuration } from '@sec-tester/core';
 
-const configuration = new Confiruration({ cluster: 'app.neuralegion.com' });
+const configuration = new Configuration({ cluster: 'app.neuralegion.com' });
 ```
 
 ### Setup runner
@@ -38,10 +38,10 @@ const configuration = new Confiruration({ cluster: 'app.neuralegion.com' });
 To set up a runner, create `SecRunner` instance passing a previously created configuration as follows:
 
 ```ts
-import { Confiruration } from '@sec-tester/core';
+import { Configuration } from '@sec-tester/core';
 import { SecRunner } from '@sec-tester/runner';
 
-const configuration = new Confiruration({ cluster: 'app.neuralegion.com' });
+const configuration = new Configuration({ cluster: 'app.neuralegion.com' });
 const runner = new SecRunner(configuration);
 
 // or
