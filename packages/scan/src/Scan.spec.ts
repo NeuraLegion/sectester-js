@@ -238,7 +238,7 @@ describe('Scan', () => {
           issuesBySeverity: [{ number: 1, type: Severity.LOW }]
         });
 
-      await scan.expect(Severity.MEDIUM);
+      await scan.expect(Severity.LOW);
 
       verify(mockedScans.getScan(id)).twice();
     });
