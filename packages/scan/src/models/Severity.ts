@@ -8,7 +8,7 @@ export const severityRanges = new Map(
   Object.values(Severity).map(severity => {
     switch (severity) {
       case Severity.MEDIUM:
-        return [severity, [Severity.MEDIUM, Severity.LOW]];
+        return [severity, [Severity.MEDIUM, Severity.HIGH]];
       case Severity.HIGH:
         return [severity, [Severity.HIGH]];
       case Severity.LOW:
