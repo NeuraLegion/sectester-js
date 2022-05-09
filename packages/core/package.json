@@ -1,6 +1,6 @@
 {
   "name": "@sec-tester/core",
-  "version": "0.14.2",
+  "version": "0.14.3",
   "description": "The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.",
   "repository": {
     "type": "git",
