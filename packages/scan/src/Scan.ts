@@ -106,10 +106,14 @@ export class Scan {
   }
 
   public async stop(): Promise<void> {
-    await this.refreshState();
+    try {
+      await this.refreshState();
 
-    if (this.active) {
-      return this.scans.stopScan(this.id);
+      if (this.active) {
+        await this.scans.stopScan(this.id);
+      }
+    } catch {
+      // noop
     }
   }
 

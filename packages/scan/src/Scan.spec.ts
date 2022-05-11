@@ -261,5 +261,16 @@ describe('Scan', () => {
 
       verify(mockedScans.stopScan(id)).never();
     });
+
+    it('should handle and ignore an error', async () => {
+      when(mockedScans.stopScan(id)).thenReject(
+        new Error(
+          'Is not possible to change the scan status from done to stopped.'
+        )
+      );
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.DONE });
+
+      await expect(scan.stop()).resolves.not.toThrow();
+    });
   });
 });
