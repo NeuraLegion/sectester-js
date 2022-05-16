@@ -41,7 +41,7 @@ describe('Repeater', () => {
   beforeEach(() => {
     when(mockedContainer.resolve(Logger)).thenReturn(instance(mockedLogger));
     when(mockedContainer.isRegistered(Logger, anything())).thenReturn(true);
-    when(mockedConfiguration.version).thenReturn(version);
+    when(mockedConfiguration.repeaterVersion).thenReturn(version);
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
     when(
       mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))

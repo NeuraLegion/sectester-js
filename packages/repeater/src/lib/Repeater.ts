@@ -90,7 +90,7 @@ export class Repeater {
   private async register(): Promise<void> {
     const res = await this.bus.execute(
       new RegisterRepeaterCommand({
-        version: this.configuration.version,
+        version: this.configuration.repeaterVersion,
         repeaterId: this.repeaterId
       })
     );
@@ -144,7 +144,7 @@ export class Repeater {
     if ('error' in payload) {
       this.handleRegisterError(payload.error);
     } else {
-      if (gt(payload.version, this.configuration.version)) {
+      if (gt(payload.version, this.configuration.repeaterVersion)) {
         this.logger?.warn(
           '%s: A new Repeater version (%s) is available, please update @sec-tester.',
           chalk.yellow('(!) IMPORTANT'),
