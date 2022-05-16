@@ -17,9 +17,7 @@ npm i -s @sec-tester/runner
 
 ### Configure SDK
 
-To start writing tests, first obtain a NeuraLegion token (either personal or organization API key), which is required for the access to NeuraLegion API.
-Find out how to obtain [personal](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens)
-and [organization](https://docs.brightsec.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens) API keys in the [NeuraLegion knowledgebase](https://docs.brightsec.com).
+To start writing tests, first obtain a NeuraLegion token, which is required for the access to NeuraLegion API. More info about [setting up an API key](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens).
 
 Then put obtained token into `BRIGHT_TOKEN` environment variable to make it accessible by default [`EnvCredentialProvider`](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#envcredentialprovider).
 
