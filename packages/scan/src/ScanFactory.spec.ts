@@ -64,7 +64,7 @@ describe('ScanFactory', () => {
         mockedScans.createScan(
           objectContaining({
             fileId,
-            name: 'GET https://example.com/',
+            name: 'GET example.com',
             module: Module.DAST,
             discoveryTypes: [Discovery.ARCHIVE],
             tests: [TestType.DOM_XSS]

@@ -1,5 +1,6 @@
 import { AttackParamLocation, TestType } from './models';
 import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
+import { randomBytes } from 'crypto';
 
 describe('ScanSettings', () => {
   describe('constructor', () => {
@@ -131,7 +132,41 @@ describe('ScanSettings', () => {
 
       // assert
       expect(result).toMatchObject({
-        name: 'GET https://example.com/'
+        name: 'GET example.com'
+      });
+    });
+
+    it('should throw an error if name is greater than 200 characters', () => {
+      // arrange
+      const settings: ScanSettingsOptions = {
+        name: randomBytes(201).toString('hex'),
+        tests: [TestType.DOM_XSS],
+        target: { url: 'https://example.com' }
+      };
+
+      // act & assert
+      expect(() => new ScanSettings(settings)).toThrow(
+        'Name must be less than 200 characters'
+      );
+    });
+
+    it('should truncate a default name if hostname is greater than 200 characters', () => {
+      // arrange
+      const settings: ScanSettingsOptions = {
+        tests: [TestType.DOM_XSS],
+        target: {
+          url: `https://subdomain-${randomBytes(200).toString(
+            'hex'
+          )}.example.com`
+        }
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result).toMatchObject({
+        name: expect.stringMatching(/^.{1,200}$/)
       });
     });
   });
