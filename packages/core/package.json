@@ -33,6 +33,7 @@
     "brightsec"
   ],
   "secTester": {
+    "name": "sec-tester-js",
     "repeaterVersion": "8.8.0"
   }
 }

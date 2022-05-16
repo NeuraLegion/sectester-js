@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Configuration } from './Configuration';
 import { EnvCredentialProvider } from '../credentials-provider';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
+import { resolve } from 'path';
 
 describe('Configuration', () => {
   const mockedProvider = mock<EnvCredentialProvider>();
@@ -17,23 +18,65 @@ describe('Configuration', () => {
       expect(configuration).toBe(configuration2);
     });
 
-    it('should throw if cluster is not passed', () => {
+    it('should throw if cluster is not passed', () =>
       expect(
         () =>
           new Configuration({
             cluster: ''
           })
-      ).toThrow();
-    });
+      ).toThrow());
 
-    it('should throw an error if credentials or credential providers are not passed', () => {
+    it('should throw an error if credentials or credential providers are not passed', () =>
       expect(
         () =>
           new Configuration({
             cluster: 'example.com',
             credentialProviders: []
           })
-      ).toThrow();
+      ).toThrow());
+
+    it('should return an expected name', () => {
+      const configuration = new Configuration({
+        cluster: 'example.com'
+      });
+      const pathToRootPackageJson = resolve(
+        __dirname,
+        '../../../../package.json'
+      );
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { name } = require(pathToRootPackageJson);
+
+      const result = configuration.name;
+
+      expect(result).toBe(name);
+    });
+
+    it('should return an expected version', () => {
+      const configuration = new Configuration({
+        cluster: 'example.com'
+      });
+      const pathToPackageJson = resolve(__dirname, '../../package.json');
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { version } = require(pathToPackageJson);
+
+      const result = configuration.version;
+
+      expect(result).toBe(version);
+    });
+
+    it('should return an expected repeater version', () => {
+      const configuration = new Configuration({
+        cluster: 'example.com'
+      });
+      const pathToPackageJson = resolve(__dirname, '../../package.json');
+      const {
+        secTester: { repeaterVersion }
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+      } = require(pathToPackageJson);
+
+      const result = configuration.repeaterVersion;
+
+      expect(result).toBe(repeaterVersion);
     });
 
     it('should use options with default values', () => {

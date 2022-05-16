@@ -6,7 +6,7 @@ import {
 } from '../credentials-provider';
 import { first } from '../utils';
 import { LogLevel } from '../logger';
-import { name, secTester } from '../../package.json';
+import { version, secTester } from '../../package.json';
 import { container, injectable } from 'tsyringe';
 
 export interface ConfigurationOptions {
@@ -57,12 +57,19 @@ export class Configuration {
     return this._logLevel;
   }
 
-  get version(): string {
+  /**
+   * @deprecated use {@link version} right after v1 has been released
+   */
+  get repeaterVersion(): string {
     return secTester.repeaterVersion;
   }
 
-  get name() {
-    return name;
+  get version(): string {
+    return version;
+  }
+
+  get name(): string {
+    return secTester.name;
   }
 
   constructor({
