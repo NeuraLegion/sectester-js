@@ -3,13 +3,12 @@ import { ExponentialBackoffRetryStrategy } from './ExponentialBackoffRetryStrate
 class TestError extends Error {
   constructor(
     options:
-      | { code: number | string }
-      | { isAxiosError?: boolean; response?: { status: number } }
+      | { code: number | string | undefined }
+      | { status: number | undefined } = { status: undefined }
   ) {
     super('Something went wrong.');
     Object.assign(this, options);
     this.name = new.target.name;
-    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
@@ -98,8 +97,7 @@ describe('ExponentialBackoffRetryStrategy', () => {
         .map(
           (_: unknown, idx: number) =>
             new TestError({
-              isAxiosError: true,
-              response: { status: 500 + idx }
+              status: 500 + idx
             })
         )
     ])('should retry on the error (%j)', async (error: Error) => {
@@ -134,7 +132,7 @@ describe('ExponentialBackoffRetryStrategy', () => {
       const retryStrategy = new ExponentialBackoffRetryStrategy({
         maxDepth: 2
       });
-      const error = new TestError({ isAxiosError: true });
+      const error = new TestError();
       const input = jest.fn().mockRejectedValueOnce(error);
 
       const result = retryStrategy.acquire(input);

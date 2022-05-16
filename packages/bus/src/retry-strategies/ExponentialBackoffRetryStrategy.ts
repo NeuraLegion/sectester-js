@@ -1,5 +1,5 @@
+import { HttpCommandError } from '../exceptions';
 import { RetryStrategy, delay } from '@sec-tester/core';
-import { AxiosError } from 'axios';
 import ErrnoException = NodeJS.ErrnoException;
 
 export interface ExponentialBackoffOptions {
@@ -53,16 +53,8 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
       );
     }
 
-    const axiosError = (err as AxiosError).isAxiosError
-      ? (err as AxiosError)
-      : undefined;
+    const status = (err as HttpCommandError).status ?? 200;
 
-    if (axiosError) {
-      const httpStatus = axiosError.response?.status ?? 200;
-
-      return httpStatus >= 500;
-    }
-
-    return false;
+    return status >= 500;
   }
 }

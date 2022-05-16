@@ -1,6 +1,7 @@
 import { HttpRequest } from '../commands';
 import { HttpCommandDispatcher } from './HttpCommandDispatcher';
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
+import { HttpCommandError } from '../exceptions';
 import { RetryStrategy } from '@sec-tester/core';
 import {
   anyFunction,
@@ -224,6 +225,22 @@ describe('HttpCommandDispatcher', () => {
 
       // assert
       verify(mockedRetryStrategy.acquire(anyFunction())).once();
+    });
+
+    it('should throw an instance of HttpCommandError', async () => {
+      // arrange
+      const command = new HttpRequest({
+        url: '/api/test',
+        payload: undefined,
+        method: 'GET',
+        expectReply: true
+      });
+      nock(baseUrl).get('/api/test').replyWithError('Something went wrong.');
+
+      // act & assert
+      await expect(axiosDispatcher.execute(command)).rejects.toThrow(
+        HttpCommandError
+      );
     });
   });
 });
