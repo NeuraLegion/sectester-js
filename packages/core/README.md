@@ -103,7 +103,7 @@ const config = new Configuration({
 });
 ```
 
-More info about [setting up an API key](https://docs.neuralegion.com/docs/manage-your-organization#manage-organization-apicli-authentication-tokens)
+More info about [setting up an API key](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens)
 
 #### credentialProviders
 
