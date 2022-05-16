@@ -44,6 +44,15 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
   }
 
   private shouldRetry(err: unknown): boolean {
+    const code = (err as ErrnoException).code;
+
+    if (code) {
+      return (
+        this.NO_OPERATIONAL_ERRORS.includes(code) ||
+        this.NO_OPERATIONAL_ERROR_CODES.includes(+code)
+      );
+    }
+
     const axiosError = (err as AxiosError).isAxiosError
       ? (err as AxiosError)
       : undefined;
@@ -52,15 +61,6 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
       const httpStatus = axiosError.response?.status ?? 200;
 
       return httpStatus >= 500;
-    }
-
-    const code = (err as ErrnoException).code;
-
-    if (code) {
-      return (
-        this.NO_OPERATIONAL_ERRORS.includes(code) ||
-        this.NO_OPERATIONAL_ERROR_CODES.includes(+code)
-      );
     }
 
     return false;
