@@ -1,8 +1,9 @@
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { HttpRequest } from '../commands';
+import { HttpCommandError } from '../exceptions';
 import { CommandDispatcher, RetryStrategy } from '@sec-tester/core';
 import { inject, injectable } from 'tsyringe';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import rateLimit, { RateLimitedAxiosInstance } from 'axios-rate-limit';
 import FormData from 'form-data';
 import { finished, Readable } from 'stream';
@@ -24,9 +25,8 @@ export class HttpCommandDispatcher implements CommandDispatcher {
   public async execute<T, R>(
     command: HttpRequest<T, R>
   ): Promise<R | undefined> {
-    const requestOptions = this.convertToHttpOptions(command);
     const response = await this.retryStrategy.acquire(() =>
-      this.client.request(requestOptions)
+      this.performHttpRequest(command)
     );
 
     if (!command.expectReply && response.data instanceof Readable) {
@@ -38,9 +38,9 @@ export class HttpCommandDispatcher implements CommandDispatcher {
     }
   }
 
-  private convertToHttpOptions<T, R>(
+  private async performHttpRequest<T, R>(
     command: HttpRequest<T, R>
-  ): AxiosRequestConfig<T> {
+  ): Promise<AxiosResponse<R>> {
     const {
       url,
       params,
@@ -52,19 +52,23 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       ttl: timeout
     } = command;
 
-    return {
-      url,
-      method,
-      data,
-      timeout,
-      params,
-      headers: {
-        ...this.inferHeaders(data),
-        'x-correlation-id': correlationId,
-        'date': createdAt.toISOString()
-      },
-      ...(!expectReply ? { responseType: 'stream' } : {})
-    };
+    try {
+      return await this.client.request<R, AxiosResponse<R>, T>({
+        url,
+        method,
+        data,
+        timeout,
+        params,
+        headers: {
+          ...this.inferHeaders(data),
+          'x-correlation-id': correlationId,
+          'date': createdAt.toISOString()
+        },
+        ...(!expectReply ? { responseType: 'stream' } : {})
+      });
+    } catch (e) {
+      throw new HttpCommandError(e);
+    }
   }
 
   private createHttpClient(): RateLimitedAxiosInstance {

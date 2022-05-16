@@ -7,6 +7,5 @@ export class IllegalOperation extends Error {
       `Please make sure that ${instance.constructor.name} established a connection with host.`
     );
     this.name = new.target.name;
-    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
