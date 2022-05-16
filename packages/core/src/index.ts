@@ -4,6 +4,7 @@ import './register';
 export * from './bus';
 export * from './configuration';
 export * from './credentials-provider';
+export * from './exceptions';
 export * from './logger';
 export {
   delay,
