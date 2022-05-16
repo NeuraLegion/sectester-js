@@ -42,6 +42,10 @@ export class Target implements TargetOptions {
 
   private _parsedURL!: URL;
 
+  get parsedURL(): URL {
+    return this._parsedURL;
+  }
+
   private _url?: string;
 
   get url(): string {

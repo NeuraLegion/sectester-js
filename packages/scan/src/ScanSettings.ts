@@ -34,6 +34,9 @@ export class ScanSettings implements ScanSettingsOptions {
   }
 
   private set name(value: string) {
+    if (value.length > 200) {
+      throw new Error('Name must be less than 200 characters.');
+    }
     this._name = value;
   }
 
@@ -176,7 +179,8 @@ export class ScanSettings implements ScanSettingsOptions {
   }: ScanSettingsOptions) {
     this.attackParamLocations = attackParamLocations;
     this.target = target;
-    this.name = name || `${this.target.method} ${this.target.url}`;
+    const { method, parsedURL } = this.target;
+    this.name = name || `${method} ${parsedURL.hostname}`.substring(0, 200);
     this.poolSize = poolSize;
     this.repeaterId = repeaterId;
     this.skipStaticParams = skipStaticParams;

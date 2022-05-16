@@ -82,7 +82,7 @@ Below you will find a list of parameters that can be used to configure a `Scan`:
 | `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                     |
 | `slowEpTimeout`        | Skip entry-points that take longer to respond than specified ms value. By default, 1000ms.                                                                                                    |
 | `targetTimeout`        | Measure timeout responses from the target application globally, and stop the scan if the target is unresponsive for longer than the specified time. By default, 5s.                           |
-| `name`                 | The scan name. The endpoint by default, e.g. `GET https://example.com/`.                                                                                                                      |
+| `name`                 | The scan name. The method and hostname by default, e.g. `GET example.com`.                                                                                                                    |
 
 Finally, run a scan against your application:
 
