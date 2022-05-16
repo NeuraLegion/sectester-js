@@ -38,29 +38,25 @@ export class HttpCommandDispatcher implements CommandDispatcher {
     }
   }
 
-  private async performHttpRequest<T, R>(
-    command: HttpRequest<T, R>
-  ): Promise<AxiosResponse<R>> {
-    const {
-      url,
-      params,
-      method,
-      expectReply,
-      correlationId,
-      createdAt,
-      payload: data,
-      ttl: timeout
-    } = command;
-
+  private async performHttpRequest<T, R>({
+    correlationId,
+    createdAt,
+    expectReply,
+    method,
+    params,
+    payload,
+    ttl,
+    url
+  }: HttpRequest<T, R>): Promise<AxiosResponse<R>> {
     try {
       return await this.client.request<R, AxiosResponse<R>, T>({
         url,
         method,
-        data,
-        timeout,
         params,
+        data: payload,
+        timeout: ttl,
         headers: {
-          ...this.inferHeaders(data),
+          ...this.inferHeaders(payload),
           'x-correlation-id': correlationId,
           'date': createdAt.toISOString()
         },
