@@ -5,10 +5,12 @@ import {
   isNumber,
   isObject,
   isPresent,
+  isStream,
   isString,
   isURLSearchParams
 } from './types';
 import FormData from 'form-data';
+import { Readable, Writable } from 'stream';
 
 describe('types', () => {
   describe('isNumber', () => {
@@ -126,6 +128,33 @@ describe('types', () => {
     ])('should return $expected for $input', ({ input, expected }) => {
       // act
       const result = isBoolean(input);
+
+      // arrange
+      expect(result).toEqual(expected);
+    });
+  });
+
+  describe('isStream', () => {
+    it.each([
+      {
+        input: Readable.from('test'),
+        expected: true
+      },
+      {
+        input: new Writable(),
+        expected: true
+      },
+      {
+        input: {},
+        expected: false
+      },
+      {
+        input: [],
+        expected: false
+      }
+    ])('should return $expected for $input', ({ input, expected }) => {
+      // act
+      const result = isStream(input);
 
       // arrange
       expect(result).toEqual(expected);

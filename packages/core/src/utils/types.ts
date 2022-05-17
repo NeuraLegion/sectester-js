@@ -1,4 +1,5 @@
 import FormData from 'form-data';
+import { Stream } from 'stream';
 
 export const isPresent = <T>(value: T): value is NonNullable<T> =>
   value !== null && value !== undefined;
@@ -22,3 +23,8 @@ export const isURLSearchParams = (value: unknown): value is URLSearchParams =>
 
 export const isFormData = (value: unknown): value is FormData =>
   value instanceof FormData;
+
+export const isStream = (value: unknown): value is Stream =>
+  isPresent(value) &&
+  typeof value === 'object' &&
+  typeof (value as Stream).pipe === 'function';
