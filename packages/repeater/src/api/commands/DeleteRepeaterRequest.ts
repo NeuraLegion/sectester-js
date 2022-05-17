@@ -5,7 +5,8 @@ export class DeleteRepeaterRequest extends HttpRequest {
     super({
       url: `/api/v1/repeaters/${payload.repeaterId}`,
       method: 'DELETE',
-      payload: undefined
+      payload: undefined,
+      expectReply: false
     });
   }
 }

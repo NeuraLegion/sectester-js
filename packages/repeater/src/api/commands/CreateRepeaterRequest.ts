@@ -10,8 +10,7 @@ export class CreateRepeaterRequest extends HttpRequest<CreateRepeaterRequestPayl
     super({
       payload,
       url: '/api/v1/repeaters',
-      method: 'POST',
-      expectReply: false
+      method: 'POST'
     });
   }
 }

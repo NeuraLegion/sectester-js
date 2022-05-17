@@ -7,16 +7,17 @@ export * from './credentials-provider';
 export * from './exceptions';
 export * from './logger';
 export {
-  delay,
-  isObject,
-  isURLSearchParams,
-  isBoolean,
-  isString,
-  isFormData,
-  isNumber,
-  isDate,
-  isPresent,
+  NumBoundaries,
   checkBoundaries,
   contains,
-  NumBoundaries
+  delay,
+  isBoolean,
+  isDate,
+  isFormData,
+  isNumber,
+  isObject,
+  isPresent,
+  isStream,
+  isString,
+  isURLSearchParams
 } from './utils';
