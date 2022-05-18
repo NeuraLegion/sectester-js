@@ -2,7 +2,7 @@ import { HttpRequest } from '../commands';
 import { HttpCommandDispatcher } from './HttpCommandDispatcher';
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { HttpCommandError } from '../exceptions';
-import { RetryStrategy } from '@sec-tester/core';
+import { Logger, RetryStrategy } from '@sec-tester/core';
 import {
   anyFunction,
   instance,
@@ -16,6 +16,7 @@ import nock from 'nock';
 
 describe('HttpCommandDispatcher', () => {
   const mockedRetryStrategy = mock<RetryStrategy>();
+  const mockedLogger = mock<Logger>();
 
   beforeAll(() => {
     nock.disableNetConnect();
@@ -23,9 +24,10 @@ describe('HttpCommandDispatcher', () => {
   });
 
   afterEach(() => {
-    reset<RetryStrategy | HttpCommandDispatcherConfig>(
+    reset<RetryStrategy | HttpCommandDispatcherConfig | Logger>(
       spiedOptions,
-      mockedRetryStrategy
+      mockedRetryStrategy,
+      mockedLogger
     );
     nock.cleanAll();
     nock.restore();
@@ -53,6 +55,7 @@ describe('HttpCommandDispatcher', () => {
     );
 
     axiosDispatcher = new HttpCommandDispatcher(
+      instance(mockedLogger),
       instance(mockedRetryStrategy),
       options
     );

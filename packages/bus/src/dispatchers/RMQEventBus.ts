@@ -7,6 +7,7 @@ import {
   EventHandlerConstructor,
   EventHandlerNotFound,
   IllegalOperation,
+  Logger,
   NoResponse,
   NoSubscriptionsFound,
   RetryStrategy
@@ -58,6 +59,7 @@ export class RMQEventBus implements EventBus {
   private readonly consumerTags: string[] = [];
 
   private readonly REPLY_QUEUE_NAME = 'amq.rabbitmq.reply-to';
+  private readonly logger: Logger;
 
   constructor(
     private readonly container: DependencyContainer,
@@ -65,6 +67,7 @@ export class RMQEventBus implements EventBus {
     private readonly retryStrategy: RetryStrategy,
     @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig
   ) {
+    this.logger = container.resolve(Logger);
     this.subject.setMaxListeners(Infinity);
   }
 
@@ -83,6 +86,8 @@ export class RMQEventBus implements EventBus {
       });
 
       await this.createConsumerChannel();
+
+      this.logger.debug('Event bus connected to %s', this.options.url);
     }
   }
 
@@ -148,23 +153,32 @@ export class RMQEventBus implements EventBus {
   }
 
   public async destroy(): Promise<void> {
-    if (this.channel) {
-      await Promise.all(
-        this.consumerTags.map(consumerTag => this.channel?.cancel(consumerTag))
-      );
-      await this.channel.close();
+    try {
+      if (this.channel) {
+        await Promise.all(
+          this.consumerTags.map(consumerTag =>
+            this.channel?.cancel(consumerTag)
+          )
+        );
+        await this.channel.close();
+      }
+
+      if (this.client) {
+        await (this.client as unknown as EventEmitter).removeAllListeners();
+        await this.client.close();
+      }
+
+      delete this.channel;
+      delete this.client;
+
+      this.consumerTags.splice(0, this.consumerTags.length);
+      this.subject.removeAllListeners();
+      this.logger.debug('Event bus disconnected from %s', this.options.url);
+    } catch (e) {
+      this.logger.error('Cannot terminate event bus gracefully');
+      this.logger.debug('Event bus terminated');
+      this.logger.debug('Error on disconnect: %s', e.message);
     }
-
-    if (this.client) {
-      await (this.client as unknown as EventEmitter).removeAllListeners();
-      await this.client.close();
-    }
-
-    delete this.channel;
-    delete this.client;
-
-    this.consumerTags.splice(0, this.consumerTags.length);
-    this.subject.removeAllListeners();
   }
 
   private async subscribe<T, R>(
@@ -182,6 +196,12 @@ export class RMQEventBus implements EventBus {
   }
 
   private async bindQueue(eventName: string): Promise<void> {
+    this.logger.debug(
+      'Bind the queue (%s) to the exchange (%s) by the routing key (%s).',
+      this.options.clientQueue,
+      this.options.exchange,
+      eventName
+    );
     await this.getChannel().addSetup((channel: Channel) =>
       channel.bindQueue(
         this.options.clientQueue,
@@ -212,6 +232,12 @@ export class RMQEventBus implements EventBus {
   }
 
   private async unbindQueue(eventName: string) {
+    this.logger.debug(
+      'Unbind the queue (%s) to the exchange (%s) by the routing key (%s).',
+      this.options.clientQueue,
+      this.options.exchange,
+      eventName
+    );
     await this.getChannel().removeSetup((channel: Channel) =>
       channel.unbindQueue(
         this.options.clientQueue,
@@ -320,7 +346,18 @@ export class RMQEventBus implements EventBus {
       this.parseConsumeMessage(message);
 
     if (event?.correlationId) {
+      this.logger.debug(
+        'Received a reply (%s) with following payload: %j',
+        event.correlationId,
+        event.payload
+      );
+
       this.subject.emit(event.correlationId, event.payload);
+    } else {
+      this.logger.debug(
+        'Error while processing a reply. The correlation ID not found. Reply: %j',
+        event
+      );
     }
   }
 
@@ -329,6 +366,12 @@ export class RMQEventBus implements EventBus {
       this.parseConsumeMessage(message);
 
     if (event) {
+      this.logger.debug(
+        'Received a event (%s) with following payload: %j',
+        event.name,
+        event.payload
+      );
+
       const handlers = this.handlers.get(event.name);
 
       if (!handlers) {
@@ -349,14 +392,25 @@ export class RMQEventBus implements EventBus {
       const response = await handler.handle(event.payload);
 
       if (response && event.replyTo) {
+        this.logger.debug(
+          'Sending a reply (%s) back with following payload: %j',
+          event.name,
+          event.payload
+        );
+
         await this.tryToSendMessage({
           payload: response,
           routingKey: event.replyTo,
           correlationId: event.correlationId
         });
       }
-    } catch {
-      // noop
+    } catch (e) {
+      this.logger.debug(
+        'Error while processing a message (%s) due to error occurred: %s. Event: %j',
+        event.correlationId,
+        e.message,
+        event
+      );
     }
   }
 
@@ -374,6 +428,8 @@ export class RMQEventBus implements EventBus {
       exchange = '',
       timestamp = new Date()
     } = options;
+
+    this.logger.debug('Send a message with following parameters: %j', options);
 
     await this.getChannel().publish(
       exchange ?? '',

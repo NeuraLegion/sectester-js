@@ -75,7 +75,7 @@ export class Configuration {
   constructor({
     cluster,
     credentials,
-    logLevel = LogLevel.NOTICE,
+    logLevel = LogLevel.ERROR,
     credentialProviders = [new EnvCredentialProvider()]
   }: ConfigurationOptions) {
     if (!credentials && !credentialProviders?.length) {
