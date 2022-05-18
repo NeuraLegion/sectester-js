@@ -53,7 +53,7 @@ The default configuration is as follows:
 
 ```js
 {
-  logLevel: LogLevel.NOTICE,
+  logLevel: LogLevel.ERROR,
   credentialProviders: [new EnvCredentialProvider()];
 }
 ```

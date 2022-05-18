@@ -1,7 +1,7 @@
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { HttpRequest } from '../commands';
 import { HttpCommandError } from '../exceptions';
-import { CommandDispatcher, RetryStrategy } from '@sec-tester/core';
+import { CommandDispatcher, Logger, RetryStrategy } from '@sec-tester/core';
 import { inject, injectable } from 'tsyringe';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import rateLimit, { RateLimitedAxiosInstance } from 'axios-rate-limit';
@@ -14,6 +14,7 @@ export class HttpCommandDispatcher implements CommandDispatcher {
   private readonly client: RateLimitedAxiosInstance;
 
   constructor(
+    private readonly logger: Logger,
     @inject(RetryStrategy)
     private readonly retryStrategy: RetryStrategy,
     @inject(HttpCommandDispatcherConfig)
@@ -25,6 +26,11 @@ export class HttpCommandDispatcher implements CommandDispatcher {
   public async execute<T, R>(
     command: HttpRequest<T, R>
   ): Promise<R | undefined> {
+    this.logger.debug(
+      'Executing an incoming command (%s): %j',
+      command.correlationId,
+      command
+    );
     const response = await this.retryStrategy.acquire(() =>
       this.performHttpRequest(command)
     );
@@ -34,6 +40,12 @@ export class HttpCommandDispatcher implements CommandDispatcher {
       response.data.on('readable', response.data.read.bind(response.data));
       await promisify(finished)(response.data);
     } else {
+      this.logger.debug(
+        'Received a response to the command (%s): %j',
+        command.correlationId,
+        response.data
+      );
+
       return response.data;
     }
   }
@@ -63,7 +75,15 @@ export class HttpCommandDispatcher implements CommandDispatcher {
         ...(!expectReply ? { responseType: 'stream' } : {})
       });
     } catch (e) {
-      throw new HttpCommandError(e);
+      const httpError = new HttpCommandError(e);
+
+      this.logger.debug(
+        'Command (%s) has been failed:',
+        correlationId,
+        httpError
+      );
+
+      throw httpError;
     }
   }
 

@@ -22,7 +22,7 @@ export class Repeater {
 
   private readonly bus: EventBus;
   private readonly configuration: Configuration;
-  private readonly logger: Logger | undefined;
+  private readonly logger: Logger;
 
   private timer?: Timer;
 
@@ -46,9 +46,7 @@ export class Repeater {
     this.configuration = configuration;
 
     const { container } = this.configuration;
-    if (container.isRegistered(Logger, true)) {
-      this.logger = container.resolve(Logger);
-    }
+    this.logger = container.resolve(Logger);
 
     this.setupShutdown();
   }
@@ -132,7 +130,7 @@ export class Repeater {
         try {
           await this.stop();
         } catch (e) {
-          this.logger?.error(e.message);
+          this.logger.error(e.message);
         }
       });
     });
@@ -145,7 +143,7 @@ export class Repeater {
       this.handleRegisterError(payload.error);
     } else {
       if (gt(payload.version, this.configuration.repeaterVersion)) {
-        this.logger?.warn(
+        this.logger.warn(
           '%s: A new Repeater version (%s) is available, please update @sec-tester.',
           chalk.yellow('(!) IMPORTANT'),
           payload.version

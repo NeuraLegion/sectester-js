@@ -6,6 +6,7 @@ import {
   Command,
   Event,
   EventHandler,
+  Logger,
   NoResponse,
   RetryStrategy
 } from '@sec-tester/core';
@@ -79,6 +80,7 @@ describe('RMQEventBus', () => {
   const mockedConnectionManager = mock<AmqpConnectionManager>();
   const mockedChannelWrapper = mock<ChannelWrapper>();
   const mockedChannel = mock<Channel>();
+  const mockedLogger = mock<Logger>();
   const mockedDependencyContainer = mock<DependencyContainer>();
   const mockedRetryStrategy = mock<RetryStrategy>();
   const options: RMQEventBusConfig = {
@@ -111,6 +113,9 @@ describe('RMQEventBus', () => {
     when(mockedRetryStrategy.acquire(anyFunction())).thenCall(
       (callback: (...args: unknown[]) => unknown) => callback()
     );
+    when(mockedDependencyContainer.resolve(Logger)).thenReturn(
+      instance(mockedLogger)
+    );
     rmq = new RMQEventBus(
       instance(mockedDependencyContainer),
       instance(mockedRetryStrategy),
@@ -125,6 +130,7 @@ describe('RMQEventBus', () => {
       | AmqpConnectionManager
       | Channel
       | RMQEventBusConfig
+      | Logger
       | DependencyContainer
       | RetryStrategy
     >(
@@ -133,6 +139,7 @@ describe('RMQEventBus', () => {
       mockedChannel,
       spiedOptions,
       mockedDependencyContainer,
+      mockedLogger,
       mockedRetryStrategy
     );
     jest.resetModules();
