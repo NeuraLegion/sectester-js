@@ -51,6 +51,10 @@ export class RepeaterFactory {
       namePrefix: `sec-tester`
     }
   ): Promise<Repeater> {
+    if (namePrefix && namePrefix.length > 44) {
+      throw new Error('Name prefix must be less than 44 characters.');
+    }
+
     this.registerRequestRunnerOptions(requestRunnerOptions);
 
     const { repeaterId } = await this.repeatersManager.createRepeater({

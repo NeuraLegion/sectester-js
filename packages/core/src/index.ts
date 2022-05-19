@@ -19,5 +19,6 @@ export {
   isPresent,
   isStream,
   isString,
-  isURLSearchParams
+  isURLSearchParams,
+  truncate
 } from './utils';

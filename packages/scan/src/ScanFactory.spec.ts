@@ -16,6 +16,7 @@ import {
 } from 'ts-mockito';
 import { Configuration } from '@sec-tester/core';
 import { DependencyContainer } from 'tsyringe';
+import { randomBytes } from 'crypto';
 
 describe('ScanFactory', () => {
   const scanId = 'roMq1UVuhPKkndLERNKnA8';
@@ -89,6 +90,36 @@ describe('ScanFactory', () => {
           deepEqual({
             discard: true,
             filename: match(/^example\.com-[a-z\d-]+\.har$/),
+            har: objectContaining({
+              log: {
+                version: '1.2',
+                creator: { name: 'test', version: '1.0' }
+              }
+            })
+          })
+        )
+      ).once();
+    });
+
+    it('should truncate a HAR filename if it is too long', async () => {
+      const settings: ScanSettingsOptions = {
+        target: {
+          url: `https://subdomain-${randomBytes(200).toString(
+            'hex'
+          )}.example.com`
+        },
+        tests: [TestType.DOM_XSS]
+      };
+      when(mockedScans.uploadHar(anything())).thenResolve({ id: fileId });
+      when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
+
+      await scanFactory.createScan(settings);
+
+      verify(
+        mockedScans.uploadHar(
+          deepEqual({
+            discard: true,
+            filename: match(/^.{0,200}-[a-z\d-]+\.har$/),
             har: objectContaining({
               log: {
                 version: '1.2',

@@ -190,5 +190,17 @@ describe('RepeaterFactory', () => {
         )
       ).once();
     });
+
+    it('should throw an error if name prefix is too long', async () => {
+      const factory = new RepeaterFactory(configuration);
+
+      const res = factory.createRepeater({
+        namePrefix: 'foo'.repeat(50)
+      });
+
+      await expect(res).rejects.toThrow(
+        'Name prefix must be less than 44 characters.'
+      );
+    });
   });
 });
