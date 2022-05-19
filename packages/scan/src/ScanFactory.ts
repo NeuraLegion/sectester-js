@@ -4,7 +4,7 @@ import { Discovery, Module, ScanConfig } from './models';
 import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
 import { Target, TargetOptions } from './target';
 import { v4 } from 'uuid';
-import { Configuration } from '@sec-tester/core';
+import { Configuration, truncate } from '@sec-tester/core';
 import { Entry, Har } from '@har-sdk/core';
 import { DependencyContainer } from 'tsyringe';
 
@@ -76,8 +76,9 @@ export class ScanFactory {
 
   private generateFilename(url: string): string {
     const { hostname } = new URL(url);
+    const slug = truncate(hostname, 200);
 
-    return `${hostname}-${v4()}.har`;
+    return `${slug}-${v4()}.har`;
   }
 
   private createHarEntry(target: Target | TargetOptions): Entry {

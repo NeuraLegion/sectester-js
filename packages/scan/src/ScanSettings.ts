@@ -1,6 +1,6 @@
 import { AttackParamLocation, TestType } from './models';
 import { Target, TargetOptions } from './target';
-import { checkBoundaries, contains } from '@sec-tester/core';
+import { checkBoundaries, contains, truncate } from '@sec-tester/core';
 
 export interface ScanSettingsOptions {
   // The list of tests to be performed against the target application
@@ -180,7 +180,7 @@ export class ScanSettings implements ScanSettingsOptions {
     this.attackParamLocations = attackParamLocations;
     this.target = target;
     const { method, parsedURL } = this.target;
-    this.name = name || `${method} ${parsedURL.hostname}`.substring(0, 200);
+    this.name = name || truncate(`${method} ${parsedURL.hostname}`, 200);
     this.poolSize = poolSize;
     this.repeaterId = repeaterId;
     this.skipStaticParams = skipStaticParams;
