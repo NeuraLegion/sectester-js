@@ -75,8 +75,8 @@ export class Scan {
 
     const predicate = this.createPredicate(expectation);
 
-    let status: ScanStatus | undefined;
-    for await ({ status } of this.status()) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    for await (const _ of this.status()) {
       const preventFurtherPolling =
         (await predicate()) || this.done || timeoutPassed;
 
@@ -89,15 +89,7 @@ export class Scan {
       clearTimeout(timer);
     }
 
-    if (this.done && status !== ScanStatus.DONE) {
-      throw new Error(`Scan failed with status ${status}.`);
-    }
-
-    if (timeoutPassed) {
-      throw new Error(
-        `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
-      );
-    }
+    this.assert(timeoutPassed);
   }
 
   public async stop(): Promise<void> {
@@ -109,6 +101,25 @@ export class Scan {
       }
     } catch {
       // noop
+    }
+  }
+
+  private assert(timeoutPassed?: boolean) {
+    const { status } = this.state;
+
+    if (status === ScanStatus.QUEUED) {
+      throw new Error(`The maximum amount of concurrent scans has been reached for the organization. 
+        Please upgrade your subscription or contact your system administrator.`);
+    }
+
+    if (this.done && status !== ScanStatus.DONE) {
+      throw new Error(`Scan failed with status ${status}.`);
+    }
+
+    if (timeoutPassed) {
+      throw new Error(
+        `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
+      );
     }
   }
 
