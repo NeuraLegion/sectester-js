@@ -1,7 +1,7 @@
 import { ScanException } from './ScanException';
 import { ScanExceptionCode } from './ScanExceptionCode';
 
-export class TimedOut extends ScanException {
+export class ScanTimedOut extends ScanException {
   get type() {
     return ScanExceptionCode.TIMED_OUT;
   }

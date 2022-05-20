@@ -7,7 +7,7 @@ import {
   Severity,
   severityRanges
 } from './models';
-import { TooManyScans, ScanAborted, TimedOut } from './exceptions';
+import { TooManyScans, ScanAborted, ScanTimedOut } from './exceptions';
 import { delay } from '@sec-tester/core';
 
 export interface ScanOptions {
@@ -129,7 +129,7 @@ export class Scan {
     }
 
     if (timeoutPassed) {
-      throw new TimedOut(this.timeout ?? 0);
+      throw new ScanTimedOut(this.timeout ?? 0);
     }
   }
 
