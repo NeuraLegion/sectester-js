@@ -32,7 +32,6 @@ export class Scan {
   private readonly pollingInterval: number;
   private readonly timeout: number | undefined;
   private state: ScanState = { status: ScanStatus.PENDING };
-  private _issues: Issue[] = [];
 
   constructor({ id, scans, timeout, pollingInterval = 5 * 1000 }: ScanOptions) {
     this.scans = scans;
@@ -52,11 +51,7 @@ export class Scan {
   public async issues(): Promise<Issue[]> {
     await this.refreshState();
 
-    if (!this.done) {
-      this._issues = await this.scans.listIssues(this.id);
-    }
-
-    return this._issues;
+    return this.scans.listIssues(this.id);
   }
 
   public async *status(): AsyncIterableIterator<ScanState> {
