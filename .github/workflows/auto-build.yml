@@ -63,4 +63,4 @@ jobs:
 
       - name: nx affected:format
         if: matrix.target == 'format'
-        run: npm run affected -- --target=format:check --base=origin/$GITHUB_BASE_REF
+        run: npm run format:check -- --base=origin/$GITHUB_BASE_REF
