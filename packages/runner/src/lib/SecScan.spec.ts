@@ -3,10 +3,12 @@ import { resolvableInstance } from './SecRunner.spec';
 import {
   Issue,
   Scan,
+  ScanExceptionCode,
   ScanFactory,
   Severity,
   TargetOptions,
-  TestType
+  TestType,
+  TooManyScans
 } from '@sec-tester/scan';
 import {
   anything,
@@ -131,6 +133,24 @@ describe('SecScan', () => {
       await secScan.run(target);
 
       verify(mockedScan.stop()).once();
+    });
+
+    it('should throw an error and dispose queued scan', async () => {
+      when(mockedScan.expect(anything())).thenReject(new TooManyScans());
+
+      const res = secScan.run(target);
+
+      await expect(res).rejects.toThrow(TooManyScans);
+      verify(mockedScan.dispose()).once();
+    });
+
+    it(`should not dispose of scan due to an exception differ from '${ScanExceptionCode.TOO_MANY}'`, async () => {
+      when(mockedScan.expect(anything())).thenReject(new Error());
+
+      const res = secScan.run(target);
+
+      await expect(res).rejects.toThrow();
+      verify(mockedScan.dispose()).never();
     });
 
     it('should stop scan on any error', async () => {
