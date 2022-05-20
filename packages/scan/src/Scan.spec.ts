@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Scan, ScanOptions } from './Scan';
-import { HttpMethod, ScanState, ScanStatus, Severity } from './models';
+import { HttpMethod, Issue, ScanState, ScanStatus, Severity } from './models';
 import { Scans } from './Scans';
 import { instance, mock, reset, spy, verify, when } from 'ts-mockito';
 
@@ -62,37 +62,34 @@ describe('Scan', () => {
       verify(mockedScans.listIssues(id)).once();
     });
 
-    it('should return a cached result if scan is done', async () => {
-      when(mockedScans.listIssues(id))
-        .thenResolve([])
-        .thenResolve([
-          {
-            id: 'pDzxcEXQC8df1fcz1QwPf9',
-            order: 1,
-            details:
-              'Cross-site request forgery is a type of malicious website exploit.',
-            name: 'Database connection crashed',
-            severity: Severity.MEDIUM,
-            protocol: 'http',
-            remedy:
-              'The best way to protect against those kind of issues is making sure the Database resources are sufficient',
-            cvss: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L',
-            time: new Date(),
-            originalRequest: {
-              method: HttpMethod.GET,
-              url: 'https://brokencrystals.com/'
-            },
-            request: {
-              method: HttpMethod.GET,
-              url: 'https://brokencrystals.com/'
-            }
-          }
-        ]);
+    it('should return a list of issues', async () => {
+      const issue: Issue = {
+        id: 'pDzxcEXQC8df1fcz1QwPf9',
+        order: 1,
+        details:
+          'Cross-site request forgery is a type of malicious website exploit.',
+        name: 'Database connection crashed',
+        severity: Severity.MEDIUM,
+        protocol: 'http',
+        remedy:
+          'The best way to protect against those kind of issues is making sure the Database resources are sufficient',
+        cvss: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L',
+        time: new Date(),
+        originalRequest: {
+          method: HttpMethod.GET,
+          url: 'https://brokencrystals.com/'
+        },
+        request: {
+          method: HttpMethod.GET,
+          url: 'https://brokencrystals.com/'
+        }
+      };
+      when(mockedScans.listIssues(id)).thenResolve([issue]);
       when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.DONE });
 
       const result = await scan.issues();
 
-      expect(result).toEqual([]);
+      expect(result).toEqual([issue]);
     });
   });
 
