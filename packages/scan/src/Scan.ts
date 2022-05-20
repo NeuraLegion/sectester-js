@@ -7,6 +7,7 @@ import {
   Severity,
   severityRanges
 } from './models';
+import { TooManyScans, ScanAborted, TimedOut } from './exceptions';
 import { delay } from '@sec-tester/core';
 
 export interface ScanOptions {
@@ -92,6 +93,18 @@ export class Scan {
     this.assert(timeoutPassed);
   }
 
+  public async dispose(): Promise<void> {
+    try {
+      await this.refreshState();
+
+      if (!this.active) {
+        await this.scans.deleteScan(this.id);
+      }
+    } catch {
+      // noop
+    }
+  }
+
   public async stop(): Promise<void> {
     try {
       await this.refreshState();
@@ -108,18 +121,15 @@ export class Scan {
     const { status } = this.state;
 
     if (status === ScanStatus.QUEUED) {
-      throw new Error(`The maximum amount of concurrent scans has been reached for the organization. 
-        Please upgrade your subscription or contact your system administrator.`);
+      throw new TooManyScans();
     }
 
     if (this.done && status !== ScanStatus.DONE) {
-      throw new Error(`Scan failed with status ${status}.`);
+      throw new ScanAborted(status);
     }
 
     if (timeoutPassed) {
-      throw new Error(
-        `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
-      );
+      throw new TimedOut(this.timeout ?? 0);
     }
   }
 
