@@ -282,10 +282,16 @@ for await (const state of scan.status()) {
 
 > This `for...of` will work while a scan is active.
 
-To stop scan, use `stop` method:
+To stop scan, use the `stop` method:
 
 ```ts
 await scan.stop();
+```
+
+To dispose a scan, you just need to call the `dispose` method:
+
+```ts
+await scan.dispose();
 ```
 
 ## License
