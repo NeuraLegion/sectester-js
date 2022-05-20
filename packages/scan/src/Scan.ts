@@ -83,7 +83,7 @@ export class Scan {
     let status: ScanStatus | undefined;
     for await ({ status } of this.status()) {
       const preventFurtherPolling =
-        this.done || (await predicate()) || timeoutPassed;
+        (await predicate()) || this.done || timeoutPassed;
 
       if (preventFurtherPolling) {
         break;
