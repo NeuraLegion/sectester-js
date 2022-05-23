@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Scan, ScanOptions } from './Scan';
 import { HttpMethod, Issue, ScanState, ScanStatus, Severity } from './models';
 import { Scans } from './Scans';
+import { ScanAborted, ScanTimedOut, TooManyScans } from './exceptions';
 import { instance, mock, reset, spy, verify, when } from 'ts-mockito';
 
 const findArg = <R>(
@@ -193,7 +194,29 @@ describe('Scan', () => {
       const result = scan.expect(Severity.HIGH);
 
       expect(setTimeout).toHaveBeenCalled();
-      await expect(result).rejects.toThrow('The expectation was not satisfied');
+      await expect(result).rejects.toThrow(ScanTimedOut);
+    });
+
+    it('should raise an error if the scan is in the queue', async () => {
+      scan = new Scan({ ...options });
+      when(mockedScans.getScan(id)).thenResolve({
+        status: ScanStatus.QUEUED
+      });
+
+      const result = scan.expect(Severity.HIGH);
+
+      await expect(result).rejects.toThrow(TooManyScans);
+    });
+
+    it('should raise an error if the scan finishes with status different from `done`', async () => {
+      scan = new Scan({ ...options });
+      when(mockedScans.getScan(id)).thenResolve({
+        status: ScanStatus.FAILED
+      });
+
+      const result = scan.expect(Severity.HIGH);
+
+      await expect(result).rejects.toThrow(ScanAborted);
     });
 
     it('should use a custom expectation', async () => {
@@ -268,6 +291,36 @@ describe('Scan', () => {
       when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.DONE });
 
       await expect(scan.stop()).resolves.not.toThrow();
+    });
+  });
+
+  describe('dispose', () => {
+    it('should dispose a scan', async () => {
+      when(mockedScans.deleteScan(id)).thenResolve();
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.QUEUED });
+
+      await scan.dispose();
+
+      verify(mockedScans.deleteScan(id)).once();
+    });
+
+    it('should do nothing if scan is active', async () => {
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.RUNNING });
+
+      await scan.dispose();
+
+      verify(mockedScans.deleteScan(id)).never();
+    });
+
+    it('should handle and ignore an error', async () => {
+      when(mockedScans.deleteScan(id)).thenReject(
+        new Error(
+          'The scan did not finish yet, please try deleting it after it has stopped.'
+        )
+      );
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.RUNNING });
+
+      await expect(scan.dispose()).resolves.not.toThrow();
     });
   });
 });

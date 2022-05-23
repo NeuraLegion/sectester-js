@@ -7,6 +7,7 @@ import {
   Severity,
   severityRanges
 } from './models';
+import { TooManyScans, ScanAborted, ScanTimedOut } from './exceptions';
 import { delay } from '@sec-tester/core';
 
 export interface ScanOptions {
@@ -75,8 +76,8 @@ export class Scan {
 
     const predicate = this.createPredicate(expectation);
 
-    let status: ScanStatus | undefined;
-    for await ({ status } of this.status()) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    for await (const _ of this.status()) {
       const preventFurtherPolling =
         (await predicate()) || this.done || timeoutPassed;
 
@@ -89,14 +90,18 @@ export class Scan {
       clearTimeout(timer);
     }
 
-    if (this.done && status !== ScanStatus.DONE) {
-      throw new Error(`Scan failed with status ${status}.`);
-    }
+    this.assert(timeoutPassed);
+  }
 
-    if (timeoutPassed) {
-      throw new Error(
-        `The expectation was not satisfied within the ${this.timeout} ms timeout specified.`
-      );
+  public async dispose(): Promise<void> {
+    try {
+      await this.refreshState();
+
+      if (!this.active) {
+        await this.scans.deleteScan(this.id);
+      }
+    } catch {
+      // noop
     }
   }
 
@@ -109,6 +114,22 @@ export class Scan {
       }
     } catch {
       // noop
+    }
+  }
+
+  private assert(timeoutPassed?: boolean) {
+    const { status } = this.state;
+
+    if (status === ScanStatus.QUEUED) {
+      throw new TooManyScans();
+    }
+
+    if (this.done && status !== ScanStatus.DONE) {
+      throw new ScanAborted(status);
+    }
+
+    if (timeoutPassed) {
+      throw new ScanTimedOut(this.timeout ?? 0);
     }
   }
 

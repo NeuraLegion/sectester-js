@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import {
   CreateScan,
+  DeleteScan,
   GetScan,
   ListIssues,
   StopScan,
@@ -199,6 +200,18 @@ describe('HttpScans', () => {
       await scans.stopScan(id);
 
       verify(mockedCommandDispatcher.execute(anyOfClass(StopScan))).once();
+    });
+  });
+
+  describe('deleteScan', () => {
+    it('should delete a scan', async () => {
+      when(
+        mockedCommandDispatcher.execute(anyOfClass(DeleteScan))
+      ).thenResolve();
+
+      await scans.deleteScan(id);
+
+      verify(mockedCommandDispatcher.execute(anyOfClass(DeleteScan))).once();
     });
   });
 

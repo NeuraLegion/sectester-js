@@ -14,6 +14,8 @@ export interface Scans {
 
   stopScan(id: string): Promise<void>;
 
+  deleteScan(id: string): Promise<void>;
+
   getScan(id: string): Promise<ScanState>;
 
   uploadHar(options: UploadHarOptions): Promise<{ id: string }>;

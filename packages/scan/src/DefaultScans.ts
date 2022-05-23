@@ -1,6 +1,7 @@
 import { Scans, UploadHarOptions } from './Scans';
 import {
   CreateScan,
+  DeleteScan,
   GetScan,
   ListIssues,
   StopScan,
@@ -41,6 +42,10 @@ export class DefaultScans implements Scans {
 
   public async stopScan(id: string): Promise<void> {
     await this.commandDispatcher.execute(new StopScan(id));
+  }
+
+  public async deleteScan(id: string): Promise<void> {
+    await this.commandDispatcher.execute(new DeleteScan(id));
   }
 
   public getScan(id: string): Promise<ScanState> {

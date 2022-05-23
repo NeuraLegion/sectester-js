@@ -1,5 +1,7 @@
 import { Reporter } from '@sec-tester/reporter';
 import {
+  Scan,
+  ScanExceptionCode,
   ScanFactory,
   ScanSettingsOptions,
   Severity,
@@ -30,11 +32,13 @@ export class SecScan {
     try {
       await scan.expect(this._threshold);
 
-      const issues = await scan.issues();
-      if (issues.length) {
-        await this.reporter.report(scan);
-        throw new Error('Target is vulnerable');
+      await this.assert(scan);
+    } catch (e) {
+      if (e.type === ScanExceptionCode.TOO_MANY) {
+        await scan.dispose();
       }
+
+      throw e;
     } finally {
       await scan.stop();
     }
@@ -50,5 +54,19 @@ export class SecScan {
     this._timeout = value;
 
     return this;
+  }
+
+  private async assert(scan: Scan): Promise<void | never> {
+    const issues = await scan.issues();
+
+    if (issues.length) {
+      await this.report(scan);
+    }
+  }
+
+  private async report(scan: Scan): Promise<never> {
+    await this.reporter.report(scan);
+
+    throw new Error('Target is vulnerable');
   }
 }

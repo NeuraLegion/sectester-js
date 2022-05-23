@@ -1,5 +1,6 @@
 import './register';
 
+export * from './exceptions';
 export * from './models';
 export * from './target';
 export * from './Scan';
