@@ -4,17 +4,19 @@ import { Discovery, Module, ScanConfig } from './models';
 import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
 import { Target, TargetOptions } from './target';
 import { v4 } from 'uuid';
-import { Configuration, truncate } from '@sec-tester/core';
+import { Configuration, Logger, truncate } from '@sec-tester/core';
 import { Entry, Har } from '@har-sdk/core';
 import { DependencyContainer } from 'tsyringe';
 
 export class ScanFactory {
   private readonly scans: Scans;
   private readonly container: DependencyContainer;
+  private readonly logger: Logger;
 
   constructor(private readonly configuration: Configuration) {
     this.container = this.configuration.container.createChildContainer();
     this.scans = this.container.resolve(Scans);
+    this.logger = this.container.resolve(Logger);
   }
 
   public async createScan(
@@ -27,7 +29,7 @@ export class ScanFactory {
     const config = await this.buildScanConfig(new ScanSettings(settings));
     const { id } = await this.scans.createScan(config);
 
-    return new Scan({ id, scans: this.scans, ...options });
+    return new Scan({ id, logger: this.logger, scans: this.scans, ...options });
   }
 
   private async buildScanConfig({

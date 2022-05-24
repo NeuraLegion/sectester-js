@@ -8,11 +8,12 @@ import {
   severityRanges
 } from './models';
 import { ScanAborted, ScanTimedOut } from './exceptions';
-import { delay } from '@sec-tester/core';
+import { delay, Logger } from '@sec-tester/core';
 
 export interface ScanOptions {
   id: string;
   scans: Scans;
+  logger?: Logger;
   pollingInterval?: number;
   timeout?: number;
 }
@@ -32,11 +33,19 @@ export class Scan {
   ]);
   private readonly scans: Scans;
   private readonly pollingInterval: number;
+  private readonly logger: Logger | undefined;
   private readonly timeout: number | undefined;
   private state: ScanState = { status: ScanStatus.PENDING };
 
-  constructor({ id, scans, timeout, pollingInterval = 5 * 1000 }: ScanOptions) {
+  constructor({
+    id,
+    scans,
+    logger,
+    timeout,
+    pollingInterval = 5 * 1000
+  }: ScanOptions) {
     this.scans = scans;
+    this.logger = logger;
     this.id = id;
     this.pollingInterval = pollingInterval;
     this.timeout = timeout;
@@ -132,10 +141,29 @@ export class Scan {
 
   private async refreshState(): Promise<ScanState> {
     if (!this.done) {
+      const lastState = this.state;
+
       this.state = await this.scans.getScan(this.id);
+
+      this.changingStatus(lastState.status, this.state.status);
     }
 
     return this.state;
+  }
+
+  private changingStatus(from: ScanStatus, to: ScanStatus): void {
+    if (from !== ScanStatus.QUEUED && to === ScanStatus.QUEUED) {
+      this.logger?.warn(
+        'The maximum amount of concurrent scans has been reached for the organization, ' +
+          'the execution will resume once a free engine will be available. ' +
+          'If you want to increase the execution concurrency, ' +
+          'please upgrade your subscription or contact your system administrator'
+      );
+    }
+
+    if (from === ScanStatus.QUEUED && to !== ScanStatus.QUEUED) {
+      this.logger?.log('Connected to engine, resuming execution');
+    }
   }
 
   private createPredicate(
