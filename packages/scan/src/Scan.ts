@@ -7,7 +7,7 @@ import {
   Severity,
   severityRanges
 } from './models';
-import { TooManyScans, ScanAborted, ScanTimedOut } from './exceptions';
+import { ScanAborted, ScanTimedOut } from './exceptions';
 import { delay } from '@sec-tester/core';
 
 export interface ScanOptions {
@@ -21,7 +21,8 @@ export class Scan {
   public readonly id: string;
   private readonly ACTIVE_STATUSES: ReadonlySet<ScanStatus> = new Set([
     ScanStatus.PENDING,
-    ScanStatus.RUNNING
+    ScanStatus.RUNNING,
+    ScanStatus.QUEUED
   ]);
   private readonly DONE_STATUSES: ReadonlySet<ScanStatus> = new Set([
     ScanStatus.DISRUPTED,
@@ -119,10 +120,6 @@ export class Scan {
 
   private assert(timeoutPassed?: boolean) {
     const { status } = this.state;
-
-    if (status === ScanStatus.QUEUED) {
-      throw new TooManyScans();
-    }
 
     if (this.done && status !== ScanStatus.DONE) {
       throw new ScanAborted(status);
