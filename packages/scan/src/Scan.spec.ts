@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { Scan, ScanOptions } from './Scan';
 import { HttpMethod, Issue, ScanState, ScanStatus, Severity } from './models';
 import { Scans } from './Scans';
-import { ScanAborted, ScanTimedOut, TooManyScans } from './exceptions';
+import { ScanAborted, ScanTimedOut } from './exceptions';
 import { instance, mock, reset, spy, verify, when } from 'ts-mockito';
 
 const findArg = <R>(
@@ -195,17 +195,6 @@ describe('Scan', () => {
 
       expect(setTimeout).toHaveBeenCalled();
       await expect(result).rejects.toThrow(ScanTimedOut);
-    });
-
-    it('should raise an error if the scan is in the queue', async () => {
-      scan = new Scan({ ...options });
-      when(mockedScans.getScan(id)).thenResolve({
-        status: ScanStatus.QUEUED
-      });
-
-      const result = scan.expect(Severity.HIGH);
-
-      await expect(result).rejects.toThrow(TooManyScans);
     });
 
     it('should raise an error if the scan finishes with status different from `done`', async () => {
