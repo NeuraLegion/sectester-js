@@ -1,5 +1,21 @@
 # How to contribute to Sec Tester SDKs
 
+## Table of contents
+
+- [Your First Contribution](#your-first-contribution)
+- [Forks and Branches](#forks-and-branches)
+  - [Start a feature branch](#start-a-feature-branch)
+  - [Commit Message Format](#commit-message-format)
+- [How to work on Sec Tester](#how-to-work-on-sec-tester)
+- [Installation](#installation)
+  - [Build](#build)
+  - [Tests](#tests)
+    - [Running unit tests](#running-unit-tests)
+    - [Running end-to-end tests](#running-end-to-end-tests)
+  - [Linting](#linting)
+  - [Formatting](#formatting)
+  - [Creating publishable package](#creating-publishable-package)
+
 ## Your First Contribution
 
 Working on your first Pull Request? You can learn how from this free series, [How to Contribute to an Open Source Project on GitHub](https://app.egghead.io/playlists/how-to-contribute-to-an-open-source-project-on-github).
@@ -130,4 +146,118 @@ If the commit reverts a previous commit, it should begin with `revert:` , follow
 revert: add the amount of requests per dispatched entry point
 
 Reverts commit 0000000
+```
+
+## How to work on Sec Tester
+
+To ensure consistency throughout the source code, keep these rules in mind as you are working:
+
+- Inspect the format, syntax errors, deviations before pushing to the branch.
+- Don't use transpilation mode of the compiler. You can use it only to debug.
+- We love OOP and, whenever possible, prefer them over closures and functions.
+
+> ⚡ We use [husky](https://github.com/typicode/husky), [commitlint](https://github.com/conventional-changelog/commitlint#readme) and [lint-staged](https://github.com/okonet/lint-staged), they will help you to follow these rules.
+
+## Installation
+
+To install all dependencies used by this project, issue this command in your terminal:
+
+```bash
+$ npm ci
+```
+
+### Build
+
+The project can be built manually by issuing the following command:
+
+```bash
+npm run build -- ${lib}
+```
+
+The build artifacts will be stored in the `dist` folder.
+
+### Tests
+
+#### Running unit tests
+
+Run this command in terminal to execute the unit tests via [Jest](https://jestjs.io/):
+
+```bash
+$ npm t
+```
+
+#### Running end-to-end tests
+
+Run his command in terminal to execute the end-to-end tests:
+
+```bash
+$ npm run e2e
+```
+
+Set `NODE_ENV` variable to `test` if you want to use test mock and stubs, to reduce overhead.
+
+### Linting
+
+This project uses [ESLint](https://eslint.org) for code linting.
+
+> ⚡ ESLint can be configured via `.eslintrc.json` file in the project root folder.
+
+To lint all the apps and modules by running:
+
+```bash
+$ npm run nx run-many --all --target lint
+```
+
+To lint single module, run this command in terminal:
+
+```bash
+$ npm run lint -- ${lib}
+```
+
+To lint multiple modules at once:
+
+```bash
+$ npm run nx run-many -- --target=lint --projects=${lib},${lib1}
+```
+
+### Formatting
+
+This project uses [Prettier](https://prettier.io/) for code formatting.
+
+> ⚡ ESLint can be configured via `.prettierrc` file in the project root folder.
+
+To format all the apps and modules by running:
+
+```bash
+$ npm run format
+```
+
+To format single module, run this command in terminal:
+
+```bash
+$ npm run format -- ${lib}
+```
+
+To format multiple modules at once:
+
+```bash
+$ npm run format -- --projects=${lib},${lib1}
+```
+
+### Creating publishable package
+
+Issue the following command to generate a new package:
+
+```bash
+$ nx generate @nrwl/node:lib ${lib} --importPath=@sec-tester/${lib}
+```
+
+> ⚡ It is important to have a clean git working directory before invoking a generator so that you can easily revert changes and re-invoke the generator with different inputs.
+
+This will create a new library inside the working directory according to the schematic.
+
+To generate the `publish` executor to release a package, you just need to issue the following command:
+
+```bash
+nx workspace-generator publish ${lib} --buildTarget ${lib}:build
 ```
