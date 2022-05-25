@@ -12,17 +12,17 @@ describe('Configuration', () => {
   describe('constructor', () => {
     it('should be a single instance', () => {
       const configuration = new Configuration({
-        cluster: 'example.com'
+        hostname: 'example.com'
       });
       const configuration2 = configuration.container.resolve(Configuration);
       expect(configuration).toBe(configuration2);
     });
 
-    it('should throw if cluster is not passed', () =>
+    it('should throw if hostname is not passed', () =>
       expect(
         () =>
           new Configuration({
-            cluster: ''
+            hostname: ''
           })
       ).toThrow());
 
@@ -30,14 +30,14 @@ describe('Configuration', () => {
       expect(
         () =>
           new Configuration({
-            cluster: 'example.com',
+            hostname: 'example.com',
             credentialProviders: []
           })
       ).toThrow());
 
     it('should return an expected name', () => {
       const configuration = new Configuration({
-        cluster: 'example.com'
+        hostname: 'example.com'
       });
       const pathToRootPackageJson = resolve(
         __dirname,
@@ -53,7 +53,7 @@ describe('Configuration', () => {
 
     it('should return an expected version', () => {
       const configuration = new Configuration({
-        cluster: 'example.com'
+        hostname: 'example.com'
       });
       const pathToPackageJson = resolve(__dirname, '../../package.json');
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -66,7 +66,7 @@ describe('Configuration', () => {
 
     it('should return an expected repeater version', () => {
       const configuration = new Configuration({
-        cluster: 'example.com'
+        hostname: 'example.com'
       });
       const pathToPackageJson = resolve(__dirname, '../../package.json');
       const {
@@ -81,7 +81,7 @@ describe('Configuration', () => {
 
     it('should use options with default values', () => {
       const config = new Configuration({
-        cluster: 'example.com'
+        hostname: 'example.com'
       });
 
       expect(config).toMatchObject({
@@ -156,20 +156,20 @@ describe('Configuration', () => {
       'should generate correct api and bus for $input',
       ({ expected, input }) => {
         const configuration = new Configuration({
-          cluster: input
+          hostname: input
         });
 
         expect(configuration).toMatchObject(expected);
       }
     );
 
-    it('should throw an error if cluster is wrong', () => {
+    it('should throw an error if hostname is wrong', () => {
       expect(
         () =>
           new Configuration({
-            cluster: ':test'
+            hostname: ':test'
           })
-      ).toThrow("pass correct 'cluster' option");
+      ).toThrow("pass correct 'hostname' option");
     });
   });
 
@@ -180,7 +180,7 @@ describe('Configuration', () => {
       };
       const configuration = new Configuration({
         credentials,
-        cluster: 'app.neuralegion.com'
+        hostname: 'app.neuralegion.com'
       });
 
       await configuration.loadCredentials();
@@ -193,7 +193,7 @@ describe('Configuration', () => {
         token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
       };
       const configuration = new Configuration({
-        cluster: 'app.neuralegion.com',
+        hostname: 'app.neuralegion.com',
         credentialProviders: [instance(mockedProvider)]
       });
       when(mockedProvider.get()).thenResolve(credentials);
@@ -206,7 +206,7 @@ describe('Configuration', () => {
 
     it('should throw an error if no one provider does not find credentials', async () => {
       const configuration = new Configuration({
-        cluster: 'app.neuralegion.com',
+        hostname: 'app.neuralegion.com',
         credentialProviders: [instance(mockedProvider)]
       });
       when(mockedProvider.get()).thenResolve(undefined);

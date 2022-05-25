@@ -22,7 +22,7 @@ import { Configuration } from '@sec-tester/core';
 import { ScanFactory } from '@sec-tester/scan';
 
 const config = new Configuration({
-  cluster: 'app.neuralegion.com'
+  hostname: 'app.neuralegion.com'
 });
 
 const scanFactory = new ScanFactory(config);

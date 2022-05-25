@@ -23,7 +23,7 @@ To use the RabbitMQ Event Bus, pass the following options object to the construc
 import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@sec-tester/bus';
 
 const config = new Configuration({
-  cluster: 'app.neuralegion.com'
+  hostname: 'app.neuralegion.com'
 });
 
 const repeaterId = 'your Repeater ID';

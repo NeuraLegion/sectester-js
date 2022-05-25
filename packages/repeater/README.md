@@ -22,7 +22,7 @@ To establish a secure connection between the Bright cloud engine and a target on
 
 ```ts
 const configuration = new Configuration({
-  cluster: 'app.neuralegion.com'
+  hostname: 'app.neuralegion.com'
 });
 
 const repeaterFactory = new RepeaterFactory(configuration);
@@ -120,7 +120,7 @@ describe('Scan', () => {
 
   beforeAll(async () => {
     const configuration = new Configuration({
-      cluster: 'app.neuralegion.com'
+      hostname: 'app.neuralegion.com'
     });
 
     repeater = await new RepeaterFactory(configuration).createRepeater();
