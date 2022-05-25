@@ -1,7 +1,6 @@
 import { Reporter } from '@sec-tester/reporter';
 import {
   Scan,
-  ScanExceptionCode,
   ScanFactory,
   ScanSettingsOptions,
   Severity,
@@ -33,12 +32,6 @@ export class SecScan {
       await scan.expect(this._threshold);
 
       await this.assert(scan);
-    } catch (e) {
-      if (e.type === ScanExceptionCode.TOO_MANY) {
-        await scan.dispose();
-      }
-
-      throw e;
     } finally {
       await scan.stop();
     }

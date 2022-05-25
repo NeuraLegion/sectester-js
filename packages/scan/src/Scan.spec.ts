@@ -2,8 +2,9 @@ import 'reflect-metadata';
 import { Scan, ScanOptions } from './Scan';
 import { HttpMethod, Issue, ScanState, ScanStatus, Severity } from './models';
 import { Scans } from './Scans';
-import { ScanAborted, ScanTimedOut, TooManyScans } from './exceptions';
+import { ScanAborted, ScanTimedOut } from './exceptions';
 import { instance, mock, reset, spy, verify, when } from 'ts-mockito';
+import { Logger } from '@sec-tester/core';
 
 const findArg = <R>(
   args: [unknown, unknown],
@@ -34,6 +35,7 @@ const useFakeTimers = () => {
 describe('Scan', () => {
   const id = 'roMq1UVuhPKkndLERNKnA8';
   const mockedScans = mock<Scans>();
+  const mockedLogger = mock<Logger>();
 
   let scan!: Scan;
   let options!: ScanOptions;
@@ -41,7 +43,11 @@ describe('Scan', () => {
 
   beforeEach(() => {
     useFakeTimers();
-    options = { id, scans: instance(mockedScans) };
+    options = {
+      id,
+      scans: instance(mockedScans),
+      logger: instance(mockedLogger)
+    };
     spiedOptions = spy(options);
     scan = new Scan(options);
   });
@@ -49,7 +55,11 @@ describe('Scan', () => {
   afterEach(() => {
     jest.resetAllMocks();
     jest.useRealTimers();
-    reset<Scans | ScanOptions>(mockedScans, spiedOptions);
+    reset<Scans | Logger | ScanOptions>(
+      mockedScans,
+      mockedLogger,
+      spiedOptions
+    );
   });
 
   describe('issues', () => {
@@ -197,17 +207,6 @@ describe('Scan', () => {
       await expect(result).rejects.toThrow(ScanTimedOut);
     });
 
-    it('should raise an error if the scan is in the queue', async () => {
-      scan = new Scan({ ...options });
-      when(mockedScans.getScan(id)).thenResolve({
-        status: ScanStatus.QUEUED
-      });
-
-      const result = scan.expect(Severity.HIGH);
-
-      await expect(result).rejects.toThrow(TooManyScans);
-    });
-
     it('should raise an error if the scan finishes with status different from `done`', async () => {
       scan = new Scan({ ...options });
       when(mockedScans.getScan(id)).thenResolve({
@@ -229,6 +228,49 @@ describe('Scan', () => {
       await scan.expect(fn);
 
       expect(fn).toHaveBeenLastCalledWith(scan);
+    });
+
+    it('should log a warn when scan enters into queued', async () => {
+      when(mockedScans.getScan(id))
+        .thenResolve({
+          status: ScanStatus.QUEUED
+        })
+        .thenResolve({
+          status: ScanStatus.RUNNING
+        })
+        .thenResolve({
+          status: ScanStatus.DONE
+        });
+
+      await scan.expect(Severity.LOW);
+
+      verify(
+        mockedLogger.warn(
+          'The maximum amount of concurrent scans has been reached for the organization, ' +
+            'the execution will resume once a free engine will be available. ' +
+            'If you want to increase the execution concurrency, ' +
+            'please upgrade your subscription or contact your system administrator'
+        )
+      ).once();
+    });
+
+    it('should log a info when scan enters into running from queued', async () => {
+      when(mockedScans.getScan(id))
+        .thenResolve({
+          status: ScanStatus.QUEUED
+        })
+        .thenResolve({
+          status: ScanStatus.RUNNING
+        })
+        .thenResolve({
+          status: ScanStatus.DONE
+        });
+
+      await scan.expect(Severity.LOW);
+
+      verify(
+        mockedLogger.log('Connected to engine, resuming execution')
+      ).once();
     });
 
     it('should handle an error that appears in a custom expectation', async () => {
@@ -297,7 +339,7 @@ describe('Scan', () => {
   describe('dispose', () => {
     it('should dispose a scan', async () => {
       when(mockedScans.deleteScan(id)).thenResolve();
-      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.QUEUED });
+      when(mockedScans.getScan(id)).thenResolve({ status: ScanStatus.STOPPED });
 
       await scan.dispose();
 
