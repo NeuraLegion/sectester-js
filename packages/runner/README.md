@@ -161,6 +161,6 @@ describe('/api', () => {
 
 ## License
 
-Copyright © 2022 [NeuraLegion](https://github.com/NeuraLegion).
+Copyright © 2022 [Bright Security](https://brightsec.com/).
 
 This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.

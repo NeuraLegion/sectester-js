@@ -1,130 +1,149 @@
-# Sec Tester SDK for JavaScript
+# SecTester SDK for JavaScript
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/maintainability)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/test_coverage)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/test_coverage)
 ![Build Status](https://github.com/NeuraLegion/sec-tester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
 ![NPM Downloads](https://img.shields.io/npm/dw/@sec-tester/core)
 
-## Installation
+## Table of contents
 
-To install all dependencies used by this project, issue this command in your terminal:
+- [About the SecTester SDK](#about-the-sectester-sdk)
+- [About Bright & SecTester](#about-bright--sectester)
+- [Usage](#usage)
+  - [Installation](#installation)
+  - [Getting a Bright API key](#getting-a-bright-api-key)
+  - [Usage examples](#usage-examples)
+- [Documentation & Help](#documentation--help)
+- [Contributing](#contributing)
+- [License](#license)
 
-```bash
-$ npm ci
-```
+## About the SecTester SDK
 
-### Build
+The SDK is designed to provide all the basic tools and functions that will allow you to create the interactions between the Bright scanning engine, run scans on any target and get the results, all in your own console or CI environment.
 
-The project can be built manually by issuing the following command:
+You can use the SDK command directly, or create a convenient wrapper for your project to integrate security testing directly into your web or testing framework of choice (you can see some examples in the Documentation section)
 
-```bash
-npm run build -- ${lib}
-```
+- This is a toolkit to work with the Bright scan engine
+- It will allow you to build automations within your CI or local machine for security testing
+- It is the direct interface with the Bright engine, which can be used to build framework/project specific wrappers
 
-The build artifacts will be stored in the `dist` folder.
+## About Bright & SecTester
 
-### Tests
+Bright is a developer-first Dynamic Application Security Testing (DAST) scanner.
 
-#### Running unit tests
+SecTester is a new tool that integrates our enterprise-grade scan engine directly into your unit tests.
 
-Run this command in terminal to execute the unit tests via [Jest](https://jestjs.io/):
+With SecTester you can:
 
-```bash
-$ npm t
-```
+- Test every function and component directly
+- Run security scans at the speed of unit tests
+- Find vulnerabilities with no false positives, before you finalize your Pull Request
 
-#### Running end-to-end tests
+Trying out Bright’s SecTester is free 💸, so let’s get started!
 
-Run his command in terminal to execute the end-to-end tests:
+> ⚠️ The SecTester project is currently in beta as an early-access tool. We are looking for your feedback to make it the best possible solution for developers, aimed to be used as part of your team’s SDLC. We apologize if not everything will work smoothly from the start, and hope a few bugs or missing features will be no match for you!
+>
+> Thank you! We appreciate your help and feedback!
 
-```bash
-$ npm run e2e
-```
+## Usage
 
-Set `NODE_ENV` variable to `test` if you want to use test mock and stubs, to reduce overhead.
+### Installation
 
-### Linting
-
-This project uses [ESLint](https://eslint.org) for code linting.
-
-> ⚡ ESLint can be configured via `.eslintrc.json` file in the project root folder.
-
-To lint all the apps and modules by running:
-
-```bash
-$ npm run nx run-many --all --target lint
-```
-
-To lint single module, run this command in terminal:
+First install the module via `yarn` or `npm` and do not forget to install the peer dependencies as well:
 
 ```bash
-$ npm run lint -- ${lib}
+$ npm i -s @sec-tester/runner \
+  @sec-tester/bus             \
+  @sec-tester/core            \
+  @sec-tester/repeater        \
+  @sec-tester/reporter        \
+  @sec-tester/scan
 ```
 
-To lint multiple modules at once:
+or
 
 ```bash
-$ npm run nx run-many -- --target=lint --projects=${lib},${lib1}
+$ yarn add @sec-tester/runner  \
+  @sec-tester/bus              \
+  @sec-tester/core             \
+  @sec-tester/repeater         \
+  @sec-tester/reporter         \
+  @sec-tester/scan
 ```
 
-### Formatting
+### Getting a Bright API key
 
-This project uses [Prettier](https://prettier.io/) for code formatting.
+1.  Register for a free account at Bright [**signup**](https://app.neuralegion.com/signup)
+2.  Create a Bright API key (personal key from your [**UI**](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens)
+3.  Save the Bright API key in your project
+    1.  We recommend using your Github repository secrets feature to store the key, accessible via the `Settings > Security > Secrets > Actions` configuration. We use the ENV variable called `BRIGHT_TOKEN` in our examples
+    2.  More info on [how to use ENV vars in Github actions](https://docs.github.com/en/actions/learn-github-actions/environment-variables)
 
-> ⚡ ESLint can be configured via `.prettierrc` file in the project root folder.
+### Usage examples
 
-To format all the apps and modules by running:
+Here is an example to check your own application for XSS vulnerabilities:
 
-```bash
-$ npm run nx run-many --all --target format
+```ts
+import { SecRunner, SecScan } from '@sec-tester/runner';
+import { Severity, TestType } from '@sec-tester/scan';
+
+describe('/api', () => {
+  let runner!: SecRunner;
+  let scan!: SecScan;
+
+  beforeEach(async () => {
+    runner = new SecRunner({ hostname: 'app.neuralegion.com' });
+
+    await runner.init();
+
+    scan = runner
+      .createScan({ tests: [TestType.XSS] })
+      .threshold(Severity.MEDIUM) // i. e. ignore LOW severity issues
+      .timeout(300000); // i. e. fail if last longer than 5 minutes
+  });
+
+  afterEach(async () => {
+    await runner.clear();
+  });
+
+  describe('/orders', () => {
+    it('should not have persistent xss', async () => {
+      await scan.run({
+        method: 'POST',
+        url: 'https://localhost:8000/api/orders',
+        body: { subject: 'Test', body: "<script>alert('xss')</script>" }
+      });
+    });
+
+    it('should not have reflective xss', async () => {
+      await scan.run({
+        url: 'https://localhost:8000/api/orders',
+        query: {
+          q: `<script>alert('xss')</script>`
+        }
+      });
+    });
+  });
+});
 ```
 
-To format single module, run this command in terminal:
+Full documentation can be found in [**runner**](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/runner)
 
-```bash
-$ npm run format -- ${lib}
-```
+## Documentation & Help
 
-To format multiple modules at once:
-
-```bash
-$ npm run nx run-many -- --target=format --projects=${lib},${lib1}
-```
+- Full documentation available at: https://docs.brightsec.com/
+- Join our [Discord](https://discord.gg/jy9BB7twtG) channel and ask anything!
 
 ## Contributing
 
-To ensure consistency throughout the source code, keep these rules in mind as you are working:
+Please read [contributing guidelines here](./CONTRIBUTING.md).
 
-- Inspect the format, syntax errors, deviations before pushing to the branch.
-- Don't use transpilation mode of the compiler. You can use it only to debug.
-- We love OOP and, whenever possible, prefer them over closures and functions.
-
-> ⚡ We use [husky](https://github.com/typicode/husky), [commitlint](https://github.com/conventional-changelog/commitlint#readme) and [lint-staged](https://github.com/okonet/lint-staged), they will help you to follow these rules.
-
-- [How to contribute to Sec Tester SDKs](./CONTRIBUTING.md)
-- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-- [Angular Git Commit Guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
-
-### Creating publishable package
-
-Issue the following command to generate a new package:
-
-```bash
-$ nx generate @nrwl/node:lib ${lib} --importPath=@sec-tester/${lib}
-```
-
-> ⚡ It is important to have a clean git working directory before invoking a generator so that you can easily revert changes and re-invoke the generator with different inputs.
-
-This will create a new library inside the working directory according to the schematic.
-
-To generate the `publish` executor to release a package, you just need to issue the following command:
-
-```bash
-nx workspace-generator publish ${lib} --buildTarget ${lib}:build
-```
+<a href="https://github.com/NeuraLegion/sec-tester-js/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=NeuraLegion/sec-tester-js"/>
+</a>
 
 ## License
 
-Copyright © 2022 [NeuraLegion](https://github.com/NeuraLegion).
+Copyright © 2022 [Bright Security](https://brightsec.com/).
 
 This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.
