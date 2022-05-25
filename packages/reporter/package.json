@@ -1,6 +1,6 @@
 {
   "name": "@sec-tester/reporter",
-  "version": "0.14.12",
+  "version": "0.14.13",
   "description": "Provide an abstraction for generating test results as part of the particular test frameworks.",
   "repository": {
     "type": "git",
