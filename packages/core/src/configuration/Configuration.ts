@@ -10,7 +10,7 @@ import { version, secTester } from '../../package.json';
 import { container, injectable } from 'tsyringe';
 
 export interface ConfigurationOptions {
-  cluster: string;
+  hostname: string;
   logLevel?: LogLevel;
   credentials?: Credentials | CredentialsOptions;
   credentialProviders?: CredentialProvider[];
@@ -19,7 +19,7 @@ export interface ConfigurationOptions {
 @injectable()
 export class Configuration {
   private readonly SCHEMA_REGEXP = /^.+:\/\//;
-  private readonly CLUSTER_NORMALIZATION_REGEXP = /^(?!(?:\w+:)?\/\/)|^\/\//;
+  private readonly HOSTNAME_NORMALIZATION_REGEXP = /^(?!(?:\w+:)?\/\/)|^\/\//;
 
   private _credentialProviders?: CredentialProvider[];
 
@@ -73,7 +73,7 @@ export class Configuration {
   }
 
   constructor({
-    cluster,
+    hostname,
     credentials,
     logLevel = LogLevel.ERROR,
     credentialProviders = [new EnvCredentialProvider()]
@@ -90,11 +90,11 @@ export class Configuration {
 
     this._credentialProviders = credentialProviders;
 
-    if (!cluster) {
-      throw new Error(`Please provide 'cluster' option.`);
+    if (!hostname) {
+      throw new Error(`Please provide 'hostname' option.`);
     }
 
-    this.resolveUrls(cluster);
+    this.resolveUrls(hostname);
 
     this._logLevel = logLevel;
 
@@ -116,18 +116,19 @@ export class Configuration {
     }
   }
 
-  private resolveUrls(cluster: string): void {
-    if (!this.SCHEMA_REGEXP.test(cluster)) {
-      cluster = cluster.replace(this.CLUSTER_NORMALIZATION_REGEXP, 'https://');
+  private resolveUrls(hostname: string): void {
+    if (!this.SCHEMA_REGEXP.test(hostname)) {
+      hostname = hostname.replace(
+        this.HOSTNAME_NORMALIZATION_REGEXP,
+        'https://'
+      );
     }
 
-    let hostname = cluster;
-
     try {
-      ({ hostname } = new URL(cluster));
+      ({ hostname } = new URL(hostname));
     } catch {
       throw new Error(
-        `Please make sure that you pass correct 'cluster' option.`
+        `Please make sure that you pass correct 'hostname' option.`
       );
     }
 

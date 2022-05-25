@@ -23,12 +23,12 @@ Then put obtained token into `BRIGHT_TOKEN` environment variable to make it acce
 
 > Refer to `@sec-tester/core` package [documentation](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#credentials) for the details on alternative ways of configuring credential providers.
 
-Once it is done, create a configuration object. Single required option is NeuraLegion `cluster` domain you are going to use, e.g. `app.neuralegion.com` as the main one:
+Once it is done, create a configuration object. Single required option is NeuraLegion `hostname` domain you are going to use, e.g. `app.neuralegion.com` as the main one:
 
 ```ts
 import { Configuration } from '@sec-tester/core';
 
-const configuration = new Configuration({ cluster: 'app.neuralegion.com' });
+const configuration = new Configuration({ hostname: 'app.neuralegion.com' });
 ```
 
 ### Setup runner
@@ -39,12 +39,12 @@ To set up a runner, create `SecRunner` instance passing a previously created con
 import { Configuration } from '@sec-tester/core';
 import { SecRunner } from '@sec-tester/runner';
 
-const configuration = new Configuration({ cluster: 'app.neuralegion.com' });
+const configuration = new Configuration({ hostname: 'app.neuralegion.com' });
 const runner = new SecRunner(configuration);
 
 // or
 
-const runner2 = new SecRunner({ cluster: 'app.neuralegion.com' });
+const runner2 = new SecRunner({ hostname: 'app.neuralegion.com' });
 ```
 
 After that, you have to initialize a `SecRunner` instance:
@@ -124,7 +124,7 @@ describe('/api', () => {
   let scan!: SecScan;
 
   beforeEach(async () => {
-    runner = new SecRunner({ cluster: 'app.neuralegion.com' });
+    runner = new SecRunner({ hostname: 'app.neuralegion.com' });
 
     await runner.init();
 

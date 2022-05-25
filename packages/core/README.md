@@ -23,7 +23,7 @@ First, you need to generate a new instance of `Configuration`.
 import { Configuration } from '@sec-tester/core';
 
 const config = new Configuration({
-  cluster: 'app.neuralegion.com',
+  hostname: 'app.neuralegion.com',
   credentials: {
     token: 'your API key'
   }
@@ -42,7 +42,7 @@ Configuration can be customized using the following options:
 
 ```ts
 export interface ConfigurationOptions {
-  cluster: string;
+  hostname: string;
   credentials?: Credentials;
   logLevel?: LogLevel;
   credentialProviders?: CredentialProvider[];
@@ -58,7 +58,7 @@ The default configuration is as follows:
 }
 ```
 
-#### cluster
+#### hostname
 
 - type: `string`
 
@@ -68,7 +68,7 @@ Set the application name (domain name), that is used to establish connection wit
 import { Configuration } from '@sec-tester/core';
 
 const config = new Configuration({
-  cluster: 'app.neuralegion.com'
+  hostname: 'app.neuralegion.com'
 });
 ```
 
@@ -82,7 +82,7 @@ What level of logs to report. Any logs of a higher level than the setting are sh
 import { Configuration, LogLevel } from '@sec-tester/core';
 
 const config = new Configuration({
-  cluster: 'app.neuralegion.com',
+  hostname: 'app.neuralegion.com',
   logLevel: LogLevel.ERROR
 });
 ```
