@@ -1,6 +1,6 @@
 {
   "name": "@sec-tester/repeater",
-  "version": "0.14.13",
+  "version": "0.15.0",
   "description": "Package for managing repeaters, which are mandatory for scanning targets on a local network.",
   "repository": {
     "type": "git",
