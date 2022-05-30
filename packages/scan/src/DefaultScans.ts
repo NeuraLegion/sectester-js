@@ -36,8 +36,13 @@ export class DefaultScans implements Scans {
     );
   }
 
-  public listIssues(id: string): Promise<Issue[]> {
-    return this.sendCommand(new ListIssues(id));
+  public async listIssues(id: string): Promise<Issue[]> {
+    const issues = await this.sendCommand(new ListIssues(id));
+
+    return issues.map(x => ({
+      ...x,
+      link: `${this.configuration.api}/scans/${id}/issues/${x.id}`
+    }));
   }
 
   public async stopScan(id: string): Promise<void> {

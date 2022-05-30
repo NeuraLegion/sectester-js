@@ -49,6 +49,7 @@ export interface Issue {
   time: Date;
   originalRequest: Request;
   request: Request;
+  link: string;
   exposure?: string;
   resources?: string[];
   comments?: Comment[];
