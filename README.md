@@ -127,11 +127,12 @@ describe('/api', () => {
 });
 ```
 
-Full documentation can be found in [**runner**](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/runner)
+Full documentation can be found in [**runner**](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/runner).
 
 ## Documentation & Help
 
 - Full documentation available at: https://docs.brightsec.com/
+- A demo project can forked from: https://github.com/NeuraLegion/sec-tester-js-demo
 - Join our [Discord](https://discord.gg/jy9BB7twtG) channel and ask anything!
 
 ## Contributing
