@@ -82,7 +82,7 @@ What level of logs to report. Any logs of a higher level than the setting are sh
 import { Configuration, LogLevel } from '@sec-tester/core';
 
 const config = new Configuration({
-  hostname: 'app.neuralegion.com',
+  // ...
   logLevel: LogLevel.ERROR
 });
 ```
@@ -97,6 +97,7 @@ Set credentials to access the application.
 import { Configuration } from '@sec-tester/core';
 
 const config = new Configuration({
+  // ...
   credentials: {
     token: 'your API key'
   }
@@ -122,6 +123,7 @@ import { Configuration, EnvCredentialProvider } from '@sec-tester/core';
 
 const credentialsProvider = new EnvCredentialProvider();
 const config = new Configuration({
+  // ...
   credentialProviders: [credentialsProvider]
 });
 ```
@@ -140,7 +142,8 @@ to allow clients to perform operations on it using a visitor class (see `Dispatc
 For instance, you can dispatch a message in a way that is more approach you or convenient from the client's perspective.
 
 ```ts
-import { CommandDispatcher } from '@sec-tester/core';
+import { CommandDispatcher, Command } from '@sec-tester/core';
+import { container } from 'tsyringe';
 
 const dispatcher = container.resolve(CommandDispatcher);
 
@@ -148,7 +151,7 @@ interface Payload {
   status: 'connected' | 'disconnected';
 }
 
-class Ping extends Command<Payload> {
+class Ping extends Command<Payload, undefined> {
   constructor(payload: Payload) {
     super(payload);
   }
@@ -173,6 +176,8 @@ Using `Command` you can easily ensure that the service has actually received the
 To create an instance of `Command` use the abstract class as follows:
 
 ```ts
+import { Command } from '@sec-tester/core';
+
 interface RequestOptions {
   url: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -206,6 +211,8 @@ The ideal use case for the publish-subscribe model is when you want to simply no
 To create an instance of `Event` use the abstract class as follows:
 
 ```ts
+import { Event } from '@sec-tester/core';
+
 interface Issue {
   name: string;
   details: string;

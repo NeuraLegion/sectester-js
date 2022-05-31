@@ -21,6 +21,9 @@ npm i -s @sec-tester/repeater
 To establish a secure connection between the Bright cloud engine and a target on a local network, you just need to use the `RepeaterFactory` constructed with [`Configuration` instance](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/core#configuration) as constructor argument.
 
 ```ts
+import { Configuration } from '@sec-tester/core';
+import { RepeaterFactory } from '@sec-tester/repeater';
+
 const configuration = new Configuration({
   hostname: 'app.neuralegion.com'
 });

@@ -20,6 +20,7 @@ npm i -s @sec-tester/bus
 To use the RabbitMQ Event Bus, pass the following options object to the constructor method:
 
 ```ts
+import { Configuration } from '@sec-tester/core';
 import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@sec-tester/bus';
 
 const config = new Configuration({
@@ -27,18 +28,18 @@ const config = new Configuration({
 });
 
 const repeaterId = 'your Repeater ID';
-const token = 'your API key';
 
 const bus = new RMQEventBus(
   config.container,
   new ExponentialBackoffRetryStrategy({ maxDepth: 5 }),
   {
+    url: config.bus,
     exchange: 'EventBus',
     clientQueue: `agent:${repeaterId}`,
     appQueue: 'app',
     credentials: {
       username: 'bot',
-      password: token
+      password: config.credentials!.token
     }
   }
 );
@@ -48,6 +49,7 @@ The options are specific to the chosen transporter. The `RabbitMQ` implementatio
 
 | Option              | Description                                                                          |
 | :------------------ | ------------------------------------------------------------------------------------ |
+| `url`               | EventBus address.                                                                    |
 | `exchange`          | Exchange name which routes a message to a particular queue.                          |
 | `clientQueue`       | Queue name which your bus will listen to.                                            |
 | `appQueue`          | Queue name which application will listen to.                                         |
@@ -70,8 +72,22 @@ In case of unrecoverable or operational errors, you will get an exception while 
 To subscribe an event handler to the particular event, you should use the `@bind()` decorator as follows:
 
 ```ts
-import { bind, EventHandler } from '@sec-tester/core';
+import { bind, Event, EventHandler } from '@sec-tester/core';
 import { injectable } from 'tsyringe';
+
+interface Issue {
+  name: string;
+  details: string;
+  type: string;
+  cvss?: string;
+  cwe?: string;
+}
+
+class IssueDetected extends Event<Issue> {
+  constructor(payload: Issue) {
+    super(payload);
+  }
+}
 
 @bind(IssueDetected)
 @injectable()
@@ -84,7 +100,7 @@ class IssueDetectedHandler implements EventHandler<Issue> {
 
 > ⚡ Make sure that you use `@injectable()` decorator to register the corresponding provider in the IoC. Otherwise, you get an error while trying to register a handler in the `EventBus`.
 
-Then you just need to register the handler in the `EvenBus`:
+Then you just need to register the handler in the `EventBus`:
 
 ```ts
 await bus.register(IssueDetectedHandler);
@@ -174,13 +190,20 @@ import {
   HttpCommandDispatcher,
   HttpCommandDispatcherConfig
 } from '@sec-tester/bus';
+import { container } from 'tsyringe';
 
 const options: HttpCommandDispatcherConfig = {
   baseUrl: 'https://app.neuralegion.com',
   token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
 };
+const logger = container.resolve(Logger);
+const retryStrategy = container.resolve(RetryStrategy);
 
-const httpDispatcher = new HttpCommandDispatcher(options);
+const httpDispatcher = new HttpCommandDispatcher(
+  logger,
+  retryStrategy,
+  options
+);
 ```
 
 The command dispatcher can be customized using the following options:
