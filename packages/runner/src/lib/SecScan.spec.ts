@@ -1,5 +1,6 @@
 import { SecScan } from './SecScan';
 import { resolvableInstance } from './SecRunner.spec';
+import { IssueFound } from './IssueFound';
 import {
   Issue,
   Scan,
@@ -20,7 +21,7 @@ import {
 } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
 import { Configuration } from '@sec-tester/core';
-import { Reporter } from '@sec-tester/reporter';
+import { Formatter } from '@sec-tester/reporter';
 
 describe('SecScan', () => {
   const tests = [TestType.XSS];
@@ -29,9 +30,9 @@ describe('SecScan', () => {
   const mockedConfiguration = mock<Configuration>();
   const mockedScanFactory = mock<ScanFactory>();
   const mockedScan = mock<Scan>();
-  const mockedReporter = mock<Reporter>();
+  const mockedIssueFormatter = mock<Formatter>();
 
-  const reporter = instance(mockedReporter);
+  const issueFormatter = instance(mockedIssueFormatter);
   const scanFactory = instance(mockedScanFactory);
 
   beforeEach(() => {
@@ -43,19 +44,19 @@ describe('SecScan', () => {
   });
 
   afterEach(() => {
-    reset<DependencyContainer | Configuration | ScanFactory | Scan | Reporter>(
+    reset<DependencyContainer | Configuration | ScanFactory | Scan | Formatter>(
       mockedContainer,
       mockedConfiguration,
       mockedScanFactory,
       mockedScan,
-      mockedReporter
+      mockedIssueFormatter
     );
   });
 
   describe('constructor', () => {
     it('should create instance', () => {
       expect(
-        () => new SecScan({ tests }, scanFactory, reporter)
+        () => new SecScan({ tests }, scanFactory, issueFormatter)
       ).not.toThrowError();
     });
   });
@@ -64,14 +65,15 @@ describe('SecScan', () => {
     const target: TargetOptions = { url: 'http://foo.bar' };
     const issues: Issue[] = [
       {
-        id: 'fooId'
+        id: 'fooId',
+        severity: Severity.HIGH
       } as Issue
     ];
 
     let secScan!: SecScan;
 
     beforeEach(() => {
-      secScan = new SecScan({ tests }, scanFactory, reporter);
+      secScan = new SecScan({ tests }, scanFactory, issueFormatter);
     });
 
     it('should run scan with default threshold', async () => {
@@ -121,7 +123,7 @@ describe('SecScan', () => {
 
       const res = secScan.run(target);
 
-      await expect(res).rejects.toThrow('Target is vulnerable');
+      await expect(res).rejects.toThrow(IssueFound);
     });
 
     it('should stop scan after resolved expectation', async () => {
@@ -149,7 +151,7 @@ describe('SecScan', () => {
       const res = secScan.run(target);
 
       await expect(res).rejects.toThrow();
-      verify(mockedReporter.report(anything())).once();
+      verify(mockedIssueFormatter.format(anything())).once();
     });
 
     it('should not report if there are not issues', async () => {
@@ -158,7 +160,7 @@ describe('SecScan', () => {
 
       await secScan.run(target);
 
-      verify(mockedReporter.report(anything())).never();
+      verify(mockedIssueFormatter.format(anything())).never();
     });
   });
 });
