@@ -20,6 +20,7 @@ npm i -s @sec-tester/bus
 To use the RabbitMQ Event Bus, pass the following options object to the constructor method:
 
 ```ts
+import { Configuration } from '@sec-tester/core';
 import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@sec-tester/bus';
 
 const config = new Configuration({
