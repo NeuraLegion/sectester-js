@@ -82,7 +82,7 @@ What level of logs to report. Any logs of a higher level than the setting are sh
 import { Configuration, LogLevel } from '@sec-tester/core';
 
 const config = new Configuration({
-  hostname: 'app.neuralegion.com',
+  // ...
   logLevel: LogLevel.ERROR
 });
 ```
@@ -97,6 +97,7 @@ Set credentials to access the application.
 import { Configuration } from '@sec-tester/core';
 
 const config = new Configuration({
+  // ...
   credentials: {
     token: 'your API key'
   }
@@ -122,6 +123,7 @@ import { Configuration, EnvCredentialProvider } from '@sec-tester/core';
 
 const credentialsProvider = new EnvCredentialProvider();
 const config = new Configuration({
+  // ...
   credentialProviders: [credentialsProvider]
 });
 ```
