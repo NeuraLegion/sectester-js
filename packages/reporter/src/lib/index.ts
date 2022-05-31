@@ -1,1 +1,2 @@
-export { Reporter } from './Reporter';
+export * from './Reporter';
+export * from './Formatter';
