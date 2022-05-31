@@ -190,13 +190,20 @@ import {
   HttpCommandDispatcher,
   HttpCommandDispatcherConfig
 } from '@sec-tester/bus';
+import { container } from 'tsyringe';
 
 const options: HttpCommandDispatcherConfig = {
   baseUrl: 'https://app.neuralegion.com',
   token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
 };
+const logger = container.resolve(Logger);
+const retryStrategy = container.resolve(RetryStrategy);
 
-const httpDispatcher = new HttpCommandDispatcher(options);
+const httpDispatcher = new HttpCommandDispatcher(
+  logger,
+  retryStrategy,
+  options
+);
 ```
 
 The command dispatcher can be customized using the following options:
