@@ -100,7 +100,7 @@ class IssueDetectedHandler implements EventHandler<Issue> {
 
 > ⚡ Make sure that you use `@injectable()` decorator to register the corresponding provider in the IoC. Otherwise, you get an error while trying to register a handler in the `EventBus`.
 
-Then you just need to register the handler in the `EvenBus`:
+Then you just need to register the handler in the `EventBus`:
 
 ```ts
 await bus.register(IssueDetectedHandler);
