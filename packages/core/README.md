@@ -143,6 +143,7 @@ For instance, you can dispatch a message in a way that is more approach you or c
 
 ```ts
 import { CommandDispatcher } from '@sec-tester/core';
+import { container } from 'tsyringe';
 
 const dispatcher = container.resolve(CommandDispatcher);
 
