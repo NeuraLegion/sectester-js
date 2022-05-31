@@ -72,8 +72,22 @@ In case of unrecoverable or operational errors, you will get an exception while 
 To subscribe an event handler to the particular event, you should use the `@bind()` decorator as follows:
 
 ```ts
-import { bind, EventHandler } from '@sec-tester/core';
+import { bind, Event, EventHandler } from '@sec-tester/core';
 import { injectable } from 'tsyringe';
+
+interface Issue {
+  name: string;
+  details: string;
+  type: string;
+  cvss?: string;
+  cwe?: string;
+}
+
+class IssueDetected extends Event<Issue> {
+  constructor(payload: Issue) {
+    super(payload);
+  }
+}
 
 @bind(IssueDetected)
 @injectable()
