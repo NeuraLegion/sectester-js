@@ -6,8 +6,8 @@ import {
   RepeaterFactory,
   RepeatersManager
 } from '@sec-tester/repeater';
-import { Reporter, StdReporter } from '@sec-tester/reporter';
 import { ScanFactory } from '@sec-tester/scan';
+import { Formatter, PlainTextFormatter } from '@sec-tester/reporter';
 
 export class SecRunner {
   private readonly configuration: Configuration;
@@ -64,15 +64,15 @@ export class SecRunner {
         repeaterId: this.repeater.repeaterId
       },
       this.configuration.container.resolve<ScanFactory>(ScanFactory),
-      this.configuration.container.resolve<Reporter>(Reporter)
+      this.configuration.container.resolve<Formatter>(Formatter)
     );
   }
 
   private async initConfiguration(configuration: Configuration): Promise<void> {
     await configuration.loadCredentials();
 
-    configuration.container.register(Reporter, {
-      useClass: StdReporter
+    configuration.container.register(Formatter, {
+      useClass: PlainTextFormatter
     });
   }
 }

@@ -81,53 +81,7 @@ $ yarn add @sec-tester/runner  \
 
 ### Usage examples
 
-Here is an example to check your own application for XSS vulnerabilities:
-
-```ts
-import { SecRunner, SecScan } from '@sec-tester/runner';
-import { Severity, TestType } from '@sec-tester/scan';
-
-describe('/api', () => {
-  let runner!: SecRunner;
-  let scan!: SecScan;
-
-  beforeEach(async () => {
-    runner = new SecRunner({ hostname: 'app.neuralegion.com' });
-
-    await runner.init();
-
-    scan = runner
-      .createScan({ tests: [TestType.XSS] })
-      .threshold(Severity.MEDIUM) // i. e. ignore LOW severity issues
-      .timeout(300000); // i. e. fail if last longer than 5 minutes
-  });
-
-  afterEach(async () => {
-    await runner.clear();
-  });
-
-  describe('/orders', () => {
-    it('should not have persistent xss', async () => {
-      await scan.run({
-        method: 'POST',
-        url: 'https://localhost:8000/api/orders',
-        body: { subject: 'Test', body: "<script>alert('xss')</script>" }
-      });
-    });
-
-    it('should not have reflective xss', async () => {
-      await scan.run({
-        url: 'https://localhost:8000/api/orders',
-        query: {
-          q: `<script>alert('xss')</script>`
-        }
-      });
-    });
-  });
-});
-```
-
-Full documentation can be found in [**runner**](https://github.com/NeuraLegion/sec-tester-js/tree/master/packages/runner).
+Full configuration & usage examples can be found in our [demo project](https://github.com/NeuraLegion/sec-tester-js-demo).
 
 ## Documentation & Help
 

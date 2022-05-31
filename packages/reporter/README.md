@@ -15,7 +15,7 @@ npm i -s @sec-tester/reporter
 
 ## Usage
 
-The package provides only one implementation of the `Reporter` that lets to get results to stdout, i.e. `StdReporter`:
+The package provides an implementation of the `Reporter` that lets to get results to stdout, i.e. `StdReporter`:
 
 ```ts
 import { Reporter, StdReporter } from '@sec-tester/reporter';
@@ -33,6 +33,48 @@ await reporter.report(scan);
 <summary>Sample console output</summary>
 
 ![reporter-sample](reporter-sample.png)
+
+</details>
+
+In addition, the package exposes a `PlainTextFormatter` that implements a `Formatter` interface:
+
+```ts
+import { Formatter, PlainTextFormatter } from '@sec-tester/reporter';
+
+const formatter: Formatter = new PlainTextFormatter();
+```
+
+To convert an issue into text, you just need to call the `format` method:
+
+```ts
+formatter.format(issue);
+```
+
+<details>
+<summary>Sample output</summary>
+
+```
+Issue in Bright UI:   https://app.neuralegion.com/scans/djoqtSDRJYaR6sH8pfYpDX/issues/8iacauN1FH9vFvDCLoo42v
+Name:                 Missing Strict-Transport-Security Header
+Severity:             Low
+Remediation:
+Make sure to proprely set and configure headers on your application - missing strict-transport-security header
+Details:
+The engine detected a missing strict-transport-security header. Headers are used to outline communication and
+improve security of application.
+Extra Details:
+● Missing Strict-Transport-Security Header
+    The engine detected a missing Strict-Transport-Security header, which might cause data to be sent insecurely from the client to the server.
+    Remedy:
+     - Make sure to set this header to one of the following options:
+        1. Strict-Transport-Security: max-age=<expire-time>
+        2. Strict-Transport-Security: max-age=<expire-time>; includeSubDomains
+        3. Strict-Transport-Security: max-age=<expire-time>; preload
+    Resources:
+     - https://www.owasp.org/index.php/OWASP_Secure_Headers_Project#hsts
+    Issues found on the following URLs:
+     - [GET] https://qa.brokencrystals.com/
+```
 
 </details>
 

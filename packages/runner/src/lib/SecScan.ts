@@ -1,9 +1,12 @@
-import { Reporter } from '@sec-tester/reporter';
+import { IssueFound } from './IssueFound';
+import { Formatter } from '@sec-tester/reporter';
 import {
+  Issue,
   Scan,
   ScanFactory,
   ScanSettingsOptions,
   Severity,
+  severityRanges,
   TargetOptions
 } from '@sec-tester/scan';
 
@@ -14,7 +17,7 @@ export class SecScan {
   constructor(
     private readonly settings: Omit<ScanSettingsOptions, 'target'>,
     private readonly scanFactory: ScanFactory,
-    private readonly reporter: Reporter
+    private readonly formatter: Formatter
   ) {}
 
   public async run(target: TargetOptions): Promise<void> {
@@ -50,16 +53,20 @@ export class SecScan {
   }
 
   private async assert(scan: Scan): Promise<void | never> {
-    const issues = await scan.issues();
+    const issue = await this.findExpectedIssue(scan);
 
-    if (issues.length) {
-      await this.report(scan);
+    if (issue) {
+      throw new IssueFound(issue, this.formatter);
     }
   }
 
-  private async report(scan: Scan): Promise<never> {
-    await this.reporter.report(scan);
+  private async findExpectedIssue(scan: Scan): Promise<Issue | undefined> {
+    const issues = await scan.issues();
 
-    throw new Error('Target is vulnerable');
+    if (this._threshold) {
+      return issues.find(x =>
+        severityRanges.get(this._threshold)?.includes(x.severity)
+      );
+    }
   }
 }
