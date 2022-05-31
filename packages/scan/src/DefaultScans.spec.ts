@@ -172,6 +172,12 @@ describe('HttpScans', () => {
           }
         }
       ];
+      const api = 'https://localhost';
+      const expected = issues.map(x => ({
+        ...x,
+        link: `${api}/scans/${id}/issues/${x.id}`
+      }));
+      when(mockedConfiguration.api).thenReturn('https://localhost');
       when(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).thenResolve(
         issues
       );
@@ -179,7 +185,7 @@ describe('HttpScans', () => {
       const result = await scans.listIssues(id);
 
       verify(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).once();
-      expect(result).toEqual(issues);
+      expect(result).toEqual(expected);
     });
 
     it('should raise an error if result is not defined', async () => {
