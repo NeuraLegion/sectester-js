@@ -218,7 +218,7 @@ import { Target } from '@sec-tester/scan';
 import FormData from 'form-data';
 
 const form = new FormData();
-form.set('greeting', 'Hello, world!');
+form.append('greeting', 'Hello, world!');
 
 const target = new Target({
   url: 'https://example.com',
