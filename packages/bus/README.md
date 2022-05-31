@@ -28,18 +28,18 @@ const config = new Configuration({
 });
 
 const repeaterId = 'your Repeater ID';
-const token = 'your API key';
 
 const bus = new RMQEventBus(
   config.container,
   new ExponentialBackoffRetryStrategy({ maxDepth: 5 }),
   {
+    url: config.bus,
     exchange: 'EventBus',
     clientQueue: `agent:${repeaterId}`,
     appQueue: 'app',
     credentials: {
       username: 'bot',
-      password: token
+      password: config.credentials!.token
     }
   }
 );
@@ -49,6 +49,7 @@ The options are specific to the chosen transporter. The `RabbitMQ` implementatio
 
 | Option              | Description                                                                          |
 | :------------------ | ------------------------------------------------------------------------------------ |
+| `url`               | EventBus address.                                                                    |
 | `exchange`          | Exchange name which routes a message to a particular queue.                          |
 | `clientQueue`       | Queue name which your bus will listen to.                                            |
 | `appQueue`          | Queue name which application will listen to.                                         |
