@@ -61,7 +61,7 @@ Below you will find a list of parameters that can be used to configure a `Scan`:
 | `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                           |
 | `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                          |
 | `slowEpTimeout`        | Automatically validate entry-point response time before initiating the vulnerability testing, and reduce scan time by skipping any entry-points that take too long to respond. By default, 1000ms. |
-| `targetTimeout`        | Measure timeout responses from the target application globally, and stop the scan if the target is unresponsive for longer than the specified time. By default, 5s.                                |
+| `targetTimeout`        | Measure timeout responses from the target application globally, and stop the scan if the target is unresponsive for longer than the specified time. By default, 5min.                              |
 | `name`                 | The scan name. The method and hostname by default, e.g. `GET example.com`.                                                                                                                         |
 
 ### Defining a target for attack
