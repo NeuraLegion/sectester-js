@@ -1,10 +1,10 @@
 {
-  "name": "@sec-tester/runner",
+  "name": "@sectester/runner",
   "version": "0.16.0",
   "description": "Run scanning for vulnerabilities just from your unit tests on CI phase.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeuraLegion/sec-tester-js.git"
+    "url": "git+https://github.com/NeuraLegion/sectester-js.git"
   },
   "engines": {
     "node": ">=16",
@@ -12,11 +12,11 @@
   },
   "author": {
     "name": "Artem Derevnjuk",
-    "email": "artem.derevnjuk@neuralegion.com"
+    "email": "artem.derevnjuk@brightsec.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NeuraLegion/sec-tester-js/issues"
+    "url": "https://github.com/NeuraLegion/sectester-js/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -33,10 +33,10 @@
     "brightsec"
   ],
   "peerDependencies": {
-    "@sec-tester/bus": ">=0.13.0 <1.0.0",
-    "@sec-tester/core": ">=0.13.0 <1.0.0",
-    "@sec-tester/repeater": ">=0.13.0 <1.0.0",
-    "@sec-tester/reporter": ">=0.13.0 <1.0.0",
-    "@sec-tester/scan": ">=0.13.0 <1.0.0"
+    "@sectester/bus": ">=0.16.0 <1.0.0",
+    "@sectester/core": ">=0.16.0 <1.0.0",
+    "@sectester/repeater": ">=0.16.0 <1.0.0",
+    "@sectester/reporter": ">=0.16.0 <1.0.0",
+    "@sectester/scan": ">=0.16.0 <1.0.0"
   }
 }

@@ -3,7 +3,7 @@ import {
   HttpCommandDispatcherConfig
 } from './dispatchers';
 import { container, DependencyContainer } from 'tsyringe';
-import { CommandDispatcher, Configuration } from '@sec-tester/core';
+import { CommandDispatcher, Configuration } from '@sectester/core';
 
 container.register(CommandDispatcher, { useClass: HttpCommandDispatcher });
 

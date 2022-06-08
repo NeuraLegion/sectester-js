@@ -1,6 +1,6 @@
 import { RepeaterFactory } from './RepeaterFactory';
 import { container, DependencyContainer } from 'tsyringe';
-import { Configuration } from '@sec-tester/core';
+import { Configuration } from '@sectester/core';
 
 container.register(RepeaterFactory, {
   useFactory(childContainer: DependencyContainer) {

@@ -1,10 +1,10 @@
 {
-  "name": "sec-tester-js",
+  "name": "sectester-js",
   "version": "0.16.0",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeuraLegion/sec-tester-js.git"
+    "url": "git+https://github.com/NeuraLegion/sectester-js.git"
   },
   "engines": {
     "node": ">=16",
@@ -15,11 +15,11 @@
   ],
   "author": {
     "name": "Artem Derevnjuk",
-    "email": "artem.derevnjuk@neuralegion.com"
+    "email": "artem.derevnjuk@brightsec.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NeuraLegion/sec-tester-js/issues"
+    "url": "https://github.com/NeuraLegion/sectester-js/issues"
   },
   "commitlint": {
     "extends": [
@@ -73,7 +73,7 @@
     "help": "nx help",
     "prepare": "is-ci || husky install"
   },
-  "homepage": "https://github.com/NeuraLegion/sec-tester-js#readme",
+  "homepage": "https://github.com/NeuraLegion/sectester-js#readme",
   "dependencies": {
     "@har-sdk/core": "^1.4.3",
     "amqp-connection-manager": "^4.1.1",

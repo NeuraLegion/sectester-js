@@ -20,7 +20,7 @@ import {
   when
 } from 'ts-mockito';
 import { Har } from '@har-sdk/core';
-import { CommandDispatcher, Configuration } from '@sec-tester/core';
+import { CommandDispatcher, Configuration } from '@sectester/core';
 import ci from 'ci-info';
 
 describe('HttpScans', () => {

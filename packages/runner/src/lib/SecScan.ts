@@ -1,5 +1,5 @@
 import { IssueFound } from './IssueFound';
-import { Formatter } from '@sec-tester/reporter';
+import { Formatter } from '@sectester/reporter';
 import {
   Issue,
   Scan,
@@ -8,7 +8,7 @@ import {
   Severity,
   severityRanges,
   TargetOptions
-} from '@sec-tester/scan';
+} from '@sectester/scan';
 
 export class SecScan {
   private _threshold = Severity.LOW;

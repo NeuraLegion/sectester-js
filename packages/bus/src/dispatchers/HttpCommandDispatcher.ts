@@ -1,7 +1,7 @@
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { HttpRequest } from '../commands';
 import { HttpCommandError } from '../exceptions';
-import { CommandDispatcher, Logger, RetryStrategy } from '@sec-tester/core';
+import { CommandDispatcher, Logger, RetryStrategy } from '@sectester/core';
 import { inject, injectable } from 'tsyringe';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import rateLimit, { RateLimitedAxiosInstance } from 'axios-rate-limit';

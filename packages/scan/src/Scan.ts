@@ -8,7 +8,7 @@ import {
   severityRanges
 } from './models';
 import { ScanAborted, ScanTimedOut } from './exceptions';
-import { delay, Logger } from '@sec-tester/core';
+import { delay, Logger } from '@sectester/core';
 
 export interface ScanOptions {
   id: string;

@@ -1,6 +1,6 @@
-import { Formatter } from '@sec-tester/reporter';
-import { SecTesterError } from '@sec-tester/core';
-import { Issue } from '@sec-tester/scan';
+import { Formatter } from '@sectester/reporter';
+import { SecTesterError } from '@sectester/core';
+import { Issue } from '@sectester/scan';
 
 export class IssueFound extends SecTesterError {
   constructor(public readonly issue: Issue, formatter: Formatter) {

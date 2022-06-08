@@ -1,5 +1,5 @@
 import { ScanConfig } from '../models';
-import { HttpRequest } from '@sec-tester/bus';
+import { HttpRequest } from '@sectester/bus';
 
 export type CreateScanPayload = ScanConfig & {
   info: {

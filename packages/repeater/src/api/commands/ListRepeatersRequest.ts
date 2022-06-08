@@ -1,4 +1,4 @@
-import { HttpRequest } from '@sec-tester/bus';
+import { HttpRequest } from '@sectester/bus';
 
 export type ListRepeatersResponsePayload = { id: string; name: string }[];
 

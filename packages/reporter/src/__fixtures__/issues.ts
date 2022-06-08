@@ -1,4 +1,4 @@
-import { HttpMethod, Severity } from '@sec-tester/scan';
+import { HttpMethod, Severity } from '@sectester/scan';
 
 export const issueWithoutResourcesText = `Issue in Bright UI:   http://app.neuralegion.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9
 Name:                 Database connection crashed

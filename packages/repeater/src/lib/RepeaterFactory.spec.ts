@@ -4,7 +4,7 @@ import { RequestRunnerOptions } from '../request-runner';
 import { Repeater } from './Repeater';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
-import { Configuration, EventBus } from '@sec-tester/core';
+import { Configuration, EventBus } from '@sectester/core';
 import {
   anything,
   capture,

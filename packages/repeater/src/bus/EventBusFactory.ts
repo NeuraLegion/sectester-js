@@ -1,4 +1,4 @@
-import { EventBus } from '@sec-tester/core';
+import { EventBus } from '@sectester/core';
 
 export interface EventBusFactory {
   create(repeaterId: string): Promise<EventBus>;

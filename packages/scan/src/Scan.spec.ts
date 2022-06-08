@@ -4,7 +4,7 @@ import { HttpMethod, Issue, ScanState, ScanStatus, Severity } from './models';
 import { Scans } from './Scans';
 import { ScanAborted, ScanTimedOut } from './exceptions';
 import { instance, mock, reset, spy, verify, when } from 'ts-mockito';
-import { Logger } from '@sec-tester/core';
+import { Logger } from '@sectester/core';
 
 const findArg = <R>(
   args: [unknown, unknown],

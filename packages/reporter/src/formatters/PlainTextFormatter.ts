@@ -1,5 +1,5 @@
 import { Formatter } from '../lib';
-import { Comment, Issue } from '@sec-tester/scan';
+import { Comment, Issue } from '@sectester/scan';
 import { format } from 'util';
 
 export class PlainTextFormatter implements Formatter {

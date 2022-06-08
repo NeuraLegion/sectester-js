@@ -1,4 +1,4 @@
-# How to contribute to Sec Tester SDKs
+# How to contribute to SecTester SDKs
 
 ## Table of contents
 
@@ -6,7 +6,7 @@
 - [Forks and Branches](#forks-and-branches)
   - [Start a feature branch](#start-a-feature-branch)
   - [Commit Message Format](#commit-message-format)
-- [How to work on Sec Tester](#how-to-work-on-sec-tester)
+- [How to work on SecTester](#how-to-work-on-sectester)
 - [Installation](#installation)
   - [Build](#build)
   - [Tests](#tests)
@@ -148,7 +148,7 @@ revert: add the amount of requests per dispatched entry point
 Reverts commit 0000000
 ```
 
-## How to work on Sec Tester
+## How to work on SecTester
 
 To ensure consistency throughout the source code, keep these rules in mind as you are working:
 
@@ -249,7 +249,7 @@ $ npm run format -- --projects=${lib},${lib1}
 Issue the following command to generate a new package:
 
 ```bash
-$ nx generate @nrwl/node:lib ${lib} --importPath=@sec-tester/${lib}
+$ nx generate @nrwl/node:lib ${lib} --importPath=@sectester/${lib}
 ```
 
 > ⚡ It is important to have a clean git working directory before invoking a generator so that you can easily revert changes and re-invoke the generator with different inputs.

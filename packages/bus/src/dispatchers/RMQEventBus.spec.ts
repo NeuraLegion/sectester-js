@@ -9,7 +9,7 @@ import {
   Logger,
   NoResponse,
   RetryStrategy
-} from '@sec-tester/core';
+} from '@sectester/core';
 import {
   anyFunction,
   anyOfClass,

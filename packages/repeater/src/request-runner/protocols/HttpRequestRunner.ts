@@ -3,7 +3,7 @@ import { RequestRunner } from '../RequestRunner';
 import { RequestRunnerOptions } from '../RequestRunnerOptions';
 import { Response } from '../Response';
 import { Protocol } from '../../models';
-import { Logger } from '@sec-tester/core';
+import { Logger } from '@sectester/core';
 import request from 'request-promise';
 import { Response as IncomingResponse } from 'request';
 import { SocksProxyAgent } from 'socks-proxy-agent';

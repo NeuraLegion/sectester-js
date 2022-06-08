@@ -7,7 +7,7 @@ import {
   issueWithoutResources,
   issueWithoutResourcesText
 } from '../__fixtures__/issues';
-import { Issue } from '@sec-tester/scan';
+import { Issue } from '@sectester/scan';
 
 describe('PlainTextFormatter', () => {
   let formatter!: PlainTextFormatter;

@@ -5,7 +5,7 @@ import { Protocol } from '../../models';
 import nock from 'nock';
 import 'reflect-metadata';
 import { anything, spy, verify, when } from 'ts-mockito';
-import { Logger, LogLevel } from '@sec-tester/core';
+import { Logger, LogLevel } from '@sectester/core';
 import { SocksProxyAgent } from 'socks-proxy-agent';
 
 const createRequest = (options: Partial<RequestOptions> = {}) => {

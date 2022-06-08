@@ -8,7 +8,7 @@ import {
   Severity,
   TargetOptions,
   TestType
-} from '@sec-tester/scan';
+} from '@sectester/scan';
 import {
   anything,
   deepEqual,
@@ -20,8 +20,8 @@ import {
   when
 } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
-import { Configuration } from '@sec-tester/core';
-import { Formatter } from '@sec-tester/reporter';
+import { Configuration } from '@sectester/core';
+import { Formatter } from '@sectester/reporter';
 
 describe('SecScan', () => {
   const tests = [TestType.XSS];

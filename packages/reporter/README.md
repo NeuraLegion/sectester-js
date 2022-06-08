@@ -1,16 +1,16 @@
-# @sec-tester/reporter
+# @sectester/reporter
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/maintainability)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/test_coverage)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/test_coverage)
-![Build Status](https://github.com/NeuraLegion/sec-tester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
-![NPM Downloads](https://img.shields.io/npm/dw/@sec-tester/core)
+[![Maintainability](https://api.codeclimate.com/v1/badges/a5f72ececc9b0f402802/maintainability)](https://codeclimate.com/github/NeuraLegion/sectester-js/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/a5f72ececc9b0f402802/test_coverage)](https://codeclimate.com/github/NeuraLegion/sectester-js/test_coverage)
+![Build Status](https://github.com/NeuraLegion/sectester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
+![NPM Downloads](https://img.shields.io/npm/dw/@sectester/core)
 
 Provide an abstraction for generating test results as part of the particular test frameworks.
 
 ## Setup
 
 ```bash
-npm i -s @sec-tester/reporter
+npm i -s @sectester/reporter
 ```
 
 ## Usage
@@ -18,7 +18,7 @@ npm i -s @sec-tester/reporter
 The package provides an implementation of the `Reporter` that lets to get results to stdout, i.e. `StdReporter`:
 
 ```ts
-import { Reporter, StdReporter } from '@sec-tester/reporter';
+import { Reporter, StdReporter } from '@sectester/reporter';
 
 const reporter: Reporter = new StdReporter();
 ```
@@ -39,7 +39,7 @@ await reporter.report(scan);
 In addition, the package exposes a `PlainTextFormatter` that implements a `Formatter` interface:
 
 ```ts
-import { Formatter, PlainTextFormatter } from '@sec-tester/reporter';
+import { Formatter, PlainTextFormatter } from '@sectester/reporter';
 
 const formatter: Formatter = new PlainTextFormatter();
 ```

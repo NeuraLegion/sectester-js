@@ -1,5 +1,5 @@
 import { RepeaterStatus } from '../lib';
-import { Event } from '@sec-tester/core';
+import { Event } from '@sectester/core';
 
 interface RepeaterStatusEventPayload {
   repeaterId: string;

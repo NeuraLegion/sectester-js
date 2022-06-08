@@ -30,12 +30,12 @@
     "baseUrl": ".",
     "typeRoots": ["node_modules/@types", "typings"],
     "paths": {
-      "@sec-tester/bus": ["packages/bus/src/index.ts"],
-      "@sec-tester/core": ["packages/core/src/index.ts"],
-      "@sec-tester/repeater": ["packages/repeater/src/index.ts"],
-      "@sec-tester/reporter": ["packages/reporter/src/index.ts"],
-      "@sec-tester/runner": ["packages/runner/src/index.ts"],
-      "@sec-tester/scan": ["packages/scan/src/index.ts"]
+      "@sectester/bus": ["packages/bus/src/index.ts"],
+      "@sectester/core": ["packages/core/src/index.ts"],
+      "@sectester/repeater": ["packages/repeater/src/index.ts"],
+      "@sectester/reporter": ["packages/reporter/src/index.ts"],
+      "@sectester/runner": ["packages/runner/src/index.ts"],
+      "@sectester/scan": ["packages/scan/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

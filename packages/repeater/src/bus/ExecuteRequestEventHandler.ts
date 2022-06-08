@@ -1,6 +1,6 @@
 import { Protocol } from '../models';
 import { Request, RequestRunner, Response } from '../request-runner';
-import { bind, EventHandler } from '@sec-tester/core';
+import { bind, EventHandler } from '@sectester/core';
 import { injectable, injectAll } from 'tsyringe';
 
 interface ExecuteRequestPayload {

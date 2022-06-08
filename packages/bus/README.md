@@ -1,16 +1,16 @@
-# @sec-tester/bus
+# @sectester/bus
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/maintainability)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/68d2f22b6a9e1e38ed21/test_coverage)](https://codeclimate.com/github/NeuraLegion/sec-tester-js/test_coverage)
-![Build Status](https://github.com/NeuraLegion/sec-tester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
-![NPM Downloads](https://img.shields.io/npm/dw/@sec-tester/core)
+[![Maintainability](https://api.codeclimate.com/v1/badges/a5f72ececc9b0f402802/maintainability)](https://codeclimate.com/github/NeuraLegion/sectester-js/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/a5f72ececc9b0f402802/test_coverage)](https://codeclimate.com/github/NeuraLegion/sectester-js/test_coverage)
+![Build Status](https://github.com/NeuraLegion/sectester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
+![NPM Downloads](https://img.shields.io/npm/dw/@sectester/core)
 
 The package includes a simplified implementation of the `EventBus`, one based on `RabbitMQ`, to establish synchronous and asynchronous communication between services and agents.
 
 ## Setup
 
 ```bash
-npm i -s @sec-tester/bus
+npm i -s @sectester/bus
 ```
 
 ## Usage
@@ -20,8 +20,8 @@ npm i -s @sec-tester/bus
 To use the RabbitMQ Event Bus, pass the following options object to the constructor method:
 
 ```ts
-import { Configuration } from '@sec-tester/core';
-import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@sec-tester/bus';
+import { Configuration } from '@sectester/core';
+import { RMQEventBus, ExponentialBackoffRetryStrategy } from '@sectester/bus';
 
 const config = new Configuration({
   hostname: 'app.neuralegion.com'
@@ -72,7 +72,7 @@ In case of unrecoverable or operational errors, you will get an exception while 
 To subscribe an event handler to the particular event, you should use the `@bind()` decorator as follows:
 
 ```ts
-import { bind, Event, EventHandler } from '@sec-tester/core';
+import { bind, Event, EventHandler } from '@sectester/core';
 import { injectable } from 'tsyringe';
 
 interface Issue {
@@ -139,7 +139,7 @@ The `publish()` method takes just a single argument, an instance of the derived 
 
 > ⚡ The class name should match one defined event in the application. Otherwise, you should override it by passing the expected name via the constructor.
 
-For more information, please see `@sec-tester/core`.
+For more information, please see `@sectester/core`.
 
 #### Executing RPC methods
 
@@ -189,7 +189,7 @@ The `HttpCommandDispatcher` is an alternative way to execute the commands over H
 import {
   HttpCommandDispatcher,
   HttpCommandDispatcherConfig
-} from '@sec-tester/bus';
+} from '@sectester/bus';
 import { container } from 'tsyringe';
 
 const options: HttpCommandDispatcherConfig = {
@@ -245,7 +245,7 @@ Below you will find a list of parameters that can be used to configure a command
 | `correlationId` | Used to ensure atomicity while working with EventBus. By default, random UUID.             |
 | `createdAt`     | The exact date and time the command was created.                                           |
 
-For more information, please see `@sec-tester/core`.
+For more information, please see `@sectester/core`.
 
 #### Retry Strategy
 

@@ -1,5 +1,5 @@
 import { HttpCommandError } from '../exceptions';
-import { RetryStrategy, delay } from '@sec-tester/core';
+import { RetryStrategy, delay } from '@sectester/core';
 import ErrnoException = NodeJS.ErrnoException;
 
 export interface ExponentialBackoffOptions {
