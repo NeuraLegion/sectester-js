@@ -1,4 +1,4 @@
-import { ScanSettingsOptions } from '@sec-tester/scan';
+import { ScanSettingsOptions } from '@sectester/scan';
 
 export type SecScanOptions = Pick<
   ScanSettingsOptions,

@@ -1,6 +1,6 @@
 import { BodyParser, ParsedBody } from './BodyParser';
 import { Target } from '../Target';
-import { isObject, isString } from '@sec-tester/core';
+import { isObject, isString } from '@sectester/core';
 
 export class JsonBodyParser implements BodyParser {
   private readonly MIME_TYPE_REGEXP = /^application\/json[-+\w\d]*?\s*(;.*)?$/i;

@@ -45,6 +45,6 @@ jobs:
         uses: paambaati/codeclimate-action@v3.0.0
         if: ${{ hashFiles('coverage/**/lcov.info') }}
         env:
-          CC_TEST_REPORTER_ID: 0b9b5803952958ee1aa210a0b892d8b7fa97aaf4fa8b6fdec67f55202fd55ca8
+          CC_TEST_REPORTER_ID: d05b4f0a8ae4d2f1ef66147c5e6f3b506363e248dd8a64cc2660cbb2509ecbe4
         with:
           coverageLocations: coverage/**/lcov.info:lcov

@@ -1,10 +1,10 @@
 {
-  "name": "@sec-tester/reporter",
+  "name": "@sectester/reporter",
   "version": "0.16.0",
   "description": "Provide an abstraction for generating test results as part of the particular test frameworks.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeuraLegion/sec-tester-js.git"
+    "url": "git+https://github.com/NeuraLegion/sectester-js.git"
   },
   "engines": {
     "node": ">=16",
@@ -12,11 +12,11 @@
   },
   "author": {
     "name": "Artem Derevnjuk",
-    "email": "artem.derevnjuk@neuralegion.com"
+    "email": "artem.derevnjuk@brightsec.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NeuraLegion/sec-tester-js/issues"
+    "url": "https://github.com/NeuraLegion/sectester-js/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -34,6 +34,6 @@
     "reporter"
   ],
   "peerDependencies": {
-    "@sec-tester/scan": ">=0.13.0 <1.0.0"
+    "@sectester/scan": ">=0.16.0 <1.0.0"
   }
 }

@@ -9,7 +9,7 @@ import {
 } from './commands';
 import { Issue, ScanConfig, ScanState } from './models';
 import { inject, injectable } from 'tsyringe';
-import { Command, CommandDispatcher, Configuration } from '@sec-tester/core';
+import { Command, CommandDispatcher, Configuration } from '@sectester/core';
 import ci from 'ci-info';
 
 @injectable()

@@ -2,7 +2,7 @@ import { HttpRequest } from '../commands';
 import { HttpCommandDispatcher } from './HttpCommandDispatcher';
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { HttpCommandError } from '../exceptions';
-import { Logger, RetryStrategy } from '@sec-tester/core';
+import { Logger, RetryStrategy } from '@sectester/core';
 import {
   anyFunction,
   instance,

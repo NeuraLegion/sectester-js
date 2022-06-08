@@ -1,4 +1,4 @@
-import { Issue } from '@sec-tester/scan';
+import { Issue } from '@sectester/scan';
 
 export interface Formatter {
   format(issue: Issue): string;

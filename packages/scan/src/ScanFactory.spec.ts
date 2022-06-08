@@ -14,7 +14,7 @@ import {
   verify,
   when
 } from 'ts-mockito';
-import { Configuration } from '@sec-tester/core';
+import { Configuration } from '@sectester/core';
 import { DependencyContainer } from 'tsyringe';
 import { randomBytes } from 'crypto';
 

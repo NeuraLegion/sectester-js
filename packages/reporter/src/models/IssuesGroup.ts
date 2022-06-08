@@ -1,4 +1,4 @@
-import { Issue, Severity } from '@sec-tester/scan';
+import { Issue, Severity } from '@sectester/scan';
 
 export interface IssuesGroup {
   severity: Severity;

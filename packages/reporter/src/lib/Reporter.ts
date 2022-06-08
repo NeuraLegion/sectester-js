@@ -1,4 +1,4 @@
-import { Scan } from '@sec-tester/scan';
+import { Scan } from '@sectester/scan';
 
 export interface Reporter {
   report(scan: Scan): Promise<void>;

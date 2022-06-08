@@ -11,7 +11,7 @@ import {
   NoResponse,
   NoSubscriptionsFound,
   RetryStrategy
-} from '@sec-tester/core';
+} from '@sectester/core';
 import type { Channel, ConsumeMessage } from 'amqplib';
 import { autoInjectable, DependencyContainer, inject } from 'tsyringe';
 import type {

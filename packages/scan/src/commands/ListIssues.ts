@@ -1,5 +1,5 @@
 import { Issue } from '../models';
-import { HttpRequest } from '@sec-tester/bus';
+import { HttpRequest } from '@sectester/bus';
 
 export class ListIssues extends HttpRequest<undefined, Omit<Issue, 'link'>[]> {
   constructor(id: string) {

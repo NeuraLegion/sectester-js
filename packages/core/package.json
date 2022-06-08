@@ -1,10 +1,10 @@
 {
-  "name": "@sec-tester/core",
+  "name": "@sectester/core",
   "version": "0.16.0",
   "description": "The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NeuraLegion/sec-tester-js.git"
+    "url": "git+https://github.com/NeuraLegion/sectester-js.git"
   },
   "engines": {
     "node": ">=16",
@@ -12,11 +12,11 @@
   },
   "author": {
     "name": "Artem Derevnjuk",
-    "email": "artem.derevnjuk@neuralegion.com"
+    "email": "artem.derevnjuk@brightsec.com"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NeuraLegion/sec-tester-js/issues"
+    "url": "https://github.com/NeuraLegion/sectester-js/issues"
   },
   "publishConfig": {
     "access": "public"
@@ -33,7 +33,7 @@
     "brightsec"
   ],
   "secTester": {
-    "name": "sec-tester-js",
+    "name": "sectester-js",
     "repeaterVersion": "8.8.0"
   }
 }

@@ -1,6 +1,6 @@
 import { BodyParser, ParsedBody } from './BodyParser';
 import { Target } from '../Target';
-import { isBoolean, isDate, isNumber, isString } from '@sec-tester/core';
+import { isBoolean, isDate, isNumber, isString } from '@sectester/core';
 
 export class TextBodyParser implements BodyParser {
   public canParse({ body }: Target): boolean {
