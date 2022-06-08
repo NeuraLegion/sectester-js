@@ -16,7 +16,7 @@ export class RepeaterFactory {
     timeout: 30000,
     maxContentLength: 100,
     reuseConnection: false,
-    whitelistMimes: [
+    allowedMimes: [
       'text/html',
       'text/plain',
       'text/css',

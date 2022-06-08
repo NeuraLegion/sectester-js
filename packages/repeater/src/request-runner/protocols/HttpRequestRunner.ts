@@ -155,7 +155,7 @@ export class HttpRequestRunner implements RequestRunner {
     const type = this.parseContentType(res);
     const maxBodySize = this.maxContentLength * 1024;
 
-    const requiresTruncating = !this.options.whitelistMimes?.some(
+    const requiresTruncating = !this.options.allowedMimes?.some(
       (mime: string) => type.startsWith(mime)
     );
 
