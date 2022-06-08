@@ -121,10 +121,10 @@ describe('HttpRequestRunner', () => {
       expect(response.body).toEqual(bigBody.slice(0, 1024));
     });
 
-    it('should not truncate response body if it is in whitelisted mime types', async () => {
+    it('should not truncate response body if it is in allowed mime types', async () => {
       const runner = setupRunner({
         maxContentLength: 1,
-        whitelistMimes: ['application/x-custom']
+        allowedMimes: ['application/x-custom']
       });
       const { request, requestOptions } = createRequest();
       const bigBody = 'x'.repeat(1025);
@@ -137,10 +137,10 @@ describe('HttpRequestRunner', () => {
       expect(response.body).toEqual(bigBody);
     });
 
-    it('should not truncate response body if whitelisted mime type starts with actual one', async () => {
+    it('should not truncate response body if allowed mime type starts with actual one', async () => {
       const runner = setupRunner({
         maxContentLength: 1,
-        whitelistMimes: ['application/x-custom']
+        allowedMimes: ['application/x-custom']
       });
       const { request, requestOptions } = createRequest();
       const bigBody = 'x'.repeat(1025);

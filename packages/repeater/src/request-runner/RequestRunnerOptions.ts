@@ -2,7 +2,7 @@ export interface RequestRunnerOptions {
   timeout?: number;
   proxyUrl?: string;
   headers?: Record<string, string | string[]>;
-  whitelistMimes?: string[];
+  allowedMimes?: string[];
   maxContentLength?: number;
   reuseConnection?: boolean;
 }
