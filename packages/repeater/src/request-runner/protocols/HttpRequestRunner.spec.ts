@@ -7,6 +7,8 @@ import 'reflect-metadata';
 import { anything, spy, verify, when } from 'ts-mockito';
 import { Logger, LogLevel } from '@sectester/core';
 import { SocksProxyAgent } from 'socks-proxy-agent';
+import { constants, gzip } from 'zlib';
+import { promisify } from 'util';
 
 const createRequest = (options: Partial<RequestOptions> = {}) => {
   const requestOptions = {
@@ -117,7 +119,6 @@ describe('HttpRequestRunner', () => {
 
       const response = await runner.run(request);
 
-      expect(response.body?.length).toEqual(1024);
       expect(response.body).toEqual(bigBody.slice(0, 1024));
     });
 
@@ -135,6 +136,49 @@ describe('HttpRequestRunner', () => {
       const response = await runner.run(request);
 
       expect(response.body).toEqual(bigBody);
+    });
+
+    it('should decode response body if content-encoding is gzip', async () => {
+      const runner = setupRunner({
+        maxContentLength: 1,
+        allowedMimes: ['text/plain']
+      });
+      const { request, requestOptions } = createRequest();
+      const expected = 'x'.repeat(1025);
+      const bigBody = await promisify(gzip)(expected, {
+        flush: constants.Z_SYNC_FLUSH,
+        finishFlush: constants.Z_SYNC_FLUSH
+      });
+      nock(requestOptions.url).get('/').reply(200, bigBody, {
+        'content-type': 'text/plain',
+        'content-encoding': 'gzip'
+      });
+
+      const response = await runner.run(request);
+
+      expect(response.body).toEqual(expected);
+    });
+
+    it('should decode and truncate gzipped response body if content-type is not in allowed list', async () => {
+      const runner = setupRunner({
+        maxContentLength: 1,
+        allowedMimes: ['text/plain']
+      });
+      const { request, requestOptions } = createRequest();
+      const bigBody = 'x'.repeat(1025);
+      const expected = bigBody.slice(0, 1024);
+      const gzippedBody = await promisify(gzip)(bigBody, {
+        flush: constants.Z_SYNC_FLUSH,
+        finishFlush: constants.Z_SYNC_FLUSH
+      });
+      nock(requestOptions.url).get('/').reply(200, gzippedBody, {
+        'content-type': 'text/html',
+        'content-encoding': 'gzip'
+      });
+
+      const response = await runner.run(request);
+
+      expect(response.body).toEqual(expected);
     });
 
     it('should not truncate response body if allowed mime type starts with actual one', async () => {
@@ -158,11 +202,10 @@ describe('HttpRequestRunner', () => {
         maxContentLength: 1
       });
       const { request, requestOptions } = createRequest();
-      const bigBody = 'x'.repeat(1025);
-      nock(requestOptions.url).get('/').reply(204, bigBody);
+      nock(requestOptions.url).get('/').reply(204);
       const response = await runner.run(request);
 
-      expect(response.body).toEqual(bigBody);
+      expect(response.body).toEqual('');
     });
 
     it('should use SocksProxyAgent if socks proxyUrl provided', async () => {

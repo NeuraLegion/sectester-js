@@ -106,8 +106,6 @@ export class HttpRequestRunner implements RequestRunner {
   }
 
   private async request(options: Request): Promise<IncomingResponse> {
-    let responseTruncatePromise: Promise<Buffer | undefined>;
-
     const res = await request({
       agent: this.getRequestAgent(options),
       body: options.body,
@@ -119,21 +117,9 @@ export class HttpRequestRunner implements RequestRunner {
       rejectUnauthorized: false,
       timeout: this.options.timeout,
       url: options.url
-    })
-      .on('request', (req: OutgoingMessage) => this.setHeaders(req, options))
-      .on(
-        'response',
-        (response: IncomingResponse) =>
-          (responseTruncatePromise = this.truncateResponse(response))
-      );
+    }).on('request', (req: OutgoingMessage) => this.setHeaders(req, options));
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const body = await responseTruncatePromise!;
-
-    if (body) {
-      res.body = body.toString();
-      res.headers['content-length'] = String(body.byteLength);
-    }
+    this.truncateResponse(res);
 
     return res;
   }
@@ -145,21 +131,21 @@ export class HttpRequestRunner implements RequestRunner {
     );
   }
 
-  private async truncateResponse(
-    res: IncomingResponse
-  ): Promise<Buffer | undefined> {
+  private truncateResponse(res: IncomingResponse): void {
     if (res.statusCode === 204 || res.method === 'HEAD') {
       return;
     }
 
     const type = this.parseContentType(res);
     const maxBodySize = this.maxContentLength * 1024;
-
     const requiresTruncating = !this.options.allowedMimes?.some(
       (mime: string) => type.startsWith(mime)
     );
 
-    return this.parseBody(res, { maxBodySize, requiresTruncating });
+    const body = this.parseBody(res, { maxBodySize, requiresTruncating });
+
+    res.body = body.toString();
+    res.headers['content-length'] = String(body.byteLength);
   }
 
   private parseContentType(res: IncomingResponse): string {
@@ -174,31 +160,16 @@ export class HttpRequestRunner implements RequestRunner {
     return type;
   }
 
-  private async parseBody(
+  private parseBody(
     res: IncomingResponse,
     options: { maxBodySize: number; requiresTruncating: boolean }
-  ): Promise<Buffer> {
-    let truncated = false;
+  ): Buffer {
+    let body = Buffer.from(res.body);
 
-    const chunks = [];
-    let chunksByteLength = 0;
-
-    for await (const chunk of res) {
-      chunks.push(chunk);
-
-      chunksByteLength += Buffer.from(chunk).byteLength;
-      truncated =
-        this.maxContentLength !== -1 &&
-        chunksByteLength > options.maxBodySize &&
-        options.requiresTruncating;
-
-      if (truncated) {
-        res.destroy();
-        break;
-      }
-    }
-
-    const body = Buffer.concat(chunks);
+    const truncated =
+      this.maxContentLength !== -1 &&
+      body.byteLength > options.maxBodySize &&
+      options.requiresTruncating;
 
     if (truncated) {
       this.logger.debug(
@@ -206,7 +177,7 @@ export class HttpRequestRunner implements RequestRunner {
         options.maxBodySize
       );
 
-      return body.slice(0, options.maxBodySize);
+      body = body.slice(0, options.maxBodySize);
     }
 
     return body;
