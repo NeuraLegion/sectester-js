@@ -5,9 +5,6 @@ on:
     branches:
       - master
 
-env:
-  DEPENDENCIES_CACHE: npm-cache
-
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -18,8 +15,6 @@ jobs:
 
       - name: Install deps
         uses: ./.github/workflows/composite/npm
-        with:
-          cache: ${{ env.DEPENDENCIES_CACHE }}
 
       - name: Release a new version
         run: npm run semantic-release
