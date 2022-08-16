@@ -36,4 +36,5 @@ exclude_patterns:
   - '/node_modules'
   - '/tests'
   - '**/*.spec.ts'
+  - '**/jest.config.ts'
   - '**/*.js'

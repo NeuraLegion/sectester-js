@@ -1,5 +1,5 @@
 {
-  "root": "packages/bus",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/bus/src",
   "projectType": "library",
   "targets": {
@@ -33,7 +33,7 @@
       "executor": "@nrwl/jest:jest",
       "outputs": ["coverage/packages/bus"],
       "options": {
-        "jestConfig": "packages/bus/jest.config.js",
+        "jestConfig": "packages/bus/jest.config.ts",
         "passWithNoTests": true
       }
     },

@@ -50,7 +50,6 @@ describe('HttpRequestRunner', () => {
   });
 
   describe('run', () => {
-    // eslint-disable-next-line jest/expect-expect
     it('should call setHeaders on the provided request if additional headers were configured globally', async () => {
       const headers = { testHeader: 'test-header-value' };
       const runner = setupRunner({ headers });

@@ -1,5 +1,5 @@
 {
-  "root": "packages/reporter",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/reporter/src",
   "projectType": "library",
   "targets": {
@@ -33,7 +33,7 @@
       "executor": "@nrwl/jest:jest",
       "outputs": ["coverage/packages/reporter"],
       "options": {
-        "jestConfig": "packages/reporter/jest.config.js",
+        "jestConfig": "packages/reporter/jest.config.ts",
         "passWithNoTests": true
       }
     },

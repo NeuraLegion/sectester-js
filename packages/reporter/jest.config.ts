@@ -1,5 +1,6 @@
-module.exports = {
-  displayName: 'bus',
+/* eslint-disable */
+export default {
+  displayName: 'reporter',
   preset: '../../jest.preset.js',
   globals: {
     'ts-jest': {
@@ -11,5 +12,5 @@ module.exports = {
     '^.+\\.[tj]sx?$': 'ts-jest'
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/packages/bus'
+  coverageDirectory: '../../coverage/packages/reporter'
 };

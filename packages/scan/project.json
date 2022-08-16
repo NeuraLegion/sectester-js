@@ -1,5 +1,5 @@
 {
-  "root": "packages/scan",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/scan/src",
   "projectType": "library",
   "targets": {
@@ -33,7 +33,7 @@
       "executor": "@nrwl/jest:jest",
       "outputs": ["coverage/packages/scan"],
       "options": {
-        "jestConfig": "packages/scan/jest.config.js",
+        "jestConfig": "packages/scan/jest.config.ts",
         "passWithNoTests": true
       }
     },

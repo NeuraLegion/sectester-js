@@ -1,5 +1,6 @@
-module.exports = {
-  displayName: 'core',
+/* eslint-disable */
+export default {
+  displayName: 'repeater',
   preset: '../../jest.preset.js',
   globals: {
     'ts-jest': {
@@ -11,5 +12,5 @@ module.exports = {
     '^.+\\.[tj]sx?$': 'ts-jest'
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/packages/core'
+  coverageDirectory: '../../coverage/packages/repeater'
 };
