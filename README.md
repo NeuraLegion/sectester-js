@@ -84,7 +84,10 @@ $ yarn add @sectester/runner  \
 
 ### Usage examples
 
-Full configuration & usage examples can be found in our [demo project](https://github.com/NeuraLegion/sectester-js-demo).
+Full configuration & usage examples can be found in:
+
+- [Nest.js Demo](https://github.com/NeuraLegion/sectester-js-demo).
+- [Broken Crystals Demo](https://github.com/NeuraLegion/sectester-js-demo-broken-crystals).
 
 ## Documentation & Help
 
