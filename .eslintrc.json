@@ -99,10 +99,10 @@
             "selector": "function",
             "format": ["PascalCase", "camelCase"]
           },
-          {
-            "selector": "variable",
-            "format": ["camelCase", "UPPER_CASE", "PascalCase", "snake_case"]
-          },
+          { "selector": "variable", "format": ["camelCase", "UPPER_CASE", "PascalCase"], "leadingUnderscore": "forbid" },
+          { "selector": "objectLiteralProperty",
+            "format": [],
+            "modifiers": ["requiresQuotes"] },
           {
             "selector": "method",
             "format": ["camelCase", "PascalCase"],
@@ -110,7 +110,7 @@
           },
           {
             "selector": "property",
-            "format": ["camelCase", "UPPER_CASE", "PascalCase", "snake_case"],
+            "format": ["camelCase", "UPPER_CASE", "snake_case"],
             "leadingUnderscore": "allow"
           },
           // https://github.com/typescript-eslint/typescript-eslint/issues/1510#issuecomment-580593245
@@ -256,6 +256,12 @@
       "rules": {
         "jest/prefer-expect-resolves": "error",
         "jest/prefer-todo": "error",
+        "jest/expect-expect": [
+          "warn",
+          {
+            "assertFunctionNames": ["expect", "verify"]
+          }
+        ],
         "import/no-extraneous-dependencies": [
           "error",
           {

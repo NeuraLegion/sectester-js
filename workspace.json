@@ -7,5 +7,6 @@
     "reporter": "packages/reporter",
     "runner": "packages/runner",
     "scan": "packages/scan"
-  }
+  },
+  "$schema": "./node_modules/nx/schemas/workspace-schema.json"
 }

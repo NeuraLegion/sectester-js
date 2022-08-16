@@ -95,6 +95,7 @@ describe('RMQEventBus', () => {
 
   beforeEach(() => {
     jest.mock('amqp-connection-manager', () => ({
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       AmqpConnectionManagerClass:
         mockedConnectionManagerConstructor.mockImplementation(() =>
           instance(mockedConnectionManager)
