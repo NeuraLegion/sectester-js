@@ -69,7 +69,7 @@ describe('WsRequestRunner', () => {
     });
 
     it('should fail sending request by timeout', async () => {
-      when(spiedExecutorOptions.timeout).thenReturn(1);
+      when(spiedExecutorOptions.timeout).thenReturn(100);
 
       const url = `ws://localhost:${wsPort}`;
       const request = new Request({ url, headers: {} });
