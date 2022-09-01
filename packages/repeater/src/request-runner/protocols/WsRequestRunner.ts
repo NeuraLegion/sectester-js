@@ -76,7 +76,7 @@ export class WsRequestRunner implements RequestRunner {
     return new WebSocket(options.url, {
       agent: this.agent,
       rejectUnauthorized: false,
-      timeout: this.options.timeout,
+      handshakeTimeout: this.options.timeout,
       headers: this.normalizeHeaders(options.headers)
     });
   }
