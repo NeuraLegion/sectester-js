@@ -34,6 +34,6 @@
   ],
   "secTester": {
     "name": "sectester-js",
-    "repeaterVersion": "8.8.0"
+    "repeaterVersion": "9.0.0"
   }
 }
