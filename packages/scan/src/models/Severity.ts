@@ -1,4 +1,5 @@
 export enum Severity {
+  CRITICAL = 'Critical',
   MEDIUM = 'Medium',
   HIGH = 'High',
   LOW = 'Low'
@@ -8,9 +9,11 @@ export const severityRanges = new Map(
   Object.values(Severity).map(severity => {
     switch (severity) {
       case Severity.MEDIUM:
-        return [severity, [Severity.MEDIUM, Severity.HIGH]];
+        return [severity, [Severity.MEDIUM, Severity.HIGH, Severity.CRITICAL]];
       case Severity.HIGH:
-        return [severity, [Severity.HIGH]];
+        return [severity, [Severity.HIGH, Severity.CRITICAL]];
+      case Severity.CRITICAL:
+        return [severity, [Severity.CRITICAL]];
       case Severity.LOW:
         return [severity, Object.values(Severity)];
     }
@@ -25,6 +28,8 @@ export function severityToNumber(s: Severity): number {
       return 2;
     case Severity.HIGH:
       return 3;
+    case Severity.CRITICAL:
+      return 4;
     default:
       throw new Error('Unknown severity value');
   }

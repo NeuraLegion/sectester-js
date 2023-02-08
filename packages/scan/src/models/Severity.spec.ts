@@ -38,7 +38,8 @@ describe('Severity', () => {
     it.each([
       { input: Severity.LOW, expected: 1 },
       { input: Severity.MEDIUM, expected: 2 },
-      { input: Severity.HIGH, expected: 3 }
+      { input: Severity.HIGH, expected: 3 },
+      { input: Severity.CRITICAL, expected: 4 }
     ])(
       'should return a number representation for $input',
       ({ input, expected }) => {
@@ -51,7 +52,7 @@ describe('Severity', () => {
     );
 
     it('should raise an error if supplied input is invalid', () => {
-      const input = 'Critical';
+      const input = 'Invalid';
 
       // act & assert
       expect(() => severityToNumber(input as unknown as Severity)).toThrow(

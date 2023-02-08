@@ -9,6 +9,7 @@ export class StdReporter implements Reporter {
     Severity,
     (...x: unknown[]) => string
   > = {
+    [Severity.CRITICAL]: chalk.redBright,
     [Severity.HIGH]: chalk.red,
     [Severity.MEDIUM]: chalk.yellow,
     [Severity.LOW]: chalk.blue
@@ -19,6 +20,7 @@ export class StdReporter implements Reporter {
     (...x: unknown[]) => void
   > = {
     /* eslint-disable no-console */
+    [Severity.CRITICAL]: console.error,
     [Severity.HIGH]: console.error,
     [Severity.MEDIUM]: console.warn,
     [Severity.LOW]: console.log
