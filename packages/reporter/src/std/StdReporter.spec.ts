@@ -30,6 +30,15 @@ const lowSeverityIssue: Partial<Issue> = {
   severity: Severity.LOW
 };
 
+const criticalSeverityIssue: Partial<Issue> = {
+  name: 'd',
+  request: {
+    method: HttpMethod.GET,
+    url: 'v'
+  },
+  severity: Severity.CRITICAL
+};
+
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const tableRowRegex = (...columnTexts: string[]) =>
@@ -60,6 +69,19 @@ describe('StdReporter', () => {
   });
 
   describe('report', () => {
+    it('should log critical severity issue to stderr', async () => {
+      when(mockedScan.issues()).thenResolve([criticalSeverityIssue] as Issue[]);
+
+      await reporter.report(instance(mockedScan));
+
+      /* eslint-disable no-console */
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringMatching('Found 1 Critical severity issue')
+      );
+      expect(console.warn).not.toHaveBeenCalled();
+      /* eslint-enable no-console */
+    });
+
     it('should log high severity issue to stderr', async () => {
       when(mockedScan.issues()).thenResolve([highSeverityIssue] as Issue[]);
 

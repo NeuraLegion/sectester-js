@@ -33,7 +33,7 @@ export class StdReporter implements Reporter {
       return;
     }
 
-    [Severity.HIGH, Severity.MEDIUM, Severity.LOW].forEach(
+    [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM, Severity.LOW].forEach(
       (severity: Severity) => {
         const message = this.formatFindingsMessage(issues, severity);
         if (message) {
