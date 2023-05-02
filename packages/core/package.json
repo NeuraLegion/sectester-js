@@ -1,6 +1,6 @@
 {
   "name": "@sectester/core",
-  "version": "0.18.0",
+  "version": "0.18.1",
   "description": "The core package can be used to obtain a config including credentials from different sources, and provide a simplified abstraction to handle events and commands.",
   "repository": {
     "type": "git",
