@@ -1,5 +1,4 @@
-import './register';
-
+export * from './protocols';
 export * from './Request';
 export * from './RequestRunner';
 export * from './RequestRunnerOptions';
