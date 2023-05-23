@@ -1,6 +1,11 @@
 import 'reflect-metadata';
 import { RepeaterFactory } from './RepeaterFactory';
-import { RequestRunnerOptions } from '../request-runner';
+import {
+  HttpRequestRunner,
+  RequestRunner,
+  RequestRunnerOptions,
+  WsRequestRunner
+} from '../request-runner';
 import { Repeater } from './Repeater';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
@@ -186,6 +191,29 @@ describe('RepeaterFactory', () => {
                 'application/graphql'
               ]
             }
+          })
+        )
+      ).once();
+    });
+
+    it('should register default request runners', async () => {
+      const factory = new RepeaterFactory(configuration);
+
+      await factory.createRepeater();
+
+      verify(
+        mockedChildeContainer.register(
+          RequestRunner,
+          deepEqual({
+            useClass: HttpRequestRunner
+          })
+        )
+      ).once();
+      verify(
+        mockedChildeContainer.register(
+          RequestRunner,
+          deepEqual({
+            useClass: WsRequestRunner
           })
         )
       ).once();

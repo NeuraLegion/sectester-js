@@ -1,5 +1,10 @@
 import { Repeater } from './Repeater';
-import { RequestRunnerOptions } from '../request-runner';
+import {
+  HttpRequestRunner,
+  RequestRunner,
+  RequestRunnerOptions,
+  WsRequestRunner
+} from '../request-runner';
 import { RepeaterOptions } from './RepeaterOptions';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
@@ -47,15 +52,19 @@ export class RepeaterFactory {
   }
 
   public async createRepeater(
-    { namePrefix, description, requestRunnerOptions }: RepeaterOptions = {
+    {
+      namePrefix,
+      description,
+      requestRunnerOptions,
+      requestRunners = [HttpRequestRunner, WsRequestRunner]
+    }: RepeaterOptions = {
       namePrefix: `sectester`
     }
   ): Promise<Repeater> {
     if (namePrefix && namePrefix.length > 44) {
       throw new Error('Name prefix must be less than 44 characters.');
     }
-
-    this.registerRequestRunnerOptions(requestRunnerOptions);
+    this.registerRequestRunners(requestRunners, requestRunnerOptions);
 
     const { repeaterId } = await this.repeatersManager.createRepeater({
       name: `${namePrefix}-${uuidv4()}`,
@@ -73,6 +82,17 @@ export class RepeaterFactory {
     });
   }
 
+  private registerRequestRunners(
+    requestRunners: (
+      | RequestRunner
+      | { new (...args: unknown[]): RequestRunner }
+    )[],
+    requestRunnerOptions?: RequestRunnerOptions | undefined
+  ): void {
+    this.registerRequestRunnerOptions(requestRunnerOptions);
+    requestRunners?.forEach(runner => this.registerRequestRunner(runner));
+  }
+
   private registerRequestRunnerOptions(
     options: RequestRunnerOptions | undefined
   ): void {
@@ -82,5 +102,19 @@ export class RepeaterFactory {
         ...(options ?? {})
       }
     });
+  }
+
+  private registerRequestRunner(
+    runner: RequestRunner | { new (...args: unknown[]): RequestRunner }
+  ): void {
+    if (typeof runner === 'function') {
+      this.container.register(RequestRunner, {
+        useClass: runner
+      });
+    } else {
+      this.container.register(RequestRunner, {
+        useValue: runner
+      });
+    }
   }
 }
