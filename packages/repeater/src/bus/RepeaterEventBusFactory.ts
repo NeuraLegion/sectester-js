@@ -1,7 +1,17 @@
+import 'reflect-metadata';
 import { EventBusFactory } from './EventBusFactory';
 import { autoInjectable, DependencyContainer, inject } from 'tsyringe';
-import { Configuration, EventBus, RetryStrategy } from '@sectester/core';
-import { RMQEventBus, RMQEventBusConfig } from '@sectester/bus';
+import {
+  Configuration,
+  EventBus,
+  Logger,
+  RetryStrategy
+} from '@sectester/core';
+import {
+  RMQEventBus,
+  RMQEventBusConfig,
+  RMQConnectionManager
+} from '@sectester/bus';
 
 @autoInjectable()
 export class RepeaterEventBusFactory implements EventBusFactory {
@@ -11,13 +21,7 @@ export class RepeaterEventBusFactory implements EventBusFactory {
     @inject(RetryStrategy) private readonly retryStrategy: RetryStrategy
   ) {}
 
-  public async create(
-    repeaterId: string,
-    options: Omit<
-      RMQEventBusConfig,
-      'url' | 'appQueue' | 'clientQueue' | 'exchange' | 'credentials'
-    > = {}
-  ): Promise<EventBus> {
+  public async create(repeaterId: string): Promise<EventBus> {
     await this.config.loadCredentials();
 
     if (!this.config.credentials) {
@@ -26,18 +30,24 @@ export class RepeaterEventBusFactory implements EventBusFactory {
       );
     }
 
+    // ADHOC: special handling of async providers
+    // For details please see: https://github.com/microsoft/tsyringe/issues/66
+    const connection = await this.container.resolve<
+      Promise<RMQConnectionManager>
+    >(RMQConnectionManager);
+
     const busConfig: RMQEventBusConfig = {
-      ...options,
-      url: this.config.bus,
       exchange: 'EventBus',
       appQueue: 'app',
-      clientQueue: `agent:${repeaterId}`,
-      credentials: {
-        username: 'bot',
-        password: this.config.credentials.token ?? ''
-      }
+      clientQueue: `agent:${repeaterId}`
     };
 
-    return new RMQEventBus(this.container, this.retryStrategy, busConfig);
+    return new RMQEventBus(
+      this.container,
+      this.container.resolve(Logger),
+      this.retryStrategy,
+      busConfig,
+      connection
+    );
   }
 }

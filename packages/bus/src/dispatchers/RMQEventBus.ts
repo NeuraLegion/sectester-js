@@ -1,4 +1,5 @@
 import { RMQEventBusConfig } from './RMQEventBusConfig';
+import { RMQConnectionManager } from './RMQConnectionManager';
 import {
   Command,
   Event,
@@ -14,11 +15,7 @@ import {
 } from '@sectester/core';
 import type { Channel, ConsumeMessage } from 'amqplib';
 import { autoInjectable, DependencyContainer, inject } from 'tsyringe';
-import type {
-  AmqpConnectionManager,
-  AmqpConnectionManagerOptions,
-  ChannelWrapper
-} from 'amqp-connection-manager';
+import type { ChannelWrapper } from 'amqp-connection-manager';
 import { EventEmitter, once } from 'events';
 
 interface ParsedConsumeMessage<T = unknown> {
@@ -46,10 +43,6 @@ interface Binding<T, R> {
 @autoInjectable()
 export class RMQEventBus implements EventBus {
   private channel: ChannelWrapper | undefined;
-  private client: AmqpConnectionManager | undefined;
-
-  private readonly DEFAULT_RECONNECT_TIME = 20;
-  private readonly DEFAULT_HEARTBEAT_INTERVAL = 30;
 
   private readonly subject = new EventEmitter({ captureRejections: true });
   private readonly handlers = new Map<
@@ -59,35 +52,28 @@ export class RMQEventBus implements EventBus {
   private readonly consumerTags: string[] = [];
 
   private readonly REPLY_QUEUE_NAME = 'amq.rabbitmq.reply-to';
-  private readonly logger: Logger;
 
   constructor(
     private readonly container: DependencyContainer,
+    private readonly logger: Logger,
     @inject(RetryStrategy)
     private readonly retryStrategy: RetryStrategy,
-    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig
+    @inject(RMQEventBusConfig) private readonly options: RMQEventBusConfig,
+    @inject(RMQConnectionManager)
+    private readonly connectionManager: RMQConnectionManager
   ) {
-    this.logger = container.resolve(Logger);
     this.subject.setMaxListeners(Infinity);
   }
 
   public async init(): Promise<void> {
-    if (!this.client) {
-      const url = this.buildUrl();
-      const options = this.buildOptions();
+    if (!this.channel) {
+      this.channel = this.connectionManager.createChannel();
 
-      this.client = new (
-        await import('amqp-connection-manager')
-      ).AmqpConnectionManagerClass(url, options);
-
-      await this.client.connect({
-        timeout:
-          (this.options.connectTimeout ?? this.DEFAULT_RECONNECT_TIME) * 1000
+      await this.channel.addSetup(async (channel: Channel) => {
+        await this.bindExchangesToQueue(channel);
+        await this.startBasicConsume(channel);
+        await this.startReplyQueueConsume(channel);
       });
-
-      await this.createConsumerChannel();
-
-      this.logger.debug('Event bus connected to %s', this.options.url);
     }
   }
 
@@ -163,17 +149,10 @@ export class RMQEventBus implements EventBus {
         await this.channel.close();
       }
 
-      if (this.client) {
-        await (this.client as unknown as EventEmitter).removeAllListeners();
-        await this.client.close();
-      }
-
       delete this.channel;
-      delete this.client;
 
       this.consumerTags.splice(0, this.consumerTags.length);
       this.subject.removeAllListeners();
-      this.logger.debug('Event bus disconnected from %s', this.options.url);
     } catch (e) {
       this.logger.error('Cannot terminate event bus gracefully');
       this.logger.debug('Event bus terminated');
@@ -290,19 +269,6 @@ export class RMQEventBus implements EventBus {
 
   private reflectEventsNames(handlerType: EventHandlerConstructor): string[] {
     return Reflect.getMetadata(Event, handlerType) ?? [];
-  }
-
-  private async createConsumerChannel(): Promise<void> {
-    if (!this.channel && this.client) {
-      this.channel = this.client.createChannel({
-        json: false
-      });
-      await this.channel.addSetup(async (channel: Channel) => {
-        await this.bindExchangesToQueue(channel);
-        await this.startBasicConsume(channel);
-        await this.startReplyQueueConsume(channel);
-      });
-    }
   }
 
   private async startReplyQueueConsume(channel: Channel): Promise<void> {
@@ -461,51 +427,6 @@ export class RMQEventBus implements EventBus {
 
       return { payload, name, correlationId, replyTo };
     }
-  }
-
-  private buildOptions(): AmqpConnectionManagerOptions {
-    const { reconnectTime, heartbeatInterval, credentials } = this.options;
-
-    return {
-      heartbeatIntervalInSeconds:
-        heartbeatInterval ?? this.DEFAULT_HEARTBEAT_INTERVAL,
-      reconnectTimeInSeconds: reconnectTime ?? this.DEFAULT_RECONNECT_TIME,
-      connectionOptions: {
-        ...(credentials
-          ? { credentials: this.createAuthRequest(credentials) }
-          : {})
-      }
-    };
-  }
-
-  private createAuthRequest(plain: { username: string; password: string }): {
-    password: string;
-    response(): Buffer;
-    mechanism: 'PLAIN';
-    username: string;
-  } {
-    return {
-      ...plain,
-      mechanism: 'PLAIN',
-      /* istanbul ignore next */
-      response(): Buffer {
-        return Buffer.from(
-          ['', plain.username, plain.password].join(String.fromCharCode(0))
-        );
-      }
-    };
-  }
-
-  private buildUrl(): string {
-    const url = new URL(this.options.url);
-
-    const { frameMax } = this.options;
-
-    if (frameMax !== null && frameMax !== undefined) {
-      url.searchParams.append('frameMax', frameMax.toString(10));
-    }
-
-    return url.toString();
   }
 
   private getChannel(): NonNullable<ChannelWrapper> {

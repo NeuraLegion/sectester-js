@@ -246,9 +246,11 @@ describe('Repeater', () => {
       let terminationCallback!: () => Promise<unknown>;
 
       beforeEach(() => {
-        when(spiedProcess.on('SIGTERM', anything())).thenCall((_, callback) => {
-          terminationCallback = callback;
-        });
+        when(spiedProcess.once('SIGTERM', anything())).thenCall(
+          (_, callback) => {
+            terminationCallback = callback;
+          }
+        );
         repeater = createRepater();
       });
 
