@@ -1,11 +1,18 @@
 import { HttpRequest } from '@sectester/bus';
 
-interface CreateRepeaterRequestPayload {
+export interface CreateRepeaterRequestPayload {
   name: string;
   description?: string;
 }
 
-export class CreateRepeaterRequest extends HttpRequest<CreateRepeaterRequestPayload> {
+export interface CreateRepeaterResponsePayload {
+  id: string;
+}
+
+export class CreateRepeaterRequest extends HttpRequest<
+  CreateRepeaterRequestPayload,
+  CreateRepeaterResponsePayload
+> {
   constructor(payload: CreateRepeaterRequestPayload) {
     super({
       payload,

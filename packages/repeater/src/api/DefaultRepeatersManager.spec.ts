@@ -1,9 +1,5 @@
 import 'reflect-metadata';
-import {
-  CreateRepeaterRequest,
-  DeleteRepeaterRequest,
-  ListRepeatersRequest
-} from './commands';
+import { CreateRepeaterRequest, DeleteRepeaterRequest } from './commands';
 import { DefaultRepeatersManager } from './DefaultRepeatersManager';
 import { RepeatersManager } from './RepeatersManager';
 import { CommandDispatcher } from '@sectester/core';
@@ -23,33 +19,20 @@ describe('DefaultRepeatersManager', () => {
     it('should create repeater', async () => {
       when(
         mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
-      ).thenResolve();
-
-      when(
-        mockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
-      ).thenResolve([
-        { name: 'bar', id: '142' },
-        {
-          name: 'foo',
-          id: '42'
-        }
-      ]);
+      ).thenResolve({ id: '142' });
 
       const result = await manager.createRepeater({ name: 'foo' });
 
       verify(
         mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
       ).once();
-      expect(result).toMatchObject({ repeaterId: '42' });
+      expect(result).toMatchObject({ repeaterId: '142' });
     });
 
     it('should throw an error if cannot find created repeater', async () => {
       when(
         mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
       ).thenResolve();
-      when(
-        mockedCommandDispatcher.execute(anyOfClass(ListRepeatersRequest))
-      ).thenResolve(null);
 
       const res = manager.createRepeater({ name: 'foo' });
 
