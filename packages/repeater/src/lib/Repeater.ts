@@ -126,7 +126,7 @@ export class Repeater {
 
   private setupShutdown(): void {
     ['SIGTERM', 'SIGINT', 'SIGHUP'].forEach(event => {
-      process.on(event, async () => {
+      process.once(event, async () => {
         try {
           await this.stop();
         } catch (e) {

@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import { RMQEventBus } from './RMQEventBus';
 import { RMQEventBusConfig } from './RMQEventBusConfig';
+import { RMQConnectionManager } from './RMQConnectionManager';
 import {
   bind,
   Command,
@@ -25,7 +26,7 @@ import {
   verify,
   when
 } from 'ts-mockito';
-import { AmqpConnectionManager, ChannelWrapper } from 'amqp-connection-manager';
+import { ChannelWrapper } from 'amqp-connection-manager';
 import { Channel, ConsumeMessage } from 'amqplib';
 import { DependencyContainer } from 'tsyringe';
 
@@ -76,15 +77,13 @@ class ConcreteThirdHandler implements EventHandler<{ foo: string }> {
 }
 
 describe('RMQEventBus', () => {
-  const mockedConnectionManagerConstructor = jest.fn();
-  const mockedConnectionManager = mock<AmqpConnectionManager>();
   const mockedChannelWrapper = mock<ChannelWrapper>();
   const mockedChannel = mock<Channel>();
   const mockedLogger = mock<Logger>();
+  const mockedConnectionManager = mock<RMQConnectionManager>();
   const mockedDependencyContainer = mock<DependencyContainer>();
   const mockedRetryStrategy = mock<RetryStrategy>();
   const options: RMQEventBusConfig = {
-    url: 'amqp://localhost:5672',
     exchange: 'event-bus',
     clientQueue: 'Agent',
     appQueue: 'App'
@@ -94,14 +93,7 @@ describe('RMQEventBus', () => {
   let rmq!: RMQEventBus;
 
   beforeEach(() => {
-    jest.mock('amqp-connection-manager', () => ({
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      AmqpConnectionManagerClass:
-        mockedConnectionManagerConstructor.mockImplementation(() =>
-          instance(mockedConnectionManager)
-        )
-    }));
-    when(mockedConnectionManager.createChannel(anything())).thenReturn(
+    when(mockedConnectionManager.createChannel()).thenReturn(
       instance(mockedChannelWrapper)
     );
     when(mockedChannelWrapper.addSetup(anyFunction())).thenCall(
@@ -119,24 +111,25 @@ describe('RMQEventBus', () => {
     );
     rmq = new RMQEventBus(
       instance(mockedDependencyContainer),
+      instance(mockedLogger),
       instance(mockedRetryStrategy),
-      options
+      options,
+      instance(mockedConnectionManager)
     );
   });
 
   afterEach(() => {
-    (rmq as any).handlers.clear();
     reset<
       | ChannelWrapper
-      | AmqpConnectionManager
+      | RMQConnectionManager
       | Channel
       | RMQEventBusConfig
       | Logger
       | DependencyContainer
       | RetryStrategy
     >(
-      mockedConnectionManager,
       mockedChannelWrapper,
+      mockedConnectionManager,
       mockedChannel,
       spiedOptions,
       mockedDependencyContainer,
@@ -301,7 +294,7 @@ describe('RMQEventBus', () => {
   describe('init', () => {
     afterEach(() => jest.useRealTimers());
 
-    it('should skip initialization if client is already initialized', async () => {
+    it('should skip initialization if channel is already initialized', async () => {
       // arrange
       await rmq.init();
 
@@ -309,13 +302,7 @@ describe('RMQEventBus', () => {
       await rmq.init();
 
       // assert
-      verify(
-        mockedConnectionManager.createChannel(
-          deepEqual({
-            json: false
-          })
-        )
-      ).once();
+      verify(mockedConnectionManager.createChannel()).once();
     });
 
     it('should create a channel', async () => {
@@ -323,53 +310,7 @@ describe('RMQEventBus', () => {
       await rmq.init();
 
       // assert
-      verify(
-        mockedConnectionManager.createChannel(
-          deepEqual({
-            json: false
-          })
-        )
-      ).once();
-    });
-
-    it('should set credentials', async () => {
-      // arrange
-      when(spiedOptions.credentials).thenReturn({
-        username: 'user',
-        password: 'pa$$word'
-      });
-
-      // act
-      await rmq.init();
-
-      // assert
-      expect(mockedConnectionManagerConstructor).toHaveBeenCalledWith(
-        'amqp://localhost:5672',
-        expect.objectContaining({
-          connectionOptions: {
-            credentials: {
-              mechanism: 'PLAIN',
-              username: 'user',
-              password: 'pa$$word',
-              response: expect.any(Function)
-            }
-          }
-        })
-      );
-    });
-
-    it('should set max frame as URL query param', async () => {
-      // arrange
-      when(spiedOptions.frameMax).thenReturn(1);
-
-      // act
-      await rmq.init();
-
-      // assert
-      expect(mockedConnectionManagerConstructor).toHaveBeenCalledWith(
-        'amqp://localhost:5672?frameMax=1',
-        expect.anything()
-      );
+      verify(mockedConnectionManager.createChannel()).once();
     });
 
     it('should consume regular messages', async () => {
@@ -440,19 +381,6 @@ describe('RMQEventBus', () => {
       ).once();
       verify(mockedChannel.prefetch(1)).once();
     });
-
-    it('should be disposed if connect timeout is passed', async () => {
-      // arrange
-      when(spiedOptions.connectTimeout).thenReturn(10);
-
-      // act
-      await rmq.init();
-
-      // assert
-      verify(
-        mockedConnectionManager.connect(objectContaining({ timeout: 10000 }))
-      ).once();
-    });
   });
 
   describe('destroy', () => {
@@ -460,20 +388,14 @@ describe('RMQEventBus', () => {
 
     afterEach(() => resetCalls(mockedChannelWrapper));
 
-    it('should remove channel and client', async () => {
-      // arrange
-      when(mockedConnectionManager.close()).thenResolve();
-      when(mockedChannelWrapper.close()).thenResolve();
-
+    it('should remove channel', async () => {
       // act
       await rmq.destroy();
 
       // assert
-      verify(mockedConnectionManager.close()).once();
       verify(mockedChannelWrapper.close()).once();
       expect(rmq).not.toMatchObject({
-        channel: expect.anything(),
-        client: expect.anything()
+        channel: expect.anything()
       });
     });
   });
@@ -495,15 +417,6 @@ describe('RMQEventBus', () => {
     it('should publish an message', async () => {
       // arrange
       const message = new ConcreteEvent({ foo: 'bar' });
-
-      when(
-        mockedChannelWrapper.publish(
-          anyString(),
-          anyString(),
-          anything(),
-          anything()
-        )
-      ).thenReturn();
 
       await rmq.init();
 
@@ -531,15 +444,6 @@ describe('RMQEventBus', () => {
     it('should apply a retry strategy', async () => {
       // arrange
       const message = new ConcreteEvent({ foo: 'bar' });
-
-      when(
-        mockedChannelWrapper.publish(
-          anyString(),
-          anyString(),
-          anything(),
-          anything()
-        )
-      ).thenReturn();
 
       await rmq.init();
 
