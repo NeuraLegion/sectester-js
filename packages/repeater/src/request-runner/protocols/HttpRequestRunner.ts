@@ -89,19 +89,13 @@ export class HttpRequestRunner implements RequestRunner {
   }
 
   private handleRequestError(err: any, options: Request): Response {
-    if (err.response) {
-      const { response } = err;
+    const { cause } = err;
+    const { message, code, syscall, name } = cause ?? err;
+    let errorCode = code ?? syscall ?? name;
 
-      return new Response({
-        protocol: this.protocol,
-        statusCode: response.statusCode,
-        headers: response.headers,
-        body: response.body
-      });
+    if (typeof errorCode !== 'string') {
+      errorCode = Error.name;
     }
-
-    const message = err.cause?.message ?? err.message;
-    const errorCode = err.cause?.code ?? err.error?.syscall ?? err.name;
 
     this.logger.error(
       'Error executing request: "%s %s HTTP/1.1"',
@@ -121,6 +115,7 @@ export class HttpRequestRunner implements RequestRunner {
     const ac = new AbortController();
     const { signal } = ac;
     let timer: NodeJS.Timeout | undefined;
+    let res!: IncomingMessage;
 
     try {
       const req = this.createRequest(options, { signal });
@@ -128,14 +123,14 @@ export class HttpRequestRunner implements RequestRunner {
       timer = this.setTimeout(ac);
       process.nextTick(() => req.end(options.body));
 
-      const [res]: [IncomingMessage] = (await once(req, 'response', {
+      [res] = (await once(req, 'response', {
         signal
       })) as [IncomingMessage];
-
-      return await this.truncateResponse(res);
     } finally {
       clearTimeout(timer);
     }
+
+    return this.truncateResponse(res);
   }
 
   private createRequest(
