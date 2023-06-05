@@ -113,6 +113,19 @@ describe('HttpRequestRunner', () => {
       });
     });
 
+    it('should handle timeout', async () => {
+      const { request, requestOptions } = createRequest();
+      nock(requestOptions.url).get('/').delayBody(2).reply(204);
+      const runner = setupRunner({ timeout: 1 });
+
+      const response = await runner.run(request);
+
+      expect(response).toMatchObject({
+        errorCode: 'Error',
+        message: 'This operation was aborted'
+      });
+    });
+
     it('should handle non-HTTP errors', async () => {
       const runner = setupRunner({}, new Logger(LogLevel.SILENT));
       const { request } = createRequest();
