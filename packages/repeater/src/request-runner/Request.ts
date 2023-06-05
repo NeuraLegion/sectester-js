@@ -1,14 +1,17 @@
+import { Protocol } from '../models';
 import { URL } from 'url';
 
 export interface RequestOptions {
-  method?: string;
+  protocol: Protocol;
   url: string;
-  headers: Record<string, string | string[]>;
+  method?: string;
+  headers?: Record<string, string | string[]>;
   body?: string;
   correlationIdRegex?: string | RegExp;
 }
 
 export class Request {
+  public readonly protocol: Protocol;
   public readonly url: string;
   public readonly body?: string;
   public readonly correlationIdRegex?: RegExp;
@@ -19,27 +22,31 @@ export class Request {
     return this._method;
   }
 
-  private _headers: Record<string, string | string[]>;
+  private _headers?: Record<string, string | string[]>;
 
-  get headers(): Readonly<Record<string, string | string[]>> {
+  get headers(): Readonly<Record<string, string | string[]>> | undefined {
     return this._headers;
   }
 
+  get secureEndpoint(): boolean {
+    return this.url.startsWith('https');
+  }
+
   constructor({
+    protocol,
     method,
     url,
     body,
     correlationIdRegex,
     headers = {}
-  }: Omit<RequestOptions, 'headers'> & {
-    headers?: Record<string, string | string[]>;
-  }) {
+  }: RequestOptions) {
+    this.protocol = protocol;
     this._method = method?.toUpperCase() ?? 'GET';
-    this.url = this.normalizeUrl(url);
+    this.validateUrl(url);
+    this.url = url;
     this.correlationIdRegex =
       this.normalizeCorrelationIdRegex(correlationIdRegex);
     this._headers = headers;
-
     this.precheckBody(body);
     this.body = body;
   }
@@ -51,13 +58,9 @@ export class Request {
     };
   }
 
-  private normalizeUrl(url: string): string {
-    if (!url) {
-      throw new Error('Url must be declared explicitly.');
-    }
-
+  private validateUrl(url: string): void {
     try {
-      return new URL(url).toString();
+      new URL(url);
     } catch {
       throw new Error('Invalid URL.');
     }
