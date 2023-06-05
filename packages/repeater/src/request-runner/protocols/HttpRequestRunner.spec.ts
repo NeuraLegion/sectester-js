@@ -7,14 +7,14 @@ import 'reflect-metadata';
 import { anything, spy, verify, when } from 'ts-mockito';
 import { Logger, LogLevel } from '@sectester/core';
 import { SocksProxyAgent } from 'socks-proxy-agent';
-import { constants, gzip } from 'zlib';
+import { brotliCompress, constants, gzip } from 'zlib';
 import { promisify } from 'util';
 
 const createRequest = (options: Partial<RequestOptions> = {}) => {
   const requestOptions = {
+    protocol: Protocol.HTTP,
     url: 'https://foo.bar',
     method: 'GET',
-    headers: {},
     ...options
   };
   const request = new Request(requestOptions);
@@ -75,6 +75,22 @@ describe('HttpRequestRunner', () => {
       const runner = setupRunner();
       const { request, requestOptions } = createRequest();
       nock(requestOptions.url).get('/').reply(200, {});
+
+      const response = await runner.run(request);
+
+      expect(response).toMatchObject({
+        statusCode: 200,
+        body: {}
+      });
+    });
+
+    it('should preserve directory traversal', async () => {
+      const runner = setupRunner();
+      const path = 'public/../../../../../../etc/passwd';
+      const { request } = createRequest({
+        url: `http://localhost:8080/${path}`
+      });
+      nock('http://localhost:8080').get(`/${path}`).reply(200, {});
 
       const response = await runner.run(request);
 
@@ -151,6 +167,24 @@ describe('HttpRequestRunner', () => {
       nock(requestOptions.url).get('/').reply(200, bigBody, {
         'content-type': 'text/plain',
         'content-encoding': 'gzip'
+      });
+
+      const response = await runner.run(request);
+
+      expect(response.body).toEqual(expected);
+    });
+
+    it('should decode response body if content-encoding is brotli', async () => {
+      const runner = setupRunner({
+        maxContentLength: 1,
+        allowedMimes: ['text/plain']
+      });
+      const { request, requestOptions } = createRequest();
+      const expected = 'x'.repeat(1025);
+      const bigBody = await promisify(brotliCompress)(expected);
+      nock(requestOptions.url).get('/').reply(200, bigBody, {
+        'content-type': 'text/plain',
+        'content-encoding': 'br'
       });
 
       const response = await runner.run(request);

@@ -55,7 +55,12 @@ describe('WsRequestRunner', () => {
       const url = `ws://localhost:${wsPort}`;
       const headers = {};
       const body = 'test request body';
-      const request = new Request({ url, headers, body });
+      const request = new Request({
+        url,
+        headers,
+        body,
+        protocol: Protocol.WS
+      });
 
       server.on('connection', socket => {
         socket.on('message', data => {
@@ -72,7 +77,7 @@ describe('WsRequestRunner', () => {
       when(spiedExecutorOptions.timeout).thenReturn(100);
 
       const url = `ws://localhost:${wsPort}`;
-      const request = new Request({ url, headers: {} });
+      const request = new Request({ url, protocol: Protocol.WS, headers: {} });
 
       const response = await runner.run(request);
 
@@ -92,7 +97,7 @@ describe('WsRequestRunner', () => {
       WsRequestRunner.FORBIDDEN_HEADERS.forEach(
         headerName => (headers[headerName] = 'forbidden-header-value')
       );
-      const request = new Request({ url, headers });
+      const request = new Request({ url, headers, protocol: Protocol.WS });
 
       server.on('connection', (socket, req) => {
         WsRequestRunner.FORBIDDEN_HEADERS.forEach(headerName => {
@@ -112,7 +117,7 @@ describe('WsRequestRunner', () => {
     it('should get the response from server', async () => {
       const url = `ws://localhost:${wsPort}`;
       const data = 'test reply';
-      const request = new Request({ url, headers: {} });
+      const request = new Request({ url, headers: {}, protocol: Protocol.WS });
 
       server.on('connection', socket => {
         socket.on('message', () => {

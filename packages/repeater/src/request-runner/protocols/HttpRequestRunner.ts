@@ -1,19 +1,31 @@
-import { Request } from '../Request';
 import { RequestRunner } from '../RequestRunner';
-import { RequestRunnerOptions } from '../RequestRunnerOptions';
-import { Response } from '../Response';
 import { Protocol } from '../../models';
+import { RequestRunnerOptions } from '../RequestRunnerOptions';
+import { Request } from '../Request';
+import { Response } from '../Response';
+import { parse as parseMimetype } from 'content-type';
 import { Logger } from '@sectester/core';
-import request from 'request-promise';
-import { Response as IncomingResponse } from 'request';
 import { SocksProxyAgent } from 'socks-proxy-agent';
-import { inject, injectable } from 'tsyringe';
-import { parse as contentTypeParse } from 'content-type';
-import { parse } from 'url';
-import http, { OutgoingMessage } from 'http';
-import https, { AgentOptions } from 'https';
+import { inject } from 'tsyringe';
+import { parse as parseUrl } from 'url';
+import { once } from 'events';
+import https, { RequestOptions } from 'https';
+import http, {
+  AgentOptions,
+  ClientRequest,
+  IncomingMessage,
+  OutgoingMessage
+} from 'http';
+import {
+  constants,
+  createBrotliDecompress,
+  createGunzip,
+  createInflate
+} from 'zlib';
+import { Readable } from 'stream';
 
-@injectable()
+type IncomingResponse = IncomingMessage & { body?: string };
+
 export class HttpRequestRunner implements RequestRunner {
   private readonly proxy?: SocksProxyAgent;
   private readonly httpAgent?: http.Agent;
@@ -31,7 +43,7 @@ export class HttpRequestRunner implements RequestRunner {
   ) {
     if (this.options.proxyUrl) {
       this.proxy = new SocksProxyAgent({
-        ...parse(this.options.proxyUrl)
+        ...parseUrl(this.options.proxyUrl)
       });
     }
 
@@ -106,34 +118,95 @@ export class HttpRequestRunner implements RequestRunner {
   }
 
   private async request(options: Request): Promise<IncomingResponse> {
-    const res = await request({
-      agent: this.getRequestAgent(options),
-      body: options.body,
-      followRedirect: false,
-      gzip: true,
-      method: options.method,
-      resolveWithFullResponse: true,
-      strictSSL: false,
-      rejectUnauthorized: false,
+    const ac = new AbortController();
+    const { signal } = ac;
+    let timer: NodeJS.Timeout | undefined;
+
+    try {
+      const req = this.createRequest(options, { signal });
+
+      timer = this.setTimeout(ac);
+      process.nextTick(() => req.end(options.body));
+
+      const [res]: [IncomingMessage] = (await once(req, 'response', {
+        signal
+      })) as [IncomingMessage];
+
+      return await this.truncateResponse(res);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private createRequest(
+    request: Request,
+    options?: { signal?: AbortSignal }
+  ): ClientRequest {
+    const protocol = request.secureEndpoint ? https : http;
+    const outgoingMessage = protocol.request(
+      this.createRequestOptions(request, options)
+    );
+    this.setHeaders(outgoingMessage, request);
+
+    if (!outgoingMessage.hasHeader('accept-encoding')) {
+      outgoingMessage.setHeader('accept-encoding', 'gzip, deflate');
+    }
+
+    return outgoingMessage;
+  }
+
+  private setTimeout(ac: AbortController): NodeJS.Timeout | undefined {
+    if (typeof this.options.timeout === 'number') {
+      return setTimeout(
+        () => ac.abort(/*'Waiting response has timed out'*/),
+        this.options.timeout
+      );
+    }
+  }
+
+  private createRequestOptions(
+    request: Request,
+    options?: { signal?: AbortSignal }
+  ): RequestOptions {
+    const {
+      auth,
+      hostname,
+      port,
+      hash = '',
+      pathname = '/',
+      search = ''
+    } = parseUrl(request.url);
+    const path = `${pathname ?? '/'}${search ?? ''}${hash ?? ''}`;
+    const agent = this.getRequestAgent(request);
+
+    return {
+      ...options,
+      hostname,
+      port,
+      path,
+      auth,
+      agent,
+      method: request.method,
       timeout: this.options.timeout,
-      url: options.url
-    }).on('request', (req: OutgoingMessage) => this.setHeaders(req, options));
-
-    this.truncateResponse(res);
-
-    return res;
+      rejectUnauthorized: false
+    };
   }
 
   private getRequestAgent(options: Request) {
     return (
-      this.proxy ??
-      (options.url.startsWith('https') ? this.httpsAgent : this.httpAgent)
+      this.proxy ?? (options.secureEndpoint ? this.httpsAgent : this.httpAgent)
     );
   }
 
-  private truncateResponse(res: IncomingResponse): void {
-    if (res.statusCode === 204 || res.method === 'HEAD') {
-      return;
+  private async truncateResponse(
+    res: IncomingResponse
+  ): Promise<IncomingResponse> {
+    if (this.responseHasNoBody(res)) {
+      this.logger.debug('The response does not contain any body.');
+
+      res.body = '';
+
+      return res;
     }
 
     const type = this.parseContentType(res);
@@ -142,17 +215,19 @@ export class HttpRequestRunner implements RequestRunner {
       (mime: string) => type.startsWith(mime)
     );
 
-    const body = this.parseBody(res, { maxBodySize, requiresTruncating });
+    const body = await this.parseBody(res, { maxBodySize, requiresTruncating });
 
     res.body = body.toString();
     res.headers['content-length'] = String(body.byteLength);
+
+    return res;
   }
 
-  private parseContentType(res: IncomingResponse): string {
+  private parseContentType(res: IncomingMessage): string {
     let type = res.headers['content-type'] || 'text/plain';
 
     try {
-      ({ type } = contentTypeParse(type));
+      ({ type } = parseMimetype(type));
     } catch {
       // noop
     }
@@ -160,11 +235,56 @@ export class HttpRequestRunner implements RequestRunner {
     return type;
   }
 
-  private parseBody(
-    res: IncomingResponse,
+  private unzipBody(response: IncomingMessage): Readable {
+    let body: Readable = response;
+
+    if (!this.responseHasNoBody(response)) {
+      let contentEncoding = response.headers['content-encoding'] || 'identity';
+      contentEncoding = contentEncoding.trim().toLowerCase();
+
+      // Always using Z_SYNC_FLUSH is what cURL does.
+      const zlibOptions = {
+        flush: constants.Z_SYNC_FLUSH,
+        finishFlush: constants.Z_SYNC_FLUSH
+      };
+
+      switch (contentEncoding) {
+        case 'gzip':
+          body = response.pipe(createGunzip(zlibOptions));
+          break;
+        case 'deflate':
+          body = response.pipe(createInflate(zlibOptions));
+          break;
+        case 'br':
+          body = response.pipe(createBrotliDecompress());
+          break;
+      }
+    }
+
+    return body;
+  }
+
+  private responseHasNoBody(response: IncomingMessage): boolean {
+    return (
+      response.method === 'HEAD' ||
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      (response.statusCode! >= 100 && response.statusCode! < 200) ||
+      response.statusCode === 204 ||
+      response.statusCode === 304
+    );
+  }
+
+  private async parseBody(
+    res: IncomingMessage,
     options: { maxBodySize: number; requiresTruncating: boolean }
-  ): Buffer {
-    let body = Buffer.from(res.body);
+  ): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+
+    for await (const chuck of this.unzipBody(res)) {
+      chunks.push(chuck);
+    }
+
+    let body = Buffer.concat(chunks);
 
     const truncated =
       this.maxContentLength !== -1 &&
@@ -177,7 +297,7 @@ export class HttpRequestRunner implements RequestRunner {
         options.maxBodySize
       );
 
-      body = body.slice(0, options.maxBodySize);
+      body = body.subarray(0, options.maxBodySize);
     }
 
     return body;

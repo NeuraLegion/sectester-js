@@ -77,7 +77,7 @@ export class WsRequestRunner implements RequestRunner {
       agent: this.agent,
       rejectUnauthorized: false,
       handshakeTimeout: this.options.timeout,
-      headers: this.normalizeHeaders(options.headers)
+      headers: this.normalizeHeaders(options.headers ?? {})
     });
   }
 
