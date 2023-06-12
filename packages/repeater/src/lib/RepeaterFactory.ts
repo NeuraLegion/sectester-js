@@ -58,7 +58,7 @@ export class RepeaterFactory {
       requestRunnerOptions,
       requestRunners = [HttpRequestRunner, WsRequestRunner]
     }: RepeaterOptions = {
-      namePrefix: `sectester`
+      namePrefix: 'sectester'
     }
   ): Promise<Repeater> {
     if (namePrefix && namePrefix.length > 44) {
@@ -67,8 +67,8 @@ export class RepeaterFactory {
     this.registerRequestRunners(requestRunners, requestRunnerOptions);
 
     const { repeaterId } = await this.repeatersManager.createRepeater({
-      name: `${namePrefix}-${uuidv4()}`,
-      description
+      description,
+      name: `${namePrefix}-${uuidv4()}`
     });
 
     const bus = await this.eventBusFactory.create(repeaterId);

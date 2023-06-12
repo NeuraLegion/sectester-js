@@ -1,8 +1,17 @@
 import { SecRunner } from './SecRunner';
 import { SecScan } from './SecScan';
-import { Configuration } from '@sectester/core';
+import { Configuration, Logger } from '@sectester/core';
 import { TestType } from '@sectester/scan';
-import { instance, mock, reset, verify, when } from 'ts-mockito';
+import {
+  anyString,
+  anything,
+  instance,
+  mock,
+  reset,
+  spy,
+  verify,
+  when
+} from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
 import {
   Repeater,
@@ -28,6 +37,7 @@ export const resolvableInstance = <T extends object>(m: T): T =>
 
 describe('SecRunner', () => {
   let secRunner!: SecRunner;
+  let terminationCallback!: () => Promise<unknown>;
 
   const repeaterId = 'fooId';
 
@@ -36,14 +46,23 @@ describe('SecRunner', () => {
   const mockedRepeaterFactory = mock<RepeaterFactory>();
   const mockedRepeaterManager = mock<RepeatersManager>();
   const mockedRepeater = mock<Repeater>();
+  const mockedLogger = mock<Logger>();
 
   const container = instance(mockedContainer);
+
+  const spiedProcess = spy(process);
+  const maxListeners = process.getMaxListeners();
+
+  beforeAll(() => process.setMaxListeners(100));
+  afterAll(() => process.setMaxListeners(maxListeners));
 
   beforeEach(() => {
     when(
       mockedContainer.resolve<RepeatersManager>(RepeatersManager)
     ).thenReturn(instance(mockedRepeaterManager));
-
+    when(mockedContainer.resolve<Logger>(Logger)).thenReturn(
+      instance(mockedLogger)
+    );
     when(mockedContainer.resolve<RepeaterFactory>(RepeaterFactory)).thenReturn(
       instance(mockedRepeaterFactory)
     );
@@ -55,12 +74,15 @@ describe('SecRunner', () => {
     when(mockedConfiguration.loadCredentials()).thenResolve();
 
     when(mockedRepeater.repeaterId).thenReturn(repeaterId);
-    when(mockedRepeater.start()).thenResolve();
-    when(mockedRepeater.stop()).thenResolve();
 
     when(mockedRepeaterFactory.createRepeater()).thenResolve(
       resolvableInstance(mockedRepeater)
     );
+    when(spiedProcess.once('SIGTERM', anything())).thenCall((_, callback) => {
+      terminationCallback = callback;
+    });
+
+    jest.useFakeTimers();
 
     const config = instance(mockedConfiguration);
     Object.setPrototypeOf(config, Configuration.prototype);
@@ -68,36 +90,58 @@ describe('SecRunner', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     reset<
       | DependencyContainer
       | Configuration
       | RepeaterFactory
       | RepeatersManager
       | Repeater
+      | Logger
+      | NodeJS.Process
     >(
       mockedContainer,
       mockedConfiguration,
       mockedRepeaterFactory,
       mockedRepeaterManager,
-      mockedRepeater
+      mockedRepeater,
+      mockedLogger,
+      spiedProcess
     );
   });
 
   describe('init', () => {
-    it('should create repeater', async () => {
-      await secRunner.init();
+    beforeEach(() => secRunner.init());
+    afterEach(() => secRunner.clear());
 
-      expect(secRunner.repeaterId).toBeDefined();
+    it('should stop() on process termination', async () => {
+      process.emit('SIGTERM', 'SIGTERM');
+      await terminationCallback();
+
+      verify(mockedRepeater.stop()).once();
+      verify(mockedRepeaterManager.deleteRepeater(repeaterId)).once();
     });
 
-    it('should throw an error if called twice', async () => {
-      await secRunner.init();
+    it('should log an error on failed stop() on process termination', async () => {
+      when(mockedRepeater.stop()).thenReject();
 
-      await expect(secRunner.init()).rejects.toThrow('Already initialized');
+      process.emit('SIGTERM', 'SIGTERM');
+      await terminationCallback();
+      jest.useRealTimers();
+      await new Promise(process.nextTick);
+
+      verify(mockedLogger.error(anyString())).once();
+    });
+
+    it('should create repeater', () =>
+      expect(secRunner.repeaterId).toBeDefined());
+
+    it('should throw an error if called twice', async () => {
+      const act = secRunner.init();
+      await expect(act).rejects.toThrow('Already initialized');
     });
 
     it('should not throw an error on re-init after clearing', async () => {
-      await secRunner.init();
       await secRunner.clear();
 
       await expect(secRunner.init()).resolves.not.toThrowError();
@@ -105,6 +149,13 @@ describe('SecRunner', () => {
   });
 
   describe('clear', () => {
+    it('should remove handlers from the signals', async () => {
+      await secRunner.init();
+      await secRunner.clear();
+
+      expect(process.listenerCount('SIGTERM')).toBe(0);
+    });
+
     it('should remove repeater', async () => {
       await secRunner.init();
       await secRunner.clear();

@@ -47,8 +47,6 @@ export class Repeater {
 
     const { container } = this.configuration;
     this.logger = container.resolve(Logger);
-
-    this.setupShutdown();
   }
 
   public async start(): Promise<void> {
@@ -122,18 +120,6 @@ export class Repeater {
         repeaterId: this.repeaterId
       })
     );
-  }
-
-  private setupShutdown(): void {
-    ['SIGTERM', 'SIGINT', 'SIGHUP'].forEach(event => {
-      process.once(event, async () => {
-        try {
-          await this.stop();
-        } catch (e) {
-          this.logger.error(e.message);
-        }
-      });
-    });
   }
 
   private handleRegisterResult(res: { payload: RegisterRepeaterResult }): void {

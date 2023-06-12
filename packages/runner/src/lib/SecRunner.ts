@@ -1,6 +1,6 @@
 import { SecScanOptions } from './SecScanOptions';
 import { SecScan } from './SecScan';
-import { Configuration, ConfigurationOptions } from '@sectester/core';
+import { Configuration, ConfigurationOptions, Logger } from '@sectester/core';
 import {
   Repeater,
   RepeaterFactory,
@@ -10,7 +10,13 @@ import { ScanFactory } from '@sectester/scan';
 import { Formatter, PlainTextFormatter } from '@sectester/reporter';
 
 export class SecRunner {
+  public static readonly SHUTDOWN_SIGNALS: readonly string[] = [
+    'SIGTERM',
+    'SIGINT',
+    'SIGHUP'
+  ];
   private readonly configuration: Configuration;
+  private readonly logger: Logger;
   private repeater: Repeater | undefined;
   private repeaterFactory: RepeaterFactory | undefined;
   private repeatersManager: RepeatersManager | undefined;
@@ -22,6 +28,7 @@ export class SecRunner {
   constructor(config: Configuration | ConfigurationOptions) {
     this.configuration =
       config instanceof Configuration ? config : new Configuration(config);
+    this.logger = this.configuration.container.resolve(Logger);
   }
 
   public async init(): Promise<void> {
@@ -36,7 +43,10 @@ export class SecRunner {
     this.repeaterFactory =
       this.configuration.container.resolve(RepeaterFactory);
 
+    this.setupShutdown();
+
     this.repeater = await this.repeaterFactory.createRepeater();
+
     await this.repeater.start();
   }
 
@@ -47,6 +57,7 @@ export class SecRunner {
         await this.repeatersManager.deleteRepeater(this.repeater.repeaterId);
       }
     } finally {
+      this.removeShutdownHandler();
       delete this.repeater;
       delete this.repeatersManager;
       delete this.repeaterFactory;
@@ -75,4 +86,24 @@ export class SecRunner {
       useClass: PlainTextFormatter
     });
   }
+
+  private setupShutdown(): void {
+    SecRunner.SHUTDOWN_SIGNALS.forEach(event =>
+      process.once(event, this.beforeShutdownSignalHandler)
+    );
+  }
+
+  private removeShutdownHandler(): void {
+    SecRunner.SHUTDOWN_SIGNALS.forEach(event =>
+      process.removeListener(event, this.beforeShutdownSignalHandler)
+    );
+  }
+
+  private readonly beforeShutdownSignalHandler = async () => {
+    try {
+      await this.clear();
+    } catch (e) {
+      this.logger.error(e.message);
+    }
+  };
 }
