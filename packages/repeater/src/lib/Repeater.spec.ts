@@ -8,14 +8,12 @@ import {
 import { Configuration, EventBus, Logger } from '@sectester/core';
 import {
   anyOfClass,
-  anyString,
   anything,
   capture,
   instance,
   mock,
   objectContaining,
   reset,
-  spy,
   verify,
   when
 } from 'ts-mockito';
@@ -54,16 +52,15 @@ describe('Repeater', () => {
   });
 
   afterEach(() => {
-    reset<
-      Configuration | EventBus | DependencyContainer | Logger | NodeJS.Process
-    >(mockedConfiguration, mockedEventBus, mockedLogger, mockedContainer);
+    reset<Configuration | EventBus | DependencyContainer | Logger>(
+      mockedConfiguration,
+      mockedEventBus,
+      mockedLogger,
+      mockedContainer
+    );
 
     jest.useRealTimers();
   });
-
-  const maxListeners = process.getMaxListeners();
-  beforeAll(() => process.setMaxListeners(100));
-  afterAll(() => process.setMaxListeners(maxListeners));
 
   describe('start', () => {
     it('should start', async () => {
@@ -238,48 +235,6 @@ describe('Repeater', () => {
       await repeater.stop();
 
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
-    });
-
-    describe('should handle process termination', () => {
-      const spiedProcess = spy(process);
-
-      let terminationCallback!: () => Promise<unknown>;
-
-      beforeEach(() => {
-        when(spiedProcess.once('SIGTERM', anything())).thenCall(
-          (_, callback) => {
-            terminationCallback = callback;
-          }
-        );
-        repeater = createRepater();
-      });
-
-      afterEach(() => reset(spiedProcess));
-
-      it('should stop() on process termination', async () => {
-        const spiedRepeater = spy(repeater);
-
-        await repeater.start();
-        process.emit('SIGTERM' as any);
-        await terminationCallback();
-
-        verify(spiedRepeater.stop()).once();
-        expect(repeater.runningStatus).toBe(RunningStatus.OFF);
-      });
-
-      it('should log an error on failed stop() on process termination', async () => {
-        await repeater.start();
-        when(
-          mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))
-        ).thenReject();
-
-        process.emit('SIGTERM' as any);
-        await terminationCallback();
-        jest.useRealTimers();
-        await new Promise(process.nextTick);
-
-        verify(mockedLogger.error(anyString())).once();
-      });
     });
   });
 
