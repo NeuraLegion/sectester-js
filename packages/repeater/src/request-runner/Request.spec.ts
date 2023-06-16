@@ -84,5 +84,18 @@ describe('Request', () => {
         'x-a2': 'a2'
       });
     });
+
+    it('should join headers if multiple values is present', () => {
+      const request = new Request({
+        url: 'http://foo.bar',
+        protocol: Protocol.HTTP
+      });
+
+      request.setHeaders({ host: ['example.com', 'example1.com'] });
+
+      expect(request.headers).toEqual({
+        host: 'example.com, example1.com'
+      });
+    });
   });
 });
