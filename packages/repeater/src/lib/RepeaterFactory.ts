@@ -17,6 +17,7 @@ import { DependencyContainer, injectable } from 'tsyringe';
  */
 @injectable()
 export class RepeaterFactory {
+  private readonly MAX_NAME_LENGTH = 80;
   private readonly DEFAULT_RUNNER_OPTIONS: Readonly<RequestRunnerOptions> = {
     timeout: 30000,
     maxContentLength: 100,
@@ -51,26 +52,22 @@ export class RepeaterFactory {
       this.container.resolve<EventBusFactory>(EventBusFactory);
   }
 
-  public async createRepeater(
-    {
-      projectId,
-      namePrefix,
-      description,
-      requestRunnerOptions,
-      requestRunners = [HttpRequestRunner, WsRequestRunner]
-    }: RepeaterOptions = {
-      namePrefix: 'sectester'
-    }
-  ): Promise<Repeater> {
-    if (namePrefix && namePrefix.length > 44) {
-      throw new Error('Name prefix must be less than 44 characters.');
-    }
+  public async createRepeater({
+    projectId,
+    description,
+    disableRandomNameGeneration,
+    requestRunnerOptions,
+    namePrefix = 'sectester',
+    requestRunners = [HttpRequestRunner, WsRequestRunner]
+  }: RepeaterOptions = {}): Promise<Repeater> {
     this.registerRequestRunners(requestRunners, requestRunnerOptions);
+
+    const name = this.generateName(namePrefix, disableRandomNameGeneration);
 
     const { repeaterId } = await this.repeatersManager.createRepeater({
       description,
       projectId,
-      name: `${namePrefix}-${uuidv4()}`
+      name
     });
 
     const bus = await this.eventBusFactory.create(repeaterId);
@@ -82,6 +79,25 @@ export class RepeaterFactory {
       bus,
       configuration: this.configuration
     });
+  }
+
+  private generateName(
+    namePrefix: string,
+    disableRandomNameGeneration: boolean = false
+  ) {
+    const normalizedPrefix = namePrefix?.trim();
+    const randomPostfix = disableRandomNameGeneration ? '' : `-${uuidv4()}`;
+    const name = `${normalizedPrefix}${randomPostfix}`;
+
+    if (name.length > this.MAX_NAME_LENGTH) {
+      const maxPrefixLength = this.MAX_NAME_LENGTH - randomPostfix.length;
+
+      throw new Error(
+        `Name prefix must be less than or equal to ${maxPrefixLength} characters.`
+      );
+    }
+
+    return name;
   }
 
   private registerRequestRunners(

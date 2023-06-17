@@ -130,6 +130,20 @@ describe('RepeaterFactory', () => {
       expect(res).toBeInstanceOf(Repeater);
     });
 
+    it('should create repeater with given name without the random postfix', async () => {
+      const factory = new RepeaterFactory(configuration);
+
+      const res = await factory.createRepeater({
+        namePrefix: 'foo',
+        disableRandomNameGeneration: true
+      });
+
+      verify(
+        mockedRepeaterManager.createRepeater(objectContaining({ name: 'foo' }))
+      );
+      expect(res).toBeInstanceOf(Repeater);
+    });
+
     it('should create repeater with given project', async () => {
       const factory = new RepeaterFactory(configuration);
       const projectId = '321';
@@ -240,7 +254,20 @@ describe('RepeaterFactory', () => {
       });
 
       await expect(res).rejects.toThrow(
-        'Name prefix must be less than 44 characters.'
+        'Name prefix must be less than or equal to 43 characters.'
+      );
+    });
+
+    it('should throw an error when name prefix is too long and random postfix is disabled', async () => {
+      const factory = new RepeaterFactory(configuration);
+
+      const res = factory.createRepeater({
+        namePrefix: 'foo'.repeat(80),
+        disableRandomNameGeneration: true
+      });
+
+      await expect(res).rejects.toThrow(
+        'Name prefix must be less than or equal to 80 characters.'
       );
     });
   });
