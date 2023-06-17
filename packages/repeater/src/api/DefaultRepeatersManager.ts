@@ -10,12 +10,19 @@ export class DefaultRepeatersManager implements RepeatersManager {
     private readonly commandDispatcher: CommandDispatcher
   ) {}
 
-  public async createRepeater(payload: {
+  public async createRepeater({
+    projectId,
+    ...options
+  }: {
     name: string;
     description?: string;
+    projectId?: string;
   }): Promise<{ repeaterId: string }> {
     const repeater = await this.commandDispatcher.execute(
-      new CreateRepeaterRequest(payload)
+      new CreateRepeaterRequest({
+        ...options,
+        ...(projectId ? { projectIds: [projectId] } : {})
+      })
     );
 
     if (!repeater?.id) {
