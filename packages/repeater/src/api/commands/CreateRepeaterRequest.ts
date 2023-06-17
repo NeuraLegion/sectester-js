@@ -3,6 +3,7 @@ import { HttpRequest } from '@sectester/bus';
 export interface CreateRepeaterRequestPayload {
   name: string;
   description?: string;
+  projectIds?: string[];
 }
 
 export interface CreateRepeaterResponsePayload {

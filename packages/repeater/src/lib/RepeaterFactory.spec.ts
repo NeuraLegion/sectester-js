@@ -130,6 +130,19 @@ describe('RepeaterFactory', () => {
       expect(res).toBeInstanceOf(Repeater);
     });
 
+    it('should create repeater with given project', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const projectId = '321';
+      const res = await factory.createRepeater({
+        projectId
+      });
+
+      verify(
+        mockedRepeaterManager.createRepeater(objectContaining({ projectId }))
+      );
+      expect(res).toBeInstanceOf(Repeater);
+    });
+
     it('should register custom request runner options', async () => {
       const factory = new RepeaterFactory(configuration);
       when(

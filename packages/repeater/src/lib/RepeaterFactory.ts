@@ -53,6 +53,7 @@ export class RepeaterFactory {
 
   public async createRepeater(
     {
+      projectId,
       namePrefix,
       description,
       requestRunnerOptions,
@@ -68,6 +69,7 @@ export class RepeaterFactory {
 
     const { repeaterId } = await this.repeatersManager.createRepeater({
       description,
+      projectId,
       name: `${namePrefix}-${uuidv4()}`
     });
 
