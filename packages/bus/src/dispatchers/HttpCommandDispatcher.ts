@@ -3,15 +3,17 @@ import { HttpRequest } from '../commands';
 import { HttpCommandError } from '../exceptions';
 import { CommandDispatcher, Logger, RetryStrategy } from '@sectester/core';
 import { inject, injectable } from 'tsyringe';
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import rateLimit, { RateLimitedAxiosInstance } from 'axios-rate-limit';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import rateLimit from 'axios-rate-limit';
 import FormData from 'form-data';
 import { finished, Readable } from 'stream';
 import { promisify } from 'util';
+import http from 'http';
+import https from 'https';
 
 @injectable()
 export class HttpCommandDispatcher implements CommandDispatcher {
-  private readonly client: RateLimitedAxiosInstance;
+  private readonly client: AxiosInstance;
 
   constructor(
     private readonly logger: Logger,
@@ -87,16 +89,20 @@ export class HttpCommandDispatcher implements CommandDispatcher {
     }
   }
 
-  private createHttpClient(): RateLimitedAxiosInstance {
+  private createHttpClient(): AxiosInstance {
     const {
       baseUrl,
       token,
+      keepAlive = true,
+      maxSockets = 50,
       timeout = 10000,
       rate = { limit: 10, window: 60 * 1000 }
     } = this.options;
 
     const options: AxiosRequestConfig = {
       timeout,
+      httpAgent: new http.Agent({ maxSockets, keepAlive }),
+      httpsAgent: new https.Agent({ maxSockets, keepAlive }),
       baseURL: baseUrl,
       responseType: 'json',
       headers: {

@@ -1,10 +1,15 @@
 import { ExponentialBackoffRetryStrategy } from './ExponentialBackoffRetryStrategy';
+import { HttpCommandError } from '../exceptions';
+import { AxiosRequestConfig } from 'axios';
 
 class TestError extends Error {
   constructor(
     options:
       | { code: number | string | undefined }
-      | { status: number | undefined } = { status: undefined }
+      | { status: number | undefined; method: string | undefined } = {
+      status: undefined,
+      method: undefined
+    }
   ) {
     super('Something went wrong.');
     Object.assign(this, options);
@@ -67,7 +72,7 @@ describe('ExponentialBackoffRetryStrategy', () => {
       expect(input).toHaveBeenCalledTimes(1);
     });
 
-    it('should prevent retries if error does not have a correct code', async () => {
+    it('should prevent retries if error does not have a code', async () => {
       const retryStrategy = new ExponentialBackoffRetryStrategy({
         maxDepth: 1
       });
@@ -79,27 +84,89 @@ describe('ExponentialBackoffRetryStrategy', () => {
       expect(input).toHaveBeenCalledTimes(1);
     });
 
+    it('should prevent retries if error does not have a correct code', async () => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 1
+      });
+      const error = new Error('Unhandled error');
+      Object.assign(error, { code: 'ENETDOWN' });
+      const input = jest.fn().mockRejectedValue(error);
+
+      const result = retryStrategy.acquire(input);
+
+      await expect(result).rejects.toThrow('Unhandled error');
+      expect(input).toHaveBeenCalledTimes(1);
+    });
+
+    it('should prevent retries if HTTP method is not idempotent', async () => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 1
+      });
+      const config: AxiosRequestConfig<undefined> = { method: 'POST' };
+      const error = new HttpCommandError({
+        config,
+        name: 'Error',
+        response: {
+          config,
+          status: 500,
+          statusText: 'Internal server error',
+          headers: {},
+          data: undefined
+        },
+        message: 'Unhandled error',
+        isAxiosError: true,
+        toJSON() {
+          return {};
+        }
+      });
+      const input = jest.fn().mockRejectedValue(error);
+
+      const result = retryStrategy.acquire(input);
+
+      await expect(result).rejects.toThrow('Unhandled error');
+      expect(input).toHaveBeenCalledTimes(1);
+    });
+
+    it('should prevent retries if error does not have a correct amqp code', async () => {
+      const retryStrategy = new ExponentialBackoffRetryStrategy({
+        maxDepth: 1
+      });
+      const error = new Error('Unhandled error');
+      Object.assign(error, { code: 300 });
+      const input = jest.fn().mockRejectedValue(error);
+
+      const result = retryStrategy.acquire(input);
+
+      await expect(result).rejects.toThrow('Unhandled error');
+      expect(input).toHaveBeenCalledTimes(1);
+    });
+
     it.each([
       ...[
         'ECONNRESET',
-        'ENETDOWN',
-        'ENETUNREACH',
         'ETIMEDOUT',
         'ECONNREFUSED',
+        'ENETUNREACH',
         'ENOTFOUND',
+        'EADDRINUSE',
+        'EHOSTUNREACH',
+        'EPIPE',
         'EAI_AGAIN'
       ].map((code: string) => new TestError({ code })),
-      ...[405, 406, 404, 313, 312, 311, 320].map(
+      ...[311, 312, 313, 320, 404, 405, 406, 502, 503, 504, 505, 506].map(
         (code: number) => new TestError({ code })
       ),
-      ...Array(12)
-        .fill(500)
-        .map(
-          (_: unknown, idx: number) =>
-            new TestError({
-              status: 500 + idx
-            })
-        )
+      ...['get', 'head', 'options', 'put', 'delete'].flatMap((method: string) =>
+        Array(12)
+          .fill(500)
+          .map(
+            (_: unknown, idx: number) =>
+              new TestError({
+                method,
+                status: 500 + idx
+              })
+          )
+      )
     ])('should retry on the error (%j)', async (error: Error) => {
       const retryStrategy = new ExponentialBackoffRetryStrategy({
         maxDepth: 2
