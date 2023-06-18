@@ -7,18 +7,27 @@ export interface ExponentialBackoffOptions {
 }
 
 export class ExponentialBackoffRetryStrategy implements RetryStrategy {
-  private readonly NO_OPERATIONAL_ERROR_CODES: readonly number[] = [
-    405, 406, 404, 313, 312, 311, 320
-  ];
-  private readonly NO_OPERATIONAL_ERRORS: readonly string[] = [
+  private readonly RETRYABLE_AMQP_CODES: ReadonlySet<number> = new Set([
+    311, 312, 313, 320, 404, 405, 406, 502, 503, 504, 505, 506
+  ]);
+  private readonly RETRYABLE_HTTP_METHODS: ReadonlySet<string> = new Set([
+    'get',
+    'head',
+    'options',
+    'put',
+    'delete'
+  ]);
+  private readonly RETRYABLE_CODES: ReadonlySet<string> = new Set([
     'ECONNRESET',
-    'ENETDOWN',
-    'ENETUNREACH',
     'ETIMEDOUT',
     'ECONNREFUSED',
+    'ENETUNREACH',
     'ENOTFOUND',
+    'EADDRINUSE',
+    'EHOSTUNREACH',
+    'EPIPE',
     'EAI_AGAIN'
-  ];
+  ]);
 
   constructor(private readonly options: ExponentialBackoffOptions) {}
 
@@ -44,17 +53,20 @@ export class ExponentialBackoffRetryStrategy implements RetryStrategy {
   }
 
   private shouldRetry(err: unknown): boolean {
-    const code = (err as ErrnoException).code;
+    const code = (err as ErrnoException | { code: number }).code;
 
-    if (code) {
-      return (
-        this.NO_OPERATIONAL_ERRORS.includes(code) ||
-        this.NO_OPERATIONAL_ERROR_CODES.includes(+code)
-      );
+    if (typeof code === 'string') {
+      return this.RETRYABLE_CODES.has(code);
     }
 
-    const status = (err as HttpCommandError).status ?? 200;
+    if (typeof code === 'number') {
+      return this.RETRYABLE_AMQP_CODES.has(+code);
+    }
 
-    return status >= 500;
+    const { status = 200, method = 'get' } = err as HttpCommandError;
+
+    return (
+      status >= 500 && this.RETRYABLE_HTTP_METHODS.has(method.toLowerCase())
+    );
   }
 }
