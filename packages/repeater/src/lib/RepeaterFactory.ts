@@ -8,6 +8,7 @@ import {
 import { RepeaterOptions } from './RepeaterOptions';
 import { RepeatersManager } from '../api';
 import { EventBusFactory } from '../bus';
+import { RepeaterRequestRunnerOptions } from './RepeaterRequestRunnerOptions';
 import { Configuration } from '@sectester/core';
 import { v4 as uuidv4 } from 'uuid';
 import { DependencyContainer, injectable } from 'tsyringe';
@@ -56,12 +57,9 @@ export class RepeaterFactory {
     projectId,
     description,
     disableRandomNameGeneration,
-    requestRunnerOptions,
     namePrefix = 'sectester',
-    requestRunners = [HttpRequestRunner, WsRequestRunner]
+    ...requestRunnerOptions
   }: RepeaterOptions = {}): Promise<Repeater> {
-    this.registerRequestRunners(requestRunners, requestRunnerOptions);
-
     const name = this.generateName(namePrefix, disableRandomNameGeneration);
 
     const { repeaterId } = await this.repeatersManager.createRepeater({
@@ -69,6 +67,27 @@ export class RepeaterFactory {
       projectId,
       name
     });
+
+    return this.createRepeaterInstance(repeaterId, requestRunnerOptions);
+  }
+
+  public async createRepeaterFromExisting(
+    repeaterId: string,
+    options?: RepeaterRequestRunnerOptions
+  ): Promise<Repeater> {
+    await this.repeatersManager.getRepeater(repeaterId);
+
+    return this.createRepeaterInstance(repeaterId, options);
+  }
+
+  private async createRepeaterInstance(
+    repeaterId: string,
+    {
+      requestRunnerOptions,
+      requestRunners = [HttpRequestRunner, WsRequestRunner]
+    }: RepeaterRequestRunnerOptions = {}
+  ) {
+    this.registerRequestRunners(requestRunners, requestRunnerOptions);
 
     const bus = await this.eventBusFactory.create(repeaterId);
 

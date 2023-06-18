@@ -1,5 +1,9 @@
 import { RepeatersManager } from './RepeatersManager';
-import { CreateRepeaterRequest, DeleteRepeaterRequest } from './commands';
+import {
+  CreateRepeaterRequest,
+  DeleteRepeaterRequest,
+  GetRepeaterRequest
+} from './commands';
 import { inject, injectable } from 'tsyringe';
 import { CommandDispatcher } from '@sectester/core';
 
@@ -9,6 +13,20 @@ export class DefaultRepeatersManager implements RepeatersManager {
     @inject(CommandDispatcher)
     private readonly commandDispatcher: CommandDispatcher
   ) {}
+
+  public async getRepeater(
+    repeaterId: string
+  ): Promise<{ repeaterId: string }> {
+    const repeater = await this.commandDispatcher.execute(
+      new GetRepeaterRequest(repeaterId)
+    );
+
+    if (!repeater?.id) {
+      throw new Error('Cannot find repeater');
+    }
+
+    return { repeaterId: repeater.id };
+  }
 
   public async createRepeater({
     projectId,
@@ -26,7 +44,7 @@ export class DefaultRepeatersManager implements RepeatersManager {
     );
 
     if (!repeater?.id) {
-      throw new Error('Cannot find created repeater id');
+      throw new Error('Cannot create a new repeater.');
     }
 
     return { repeaterId: repeater.id };
