@@ -48,11 +48,13 @@ const repeater = await repeaterFactory.createRepeater({
 
 The `createRepeater` method accepts the options described below:
 
-| Option                 | Description                                                                                           |
-| :--------------------- | ----------------------------------------------------------------------------------------------------- |
-| `namePrefix`           | Enter a name prefix that will be used as a constant part of the unique name. By default, `sectester`. |
-| `description`          | Set a short description of the Repeater.                                                              |
-| `requestRunnerOptions` | Custom the request runner settings that will be used to execute requests to your application.         |
+| Option                        | Description                                                                                           |
+| :---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `namePrefix`                  | Enter a name prefix that will be used as a constant part of the unique name. By default, `sectester`. |
+| `description`                 | Set a short description of the Repeater.                                                              |
+| `requestRunnerOptions`        | Custom the request runner settings that will be used to execute requests to your application.         |
+| `projectId`                   | Specify the project ID to associate the Repeater with.                                                |
+| `disableRandomNameGeneration` | Disable random name generation for the Repeater's name.                                               |
 
 The default `requestRunnerOptions` is as follows:
 
@@ -91,6 +93,33 @@ export interface RequestRunnerOptions {
   maxContentLength?: number;
   reuseConnection?: boolean;
 }
+```
+
+The `RepeaterFactory` also provides a method to create a `Repeater` instance using an existing repeater ID. You can use the `createRepeaterFromExisting` method to accomplish this:
+
+```ts
+const existingRepeaterId = '<your repater ID>';
+const repeater = await repeaterFactory.createRepeaterFromExisting(
+  existingRepeaterId
+);
+```
+
+This method retrieves the existing repeater's details from the cloud using its ID and returns a `Repeater` instance associated with the specified ID.
+
+You can also customize the request runner options for the existing repeater by passing them as options:
+
+```ts
+const existingRepeaterId = '<your repater ID>';
+const repeater = await repeaterFactory.createRepeaterFromExisting(
+  existingRepeaterId,
+  {
+    requestRunnerOptions: {
+      timeout: 10000,
+      maxContentLength: 200,
+      allowedMimes: ['text/html']
+    }
+  }
+);
 ```
 
 The `Repeater` instance provides the `start` method. This method is required to establish a connection with the Bright cloud engine and interact with other services.
@@ -164,7 +193,7 @@ container.register(RequestRunner, {
 ## Limitations
 
 Custom scripts and self-signed certificates
-(see [NexPloit CLI](https://www.npmjs.com/package/@neuralegion/nexploit-cli)) are not supported yet.
+(see [Bright CLI](https://www.npmjs.com/package/@brightsec/cli)) are not supported yet.
 
 ## License
 

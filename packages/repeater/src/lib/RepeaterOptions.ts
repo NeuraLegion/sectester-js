@@ -1,10 +1,8 @@
-import { RequestRunner, RequestRunnerOptions } from '../request-runner';
+import { RepeaterRequestRunnerOptions } from './RepeaterRequestRunnerOptions';
 
-export interface RepeaterOptions {
+export interface RepeaterOptions extends RepeaterRequestRunnerOptions {
   namePrefix?: string;
   projectId?: string;
   description?: string;
   disableRandomNameGeneration?: boolean;
-  requestRunnerOptions?: RequestRunnerOptions;
-  requestRunners?: (RequestRunner | { new (...args: any[]): RequestRunner })[];
 }

@@ -40,6 +40,27 @@ const resolvableInstance = <T extends object>(m: T): T =>
 
 describe('RepeaterFactory', () => {
   const repeaterId = 'fooId';
+  const defaultOptions = {
+    timeout: 30000,
+    maxContentLength: 100,
+    reuseConnection: false,
+    allowedMimes: [
+      'text/html',
+      'text/plain',
+      'text/css',
+      'text/javascript',
+      'text/markdown',
+      'text/xml',
+      'application/javascript',
+      'application/x-javascript',
+      'application/json',
+      'application/xml',
+      'application/x-www-form-urlencoded',
+      'application/msgpack',
+      'application/ld+json',
+      'application/graphql'
+    ]
+  };
 
   const mockedContainer = mock<DependencyContainer>();
   const mockedChildeContainer = mock<DependencyContainer>();
@@ -197,27 +218,7 @@ describe('RepeaterFactory', () => {
         mockedChildeContainer.register(
           RequestRunnerOptions,
           deepEqual({
-            useValue: {
-              timeout: 30000,
-              maxContentLength: 100,
-              reuseConnection: false,
-              allowedMimes: [
-                'text/html',
-                'text/plain',
-                'text/css',
-                'text/javascript',
-                'text/markdown',
-                'text/xml',
-                'application/javascript',
-                'application/x-javascript',
-                'application/json',
-                'application/xml',
-                'application/x-www-form-urlencoded',
-                'application/msgpack',
-                'application/ld+json',
-                'application/graphql'
-              ]
-            }
+            useValue: defaultOptions
           })
         )
       ).once();
@@ -269,6 +270,90 @@ describe('RepeaterFactory', () => {
       await expect(res).rejects.toThrow(
         'Name prefix must be less than or equal to 80 characters.'
       );
+    });
+  });
+
+  describe('createRepeaterFromExisting', () => {
+    it('should create repeater from existing repeater ID', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const existingRepeaterId = '123';
+
+      const res = await factory.createRepeaterFromExisting(existingRepeaterId);
+
+      expect(res).toBeInstanceOf(Repeater);
+      expect(res).toMatchObject({
+        repeaterId: existingRepeaterId
+      });
+    });
+
+    it('should register custom request runner options', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const existingRepeaterId = '123';
+      when(
+        mockedChildeContainer.register(RequestRunnerOptions, anything())
+      ).thenReturn();
+
+      const requestRunnerOptions = {
+        timeout: 10000,
+        maxContentLength: 200,
+        allowedMimes: ['text/html']
+      };
+
+      await factory.createRepeaterFromExisting(existingRepeaterId, {
+        requestRunnerOptions
+      });
+
+      verify(
+        mockedChildeContainer.register(
+          RequestRunnerOptions,
+          objectContaining({
+            useValue: requestRunnerOptions
+          })
+        )
+      ).once();
+    });
+
+    it('should register default request runner options', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const existingRepeaterId = '123';
+      when(
+        mockedChildeContainer.register(RequestRunnerOptions, anything())
+      ).thenReturn();
+
+      await factory.createRepeaterFromExisting(existingRepeaterId);
+
+      verify(
+        mockedChildeContainer.register(
+          RequestRunnerOptions,
+          deepEqual({
+            useValue: defaultOptions
+          })
+        )
+      ).once();
+    });
+
+    it('should register default request runners', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const existingRepeaterId = '123';
+
+      await factory.createRepeaterFromExisting(existingRepeaterId);
+
+      verify(
+        mockedChildeContainer.register(
+          RequestRunner,
+          deepEqual({
+            useClass: HttpRequestRunner
+          })
+        )
+      ).once();
+      verify(
+        mockedChildeContainer.register(
+          RequestRunner,
+          deepEqual({
+            useClass: WsRequestRunner
+          })
+        )
+      ).once();
     });
   });
 });
