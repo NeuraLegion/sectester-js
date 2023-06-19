@@ -49,8 +49,6 @@ export class RMQEventBus implements EventBus {
     string,
     EventHandler<unknown, unknown>[]
   >();
-  private readonly consumerTags: string[] = [];
-
   private readonly REPLY_QUEUE_NAME = 'amq.rabbitmq.reply-to';
 
   constructor(
@@ -141,17 +139,12 @@ export class RMQEventBus implements EventBus {
   public async destroy(): Promise<void> {
     try {
       if (this.channel) {
-        await Promise.all(
-          this.consumerTags.map(consumerTag =>
-            this.channel?.cancel(consumerTag)
-          )
-        );
+        await this.channel.cancelAll();
         await this.channel.close();
       }
 
       delete this.channel;
 
-      this.consumerTags.splice(0, this.consumerTags.length);
       this.subject.removeAllListeners();
     } catch (e) {
       this.logger.error('Cannot terminate event bus gracefully');
@@ -272,27 +265,34 @@ export class RMQEventBus implements EventBus {
   }
 
   private async startReplyQueueConsume(channel: Channel): Promise<void> {
-    const { consumerTag } = await channel.consume(
+    await channel.consume(
       this.REPLY_QUEUE_NAME,
       (msg: ConsumeMessage | null) => (msg ? this.processReply(msg) : void 0),
       {
         noAck: true
       }
     );
-
-    this.consumerTags.push(consumerTag);
   }
 
   private async startBasicConsume(channel: Channel): Promise<void> {
-    const { consumerTag } = await channel.consume(
+    await channel.consume(
       this.options.clientQueue,
-      (msg: ConsumeMessage | null) => (msg ? this.processMessage(msg) : void 0),
+      async (msg: ConsumeMessage | null) => {
+        try {
+          if (msg) {
+            await this.processMessage(msg);
+          }
+        } catch (e) {
+          this.logger.error(
+            'Error while processing a message due to error occurred: ',
+            e
+          );
+        }
+      },
       {
         noAck: true
       }
     );
-
-    this.consumerTags.push(consumerTag);
   }
 
   private async bindExchangesToQueue(channel: Channel): Promise<void> {
@@ -371,12 +371,12 @@ export class RMQEventBus implements EventBus {
         });
       }
     } catch (e) {
-      this.logger.debug(
-        'Error while processing a message (%s) due to error occurred: %s. Event: %j',
+      this.logger.error(
+        'Error occurred while precessing a message (%s)',
         event.correlationId,
-        e.message,
-        event
+        e
       );
+      this.logger.debug('Failed message (%s): %j', event.correlationId, event);
     }
   }
 
