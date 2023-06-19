@@ -7,6 +7,7 @@ import {
   Command,
   Event,
   EventHandler,
+  EventHandlerNotFound,
   Logger,
   NoResponse,
   RetryStrategy
@@ -615,7 +616,7 @@ describe('RMQEventBus', () => {
       ).once();
     });
 
-    it('should throw an error if no active subscriptions', async () => {
+    it('should log an error if no active subscriptions', async () => {
       // arrange
       const payload = { foo: 'bar' };
       const message = {
@@ -630,11 +631,13 @@ describe('RMQEventBus', () => {
         }
       } as ConsumeMessage;
 
-      // act / assert
+      // act
+      await processMessage(message);
+      // assert
       verify(spiedHandler.handle(anything())).never();
-      await expect(processMessage(message)).rejects.toThrow(
-        'Event handler not found'
-      );
+      verify(
+        mockedLogger.error(anyString(), anyOfClass(EventHandlerNotFound))
+      ).once();
     });
 
     it('should skip a redelivered event', async () => {
