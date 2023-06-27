@@ -38,7 +38,7 @@ export class DefaultRMQConnectionManager implements RMQConnectionManager {
           (this.config.connectTimeout ?? this.DEFAULT_RECONNECT_TIME) * 1000
       });
 
-      this.logger.debug('Event bus connected to %s', this.config.url);
+      this.logger.debug('Connected to %s', this.config.url);
     }
   }
 
@@ -50,10 +50,10 @@ export class DefaultRMQConnectionManager implements RMQConnectionManager {
 
       delete this.client;
 
-      this.logger.debug('Event bus disconnected from %s', this.config.url);
+      this.logger.debug('Disconnected from %s', this.config.url);
     } catch (e) {
-      this.logger.error('Cannot terminate event bus gracefully');
-      this.logger.debug('Event bus terminated');
+      this.logger.error('Cannot terminate a connection to bus gracefully');
+      this.logger.debug('Connection to the event bus terminated');
       this.logger.debug('Error on disconnect: %s', e.message);
     }
   }

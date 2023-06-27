@@ -8,7 +8,6 @@ import {
 } from '../request-runner';
 import { Repeater } from './Repeater';
 import { RepeatersManager } from '../api';
-import { EventBusFactory } from '../bus';
 import { Configuration, EventBus } from '@sectester/core';
 import {
   anything,
@@ -21,7 +20,7 @@ import {
   verify,
   when
 } from 'ts-mockito';
-import { DependencyContainer } from 'tsyringe';
+import { DependencyContainer, Lifecycle } from 'tsyringe';
 
 const resolvableInstance = <T extends object>(m: T): T =>
   new Proxy<T>(instance(m), {
@@ -63,34 +62,29 @@ describe('RepeaterFactory', () => {
   };
 
   const mockedContainer = mock<DependencyContainer>();
-  const mockedChildeContainer = mock<DependencyContainer>();
+  const mockedChildContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();
   const mockedEventBus = mock<EventBus>();
-  const mockedEventBusFactory = mock<EventBusFactory>();
   const mockedRepeaterManager = mock<RepeatersManager>();
 
   const configuration = instance(mockedConfiguration);
 
   beforeEach(() => {
+    when(mockedChildContainer.resolve<EventBus>(EventBus)).thenReturn(
+      resolvableInstance(mockedEventBus)
+    );
     when(
-      mockedChildeContainer.resolve<EventBusFactory>(EventBusFactory)
-    ).thenReturn(instance(mockedEventBusFactory));
-    when(
-      mockedChildeContainer.resolve<RepeatersManager>(RepeatersManager)
+      mockedContainer.resolve<RepeatersManager>(RepeatersManager)
     ).thenReturn(instance(mockedRepeaterManager));
 
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
 
     when(mockedContainer.createChildContainer()).thenReturn(
-      instance(mockedChildeContainer)
+      instance(mockedChildContainer)
     );
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     when(mockedEventBus.init!()).thenResolve();
-
-    when(mockedEventBusFactory.create(anything())).thenResolve(
-      resolvableInstance(mockedEventBus)
-    );
 
     when(mockedRepeaterManager.createRepeater(anything())).thenResolve({
       repeaterId
@@ -98,18 +92,11 @@ describe('RepeaterFactory', () => {
   });
 
   afterEach(() => {
-    reset<
-      | DependencyContainer
-      | Configuration
-      | EventBus
-      | EventBusFactory
-      | RepeatersManager
-    >(
+    reset<DependencyContainer | Configuration | EventBus | RepeatersManager>(
       mockedContainer,
-      mockedChildeContainer,
+      mockedChildContainer,
       mockedConfiguration,
       mockedEventBus,
-      mockedEventBusFactory,
       mockedRepeaterManager
     );
   });
@@ -181,7 +168,7 @@ describe('RepeaterFactory', () => {
     it('should register custom request runner options', async () => {
       const factory = new RepeaterFactory(configuration);
       when(
-        mockedChildeContainer.register(RequestRunnerOptions, anything())
+        mockedChildContainer.register(RequestRunnerOptions, anything())
       ).thenReturn();
 
       const requestRunnerOptions = {
@@ -197,7 +184,7 @@ describe('RepeaterFactory', () => {
       });
 
       verify(
-        mockedChildeContainer.register(
+        mockedChildContainer.register(
           RequestRunnerOptions,
           objectContaining({
             useValue: requestRunnerOptions
@@ -206,16 +193,16 @@ describe('RepeaterFactory', () => {
       ).once();
     });
 
-    it('should register default request runner options', async () => {
+    it('should register request runner options', async () => {
       const factory = new RepeaterFactory(configuration);
       when(
-        mockedChildeContainer.register(RequestRunnerOptions, anything())
+        mockedChildContainer.register(RequestRunnerOptions, anything())
       ).thenReturn();
 
-      await factory.createRepeater();
+      await factory.createRepeater({ requestRunnerOptions: defaultOptions });
 
       verify(
-        mockedChildeContainer.register(
+        mockedChildContainer.register(
           RequestRunnerOptions,
           deepEqual({
             useValue: defaultOptions
@@ -224,24 +211,32 @@ describe('RepeaterFactory', () => {
       ).once();
     });
 
-    it('should register default request runners', async () => {
+    it('should register request runners', async () => {
       const factory = new RepeaterFactory(configuration);
 
-      await factory.createRepeater();
+      await factory.createRepeater({
+        requestRunners: [HttpRequestRunner, WsRequestRunner]
+      });
 
       verify(
-        mockedChildeContainer.register(
+        mockedChildContainer.register(
           RequestRunner,
           deepEqual({
             useClass: HttpRequestRunner
+          }),
+          deepEqual({
+            lifecycle: Lifecycle.ContainerScoped
           })
         )
       ).once();
       verify(
-        mockedChildeContainer.register(
+        mockedChildContainer.register(
           RequestRunner,
           deepEqual({
             useClass: WsRequestRunner
+          }),
+          deepEqual({
+            lifecycle: Lifecycle.ContainerScoped
           })
         )
       ).once();
@@ -290,7 +285,7 @@ describe('RepeaterFactory', () => {
       const factory = new RepeaterFactory(configuration);
       const existingRepeaterId = '123';
       when(
-        mockedChildeContainer.register(RequestRunnerOptions, anything())
+        mockedChildContainer.register(RequestRunnerOptions, anything())
       ).thenReturn();
 
       const requestRunnerOptions = {
@@ -304,7 +299,7 @@ describe('RepeaterFactory', () => {
       });
 
       verify(
-        mockedChildeContainer.register(
+        mockedChildContainer.register(
           RequestRunnerOptions,
           objectContaining({
             useValue: requestRunnerOptions
@@ -313,17 +308,16 @@ describe('RepeaterFactory', () => {
       ).once();
     });
 
-    it('should register default request runner options', async () => {
+    it('should register request runner options', async () => {
       const factory = new RepeaterFactory(configuration);
       const existingRepeaterId = '123';
-      when(
-        mockedChildeContainer.register(RequestRunnerOptions, anything())
-      ).thenReturn();
 
-      await factory.createRepeaterFromExisting(existingRepeaterId);
+      await factory.createRepeaterFromExisting(existingRepeaterId, {
+        requestRunnerOptions: defaultOptions
+      });
 
       verify(
-        mockedChildeContainer.register(
+        mockedChildContainer.register(
           RequestRunnerOptions,
           deepEqual({
             useValue: defaultOptions
@@ -332,25 +326,33 @@ describe('RepeaterFactory', () => {
       ).once();
     });
 
-    it('should register default request runners', async () => {
+    it('should register request runners', async () => {
       const factory = new RepeaterFactory(configuration);
       const existingRepeaterId = '123';
 
-      await factory.createRepeaterFromExisting(existingRepeaterId);
+      await factory.createRepeaterFromExisting(existingRepeaterId, {
+        requestRunners: [HttpRequestRunner, WsRequestRunner]
+      });
 
       verify(
-        mockedChildeContainer.register(
+        mockedChildContainer.register(
           RequestRunner,
           deepEqual({
             useClass: HttpRequestRunner
+          }),
+          deepEqual({
+            lifecycle: Lifecycle.ContainerScoped
           })
         )
       ).once();
       verify(
-        mockedChildeContainer.register(
+        mockedChildContainer.register(
           RequestRunner,
           deepEqual({
             useClass: WsRequestRunner
+          }),
+          deepEqual({
+            lifecycle: Lifecycle.ContainerScoped
           })
         )
       ).once();

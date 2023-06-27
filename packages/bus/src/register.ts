@@ -5,14 +5,14 @@ import {
   RMQConnectionConfig,
   RMQConnectionManager
 } from './dispatchers';
-import {
-  container,
-  DependencyContainer,
-  instanceCachingFactory
-} from 'tsyringe';
+import { container, DependencyContainer } from 'tsyringe';
 import { CommandDispatcher, Configuration } from '@sectester/core';
 
 container.register(CommandDispatcher, { useClass: HttpCommandDispatcher });
+
+container.register(RMQConnectionManager, {
+  useClass: DefaultRMQConnectionManager
+});
 
 container.register(RMQConnectionConfig, {
   useFactory(childContainer: DependencyContainer) {
@@ -32,17 +32,6 @@ container.register(RMQConnectionConfig, {
       }
     };
   }
-});
-
-container.register(RMQConnectionManager, {
-  useFactory: instanceCachingFactory(
-    async (childContainer: DependencyContainer) => {
-      const instance = childContainer.resolve(DefaultRMQConnectionManager);
-      await instance.connect();
-
-      return instance;
-    }
-  )
 });
 
 container.register(HttpCommandDispatcherConfig, {
