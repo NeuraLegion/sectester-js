@@ -6,7 +6,7 @@ import { Response } from '../Response';
 import { parse as parseMimetype } from 'content-type';
 import { Logger } from '@sectester/core';
 import { SocksProxyAgent } from 'socks-proxy-agent';
-import { inject } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import { parse as parseUrl } from 'url';
 import { once } from 'events';
 import https, { RequestOptions } from 'https';
@@ -26,6 +26,7 @@ import { Readable } from 'stream';
 
 type IncomingResponse = IncomingMessage & { body?: string };
 
+@injectable()
 export class HttpRequestRunner implements RequestRunner {
   private readonly proxy?: SocksProxyAgent;
   private readonly httpAgent?: http.Agent;

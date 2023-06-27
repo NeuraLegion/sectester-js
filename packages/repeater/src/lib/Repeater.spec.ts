@@ -4,7 +4,7 @@ import {
   RegisterRepeaterCommand,
   RepeaterRegisteringError,
   RepeaterStatusEvent
-} from '../bus';
+} from '../api';
 import { Configuration, EventBus, Logger } from '@sectester/core';
 import {
   anyOfClass,

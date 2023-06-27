@@ -1,9 +1,9 @@
 import { Protocol } from '../models';
 import { Request, RequestRunner, Response } from '../request-runner';
 import { bind, EventHandler } from '@sectester/core';
-import { injectable, injectAll } from 'tsyringe';
+import { injectAll, Lifecycle, scoped } from 'tsyringe';
 
-interface ExecuteRequestPayload {
+export interface ExecuteRequestPayload {
   readonly protocol: Protocol;
   readonly url: string;
   readonly headers: Record<string, string | string[]>;
@@ -12,7 +12,7 @@ interface ExecuteRequestPayload {
   readonly correlation_id_regex?: string;
 }
 
-interface ExecuteRequestResult {
+export interface ExecuteRequestResult {
   readonly protocol: Protocol;
   readonly body?: string;
   readonly headers?: Record<string, string | string[] | undefined>;
@@ -21,7 +21,7 @@ interface ExecuteRequestResult {
   readonly message?: string;
 }
 
-@injectable()
+@scoped(Lifecycle.ContainerScoped)
 @bind('ExecuteScript')
 export class ExecuteRequestEventHandler
   implements EventHandler<ExecuteRequestPayload, ExecuteRequestResult>

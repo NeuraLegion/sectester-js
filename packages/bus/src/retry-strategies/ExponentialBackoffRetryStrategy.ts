@@ -1,11 +1,13 @@
 import { HttpCommandError } from '../exceptions';
-import { RetryStrategy, delay } from '@sectester/core';
+import { delay, RetryStrategy } from '@sectester/core';
+import { injectable } from 'tsyringe';
 import ErrnoException = NodeJS.ErrnoException;
 
 export interface ExponentialBackoffOptions {
   maxDepth: number;
 }
 
+@injectable()
 export class ExponentialBackoffRetryStrategy implements RetryStrategy {
   private readonly RETRYABLE_AMQP_CODES: ReadonlySet<number> = new Set([
     311, 312, 313, 320, 404, 405, 406, 502, 503, 504, 505, 506

@@ -14,7 +14,7 @@ import {
   RetryStrategy
 } from '@sectester/core';
 import type { Channel, ConsumeMessage } from 'amqplib';
-import { autoInjectable, DependencyContainer, inject } from 'tsyringe';
+import { DependencyContainer, inject, injectable } from 'tsyringe';
 import type { ChannelWrapper } from 'amqp-connection-manager';
 import { EventEmitter, once } from 'events';
 
@@ -40,7 +40,7 @@ interface Binding<T, R> {
   eventNames: string[];
 }
 
-@autoInjectable()
+@injectable()
 export class RMQEventBus implements EventBus {
   private channel: ChannelWrapper | undefined;
 
@@ -64,6 +64,8 @@ export class RMQEventBus implements EventBus {
   }
 
   public async init(): Promise<void> {
+    await this.connectionManager.connect();
+
     if (!this.channel) {
       this.channel = this.connectionManager.createChannel();
 
@@ -137,6 +139,8 @@ export class RMQEventBus implements EventBus {
   }
 
   public async destroy(): Promise<void> {
+    await this.connectionManager.disconnect();
+
     try {
       if (this.channel) {
         await this.channel.cancelAll();
@@ -148,8 +152,7 @@ export class RMQEventBus implements EventBus {
       this.subject.removeAllListeners();
     } catch (e) {
       this.logger.error('Cannot terminate event bus gracefully');
-      this.logger.debug('Event bus terminated');
-      this.logger.debug('Error on disconnect: %s', e.message);
+      this.logger.debug('Error on terminating event bus: %s', e.message);
     }
   }
 

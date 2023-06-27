@@ -1,17 +1,11 @@
-import { Repeater } from './Repeater';
-import {
-  HttpRequestRunner,
-  RequestRunner,
-  RequestRunnerOptions,
-  WsRequestRunner
-} from '../request-runner';
+import { Repeater, RepeaterId } from './Repeater';
+import { RequestRunner, RequestRunnerOptions } from '../request-runner';
 import { RepeaterOptions } from './RepeaterOptions';
 import { RepeatersManager } from '../api';
-import { EventBusFactory } from '../bus';
 import { RepeaterRequestRunnerOptions } from './RepeaterRequestRunnerOptions';
-import { Configuration } from '@sectester/core';
+import { Configuration, EventBus } from '@sectester/core';
 import { v4 as uuidv4 } from 'uuid';
-import { DependencyContainer, injectable } from 'tsyringe';
+import { DependencyContainer, injectable, Lifecycle } from 'tsyringe';
 
 /**
  *  A factory that is able to create a dedicated instance of the repeater with a bus and other dependencies.
@@ -19,38 +13,14 @@ import { DependencyContainer, injectable } from 'tsyringe';
 @injectable()
 export class RepeaterFactory {
   private readonly MAX_NAME_LENGTH = 80;
-  private readonly DEFAULT_RUNNER_OPTIONS: Readonly<RequestRunnerOptions> = {
-    timeout: 30000,
-    maxContentLength: 100,
-    reuseConnection: false,
-    allowedMimes: [
-      'text/html',
-      'text/plain',
-      'text/css',
-      'text/javascript',
-      'text/markdown',
-      'text/xml',
-      'application/javascript',
-      'application/x-javascript',
-      'application/json',
-      'application/xml',
-      'application/x-www-form-urlencoded',
-      'application/msgpack',
-      'application/ld+json',
-      'application/graphql'
-    ]
-  };
-  private readonly container: DependencyContainer;
   private readonly repeatersManager: RepeatersManager;
-  private readonly eventBusFactory: EventBusFactory;
+  private readonly runnerOptions: Readonly<RequestRunnerOptions>;
 
   constructor(private readonly configuration: Configuration) {
-    this.container = this.configuration.container.createChildContainer();
-
     this.repeatersManager =
-      this.container.resolve<RepeatersManager>(RepeatersManager);
-    this.eventBusFactory =
-      this.container.resolve<EventBusFactory>(EventBusFactory);
+      this.configuration.container.resolve(RepeatersManager);
+    this.runnerOptions =
+      this.configuration.container.resolve(RequestRunnerOptions);
   }
 
   public async createRepeater({
@@ -84,20 +54,43 @@ export class RepeaterFactory {
     repeaterId: string,
     {
       requestRunnerOptions,
-      requestRunners = [HttpRequestRunner, WsRequestRunner]
+      requestRunners = []
     }: RepeaterRequestRunnerOptions = {}
   ) {
-    this.registerRequestRunners(requestRunners, requestRunnerOptions);
+    const container = this.configuration.container.createChildContainer();
 
-    const bus = await this.eventBusFactory.create(repeaterId);
+    container.register(RepeaterId, {
+      useValue: repeaterId
+    });
+
+    this.registerRequestRunnerOptions(container, requestRunnerOptions);
+    this.registerRequestRunners(container, requestRunners);
+
+    const bus = await this.createEventBus(container);
+
+    return new Repeater({
+      bus,
+      repeaterId,
+      configuration: this.configuration
+    });
+  }
+
+  private async createEventBus(
+    container: DependencyContainer
+  ): Promise<EventBus> {
+    await this.configuration.loadCredentials();
+
+    if (!this.configuration.credentials) {
+      throw new Error(
+        'Please provide credentials to establish a connection with the bus.'
+      );
+    }
+
+    const bus = container.resolve<EventBus>(EventBus);
 
     await bus.init?.();
 
-    return new Repeater({
-      repeaterId,
-      bus,
-      configuration: this.configuration
-    });
+    return bus;
   }
 
   private generateName(
@@ -120,38 +113,40 @@ export class RepeaterFactory {
   }
 
   private registerRequestRunners(
+    container: DependencyContainer,
     requestRunners: (
       | RequestRunner
       | { new (...args: unknown[]): RequestRunner }
-    )[],
-    requestRunnerOptions?: RequestRunnerOptions | undefined
+    )[]
   ): void {
-    this.registerRequestRunnerOptions(requestRunnerOptions);
-    requestRunners?.forEach(runner => this.registerRequestRunner(runner));
-  }
-
-  private registerRequestRunnerOptions(
-    options: RequestRunnerOptions | undefined
-  ): void {
-    this.container.register(RequestRunnerOptions, {
-      useValue: {
-        ...this.DEFAULT_RUNNER_OPTIONS,
-        ...(options ?? {})
+    requestRunners.forEach(runner => {
+      if (typeof runner === 'function') {
+        container.register(
+          RequestRunner,
+          {
+            useClass: runner
+          },
+          {
+            lifecycle: Lifecycle.ContainerScoped
+          }
+        );
+      } else {
+        container.register(RequestRunner, {
+          useValue: runner
+        });
       }
     });
   }
 
-  private registerRequestRunner(
-    runner: RequestRunner | { new (...args: unknown[]): RequestRunner }
+  private registerRequestRunnerOptions(
+    container: DependencyContainer,
+    options: RequestRunnerOptions | undefined
   ): void {
-    if (typeof runner === 'function') {
-      this.container.register(RequestRunner, {
-        useClass: runner
-      });
-    } else {
-      this.container.register(RequestRunner, {
-        useValue: runner
-      });
-    }
+    container.register(RequestRunnerOptions, {
+      useValue: {
+        ...this.runnerOptions,
+        ...(options ?? {})
+      }
+    });
   }
 }

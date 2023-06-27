@@ -7,7 +7,7 @@ import {
 import { first } from '../utils';
 import { LogLevel } from '../logger';
 import { version, secTester } from '../../package.json';
-import { container, injectable } from 'tsyringe';
+import { container } from 'tsyringe';
 
 export interface ConfigurationOptions {
   hostname: string;
@@ -16,7 +16,6 @@ export interface ConfigurationOptions {
   credentialProviders?: CredentialProvider[];
 }
 
-@injectable()
 export class Configuration {
   private readonly SCHEMA_REGEXP = /^.+:\/\//;
   private readonly HOSTNAME_NORMALIZATION_REGEXP = /^(?!(?:\w+:)?\/\/)|^\/\//;

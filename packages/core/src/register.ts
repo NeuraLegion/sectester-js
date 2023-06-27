@@ -1,11 +1,15 @@
 import { Configuration } from './configuration';
 import { Logger } from './logger';
-import { container, DependencyContainer } from 'tsyringe';
+import {
+  container,
+  DependencyContainer,
+  instancePerContainerCachingFactory
+} from 'tsyringe';
 
 container.register(Logger, {
-  useFactory(child: DependencyContainer): Logger {
-    return child.isRegistered(Configuration, true)
+  useFactory: instancePerContainerCachingFactory((child: DependencyContainer) =>
+    child.isRegistered(Configuration, true)
       ? new Logger(child.resolve(Configuration).logLevel)
-      : new Logger();
-  }
+      : new Logger()
+  )
 });

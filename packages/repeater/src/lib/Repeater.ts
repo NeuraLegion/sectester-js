@@ -4,7 +4,7 @@ import {
   RegisterRepeaterResult,
   RepeaterRegisteringError,
   RepeaterStatusEvent
-} from '../bus';
+} from '../api';
 import { RepeaterStatus } from '../models';
 import { Configuration, EventBus, Logger } from '@sectester/core';
 import { gt } from 'semver';
@@ -17,8 +17,11 @@ export enum RunningStatus {
   RUNNING
 }
 
+export type RepeaterId = string;
+export const RepeaterId = Symbol('RepeaterId');
+
 export class Repeater {
-  public readonly repeaterId: string;
+  public readonly repeaterId: RepeaterId;
 
   private readonly bus: EventBus;
   private readonly configuration: Configuration;
@@ -37,7 +40,7 @@ export class Repeater {
     bus,
     configuration
   }: {
-    repeaterId: string;
+    repeaterId: RepeaterId;
     bus: EventBus;
     configuration: Configuration;
   }) {
