@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import { format } from 'util';
 
 export enum LogLevel {
   SILENT,
@@ -10,11 +9,10 @@ export enum LogLevel {
 }
 
 export class Logger {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  private MAX_FORMATTED_LEVEL_LENGTH = Object.keys(LogLevel)
-    .sort((a: string, b: string) => a.length - b.length)
-    .slice(0)
-    .pop()!.length;
+  private MAX_FORMATTED_LEVEL_LENGTH = Object.values(LogLevel).reduce(
+    (maxLength, level) => Math.max(maxLength, level.toString().length),
+    0
+  );
 
   get logLevel(): LogLevel {
     return this._logLevel;
@@ -56,7 +54,7 @@ export class Logger {
   }
 
   private formatHeader(level: LogLevel): string | undefined {
-    const header = format('[%s] [%s]', new Date(), this.formattedLevel(level));
+    const header = `[${new Date()}] [${this.formattedLevel(level)}]`;
 
     switch (level) {
       case LogLevel.ERROR:
