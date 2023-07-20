@@ -53,7 +53,7 @@ describe('ScanFactory', () => {
     it('should create a scan', async () => {
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
-        tests: [TestType.STORED_XSS]
+        tests: [TestType.XSS]
       };
       when(mockedScans.uploadHar(anything())).thenResolve({ id: fileId });
       when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
@@ -68,7 +68,7 @@ describe('ScanFactory', () => {
             name: 'GET example.com',
             module: Module.DAST,
             discoveryTypes: [Discovery.ARCHIVE],
-            tests: [TestType.STORED_XSS]
+            tests: [TestType.XSS]
           })
         )
       ).once();
@@ -78,7 +78,7 @@ describe('ScanFactory', () => {
     it('should generate and upload a HAR file', async () => {
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
-        tests: [TestType.STORED_XSS]
+        tests: [TestType.XSS]
       };
       when(mockedScans.uploadHar(anything())).thenResolve({ id: fileId });
       when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
@@ -108,7 +108,7 @@ describe('ScanFactory', () => {
             'hex'
           )}.example.com`
         },
-        tests: [TestType.STORED_XSS]
+        tests: [TestType.XSS]
       };
       when(mockedScans.uploadHar(anything())).thenResolve({ id: fileId });
       when(mockedScans.createScan(anything())).thenResolve({ id: scanId });

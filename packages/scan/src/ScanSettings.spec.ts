@@ -107,7 +107,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         name: 'my scan',
-        tests: [TestType.STORED_XSS],
+        tests: [TestType.XSS],
         target: { url: 'https://example.com' }
       };
 
@@ -123,7 +123,7 @@ describe('ScanSettings', () => {
     it('should create a settings with default name', () => {
       // arrange
       const settings: ScanSettingsOptions = {
-        tests: [TestType.STORED_XSS],
+        tests: [TestType.XSS],
         target: { url: 'https://example.com' }
       };
 
@@ -140,7 +140,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         name: randomBytes(201).toString('hex'),
-        tests: [TestType.STORED_XSS],
+        tests: [TestType.XSS],
         target: { url: 'https://example.com' }
       };
 
@@ -153,7 +153,7 @@ describe('ScanSettings', () => {
     it('should truncate a default name if hostname is greater than 200 characters', () => {
       // arrange
       const settings: ScanSettingsOptions = {
-        tests: [TestType.STORED_XSS],
+        tests: [TestType.XSS],
         target: {
           url: `https://subdomain-${randomBytes(200).toString(
             'hex'
