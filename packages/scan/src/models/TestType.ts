@@ -41,6 +41,7 @@ export enum TestType {
   SQLI = 'sqli',
   SSRF = 'ssrf',
   SSTI = 'ssti',
+  STORED_XSS = 'stored_xss',
   UNVALIDATED_REDIRECT = 'unvalidated_redirect',
   VERSION_CONTROL_SYSTEMS = 'version_control_systems',
   WORDPRESS = 'wordpress',
