@@ -54,7 +54,7 @@ export class Logger {
   }
 
   private formatHeader(level: LogLevel): string | undefined {
-    const header = `[${new Date()}] [${this.formattedLevel(level)}]`;
+    const header = `[${new Date().toJSON()}] [${this.formattedLevel(level)}]`;
 
     switch (level) {
       case LogLevel.ERROR:
