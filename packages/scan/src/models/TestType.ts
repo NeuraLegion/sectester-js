@@ -11,6 +11,9 @@ export enum TestType {
   DATE_MANIPULATION = 'date_manipulation',
   DEFAULT_LOGIN_LOCATION = 'default_login_location',
   DIRECTORY_LISTING = 'directory_listing',
+  /**
+   * @deprecated Use TestType.XSS instead
+   */
   DOM_XSS = 'dom_xss',
   EMAIL_INJECTION = 'email_injection',
   EXPOSED_COUCH_DB_APIS = 'exposed_couch_db_apis',
@@ -41,6 +44,7 @@ export enum TestType {
   SQLI = 'sqli',
   SSRF = 'ssrf',
   SSTI = 'ssti',
+  STORED_XSS = 'stored_xss',
   UNVALIDATED_REDIRECT = 'unvalidated_redirect',
   VERSION_CONTROL_SYSTEMS = 'version_control_systems',
   WORDPRESS = 'wordpress',

@@ -110,7 +110,7 @@ describe('HttpScans', () => {
 
       await scans.createScan({
         name: 'test',
-        tests: [TestType.DOM_XSS],
+        tests: [TestType.XSS],
         module: Module.DAST
       });
 
@@ -139,7 +139,7 @@ describe('HttpScans', () => {
 
       const result = scans.createScan({
         name: 'test',
-        tests: [TestType.DOM_XSS],
+        tests: [TestType.XSS],
         module: Module.DAST
       });
 
