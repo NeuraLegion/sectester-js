@@ -1,6 +1,6 @@
 {
   "name": "@sectester/runner",
-  "version": "0.24.1",
+  "version": "0.25.0",
   "description": "Run scanning for vulnerabilities just from your unit tests on CI phase.",
   "repository": {
     "type": "git",
