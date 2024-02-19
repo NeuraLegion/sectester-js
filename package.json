@@ -78,7 +78,7 @@
     "@har-sdk/core": "^1.4.3",
     "amqp-connection-manager": "^4.1.13",
     "amqplib": "^0.10.3",
-    "axios": "^0.26.1",
+    "axios": "^0.27.2",
     "axios-rate-limit": "^1.3.0",
     "chalk": "^4.1.2",
     "ci-info": "^3.3.0",
