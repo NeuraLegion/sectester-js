@@ -84,7 +84,7 @@
     "ci-info": "^3.3.0",
     "content-type": "^1.0.4",
     "form-data": "^4.0.0",
-    "reflect-metadata": "^0.1.13",
+    "reflect-metadata": "^0.2.1",
     "semver": "^7.5.2",
     "socks-proxy-agent": "^6.2.0-beta.0",
     "tslib": "~2.3.1",
