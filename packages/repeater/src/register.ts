@@ -3,8 +3,7 @@ import { DefaultRepeatersManager, RepeatersManager } from './api';
 import {
   HttpRequestRunner,
   RequestRunner,
-  RequestRunnerOptions,
-  WsRequestRunner
+  RequestRunnerOptions
 } from './request-runner';
 import {
   container,
@@ -25,10 +24,6 @@ import {
 
 container.register(RequestRunner, {
   useClass: HttpRequestRunner
-});
-
-container.register(RequestRunner, {
-  useClass: WsRequestRunner
 });
 
 container.register(RequestRunnerOptions, {

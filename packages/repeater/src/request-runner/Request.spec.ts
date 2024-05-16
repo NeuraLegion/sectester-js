@@ -34,17 +34,6 @@ describe('Request', () => {
       ).toThrow('Body must be string.');
     });
 
-    it('should throw Error on invalid correlationIdRegex', () => {
-      expect(
-        () =>
-          new Request({
-            url: 'http://foo.bar',
-            correlationIdRegex: '(',
-            protocol: Protocol.HTTP
-          })
-      ).toThrow('Correlation id must be regular expression.');
-    });
-
     it('should create an instance', () => {
       expect(
         () =>

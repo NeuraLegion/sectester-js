@@ -5,7 +5,7 @@ describe('Response', () => {
   describe('constructor', () => {
     it('should create an instance having only protocol', () => {
       const responseOptions = {
-        protocol: Protocol.WS
+        protocol: Protocol.HTTP
       };
 
       const response = new Response(responseOptions);
@@ -15,7 +15,7 @@ describe('Response', () => {
 
     it('should create an instance with full fieldset', () => {
       const responseOptions = {
-        protocol: Protocol.WS,
+        protocol: Protocol.HTTP,
         statusCode: 200,
         headers: { 'x-key': ['x-value'] },
         body: '{}',

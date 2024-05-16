@@ -7,7 +7,6 @@ export interface RequestOptions {
   method?: string;
   headers?: Record<string, string | string[]>;
   body?: string;
-  correlationIdRegex?: string | RegExp;
 }
 
 export class Request {
@@ -30,7 +29,6 @@ export class Request {
   public readonly protocol: Protocol;
   public readonly url: string;
   public readonly body?: string;
-  public readonly correlationIdRegex?: RegExp;
 
   private readonly _method?: string;
 
@@ -48,20 +46,11 @@ export class Request {
     return this.url.startsWith('https');
   }
 
-  constructor({
-    protocol,
-    method,
-    url,
-    body,
-    correlationIdRegex,
-    headers = {}
-  }: RequestOptions) {
+  constructor({ protocol, method, url, body, headers = {} }: RequestOptions) {
     this.protocol = protocol;
     this._method = method?.toUpperCase() ?? 'GET';
     this.validateUrl(url);
     this.url = url;
-    this.correlationIdRegex =
-      this.normalizeCorrelationIdRegex(correlationIdRegex);
     this.setHeaders(headers);
     this.precheckBody(body);
     this.body = body;
@@ -97,18 +86,6 @@ export class Request {
   private precheckBody(body: string | undefined): void {
     if (body && typeof body !== 'string') {
       throw new Error('Body must be string.');
-    }
-  }
-
-  private normalizeCorrelationIdRegex(
-    correlationIdRegex: RegExp | string | undefined
-  ): RegExp | undefined {
-    if (correlationIdRegex) {
-      try {
-        return new RegExp(correlationIdRegex, 'i');
-      } catch {
-        throw new Error('Correlation id must be regular expression.');
-      }
     }
   }
 }

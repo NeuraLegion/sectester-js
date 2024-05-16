@@ -3,8 +3,7 @@ import { RepeaterFactory } from './RepeaterFactory';
 import {
   HttpRequestRunner,
   RequestRunner,
-  RequestRunnerOptions,
-  WsRequestRunner
+  RequestRunnerOptions
 } from '../request-runner';
 import { Repeater } from './Repeater';
 import { RepeatersManager } from '../api';
@@ -215,7 +214,7 @@ describe('RepeaterFactory', () => {
       const factory = new RepeaterFactory(configuration);
 
       await factory.createRepeater({
-        requestRunners: [HttpRequestRunner, WsRequestRunner]
+        requestRunners: [HttpRequestRunner]
       });
 
       verify(
@@ -223,17 +222,6 @@ describe('RepeaterFactory', () => {
           RequestRunner,
           deepEqual({
             useClass: HttpRequestRunner
-          }),
-          deepEqual({
-            lifecycle: Lifecycle.ContainerScoped
-          })
-        )
-      ).once();
-      verify(
-        mockedChildContainer.register(
-          RequestRunner,
-          deepEqual({
-            useClass: WsRequestRunner
           }),
           deepEqual({
             lifecycle: Lifecycle.ContainerScoped
@@ -331,7 +319,7 @@ describe('RepeaterFactory', () => {
       const existingRepeaterId = '123';
 
       await factory.createRepeaterFromExisting(existingRepeaterId, {
-        requestRunners: [HttpRequestRunner, WsRequestRunner]
+        requestRunners: [HttpRequestRunner]
       });
 
       verify(
@@ -339,17 +327,6 @@ describe('RepeaterFactory', () => {
           RequestRunner,
           deepEqual({
             useClass: HttpRequestRunner
-          }),
-          deepEqual({
-            lifecycle: Lifecycle.ContainerScoped
-          })
-        )
-      ).once();
-      verify(
-        mockedChildContainer.register(
-          RequestRunner,
-          deepEqual({
-            useClass: WsRequestRunner
           }),
           deepEqual({
             lifecycle: Lifecycle.ContainerScoped

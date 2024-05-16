@@ -1,4 +1,3 @@
 export enum Protocol {
-  HTTP = 'http',
-  WS = 'ws'
+  HTTP = 'http'
 }
