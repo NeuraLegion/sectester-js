@@ -1,6 +1,14 @@
 import { RepeaterFactory, RepeaterId } from './lib';
 import { DefaultRepeatersManager, RepeatersManager } from './api';
 import {
+  DefaultRepeaterBusFactory,
+  DefaultRepeaterCommandHub,
+  DefaultRepeaterServer,
+  RepeaterBusFactory,
+  RepeaterCommandHub,
+  RepeaterServer
+} from './bus';
+import {
   HttpRequestRunner,
   RequestRunner,
   RequestRunnerOptions
@@ -86,3 +94,6 @@ container.register(EventBus, {
 });
 
 container.register(RepeatersManager, { useClass: DefaultRepeatersManager });
+container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
+container.register(RepeaterCommandHub, { useClass: DefaultRepeaterCommandHub });
+container.register(RepeaterBusFactory, { useClass: DefaultRepeaterBusFactory });

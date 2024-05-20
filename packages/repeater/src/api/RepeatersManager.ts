@@ -1,6 +1,4 @@
 export interface RepeatersManager {
-  getRepeater(repeaterId: string): Promise<{ repeaterId: string }>;
-
   createRepeater(options: {
     name: string;
     projectId?: string;

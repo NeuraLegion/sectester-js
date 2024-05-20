@@ -1,245 +1,118 @@
-import 'reflect-metadata';
 import { Repeater, RunningStatus } from './Repeater';
-import {
-  RegisterRepeaterCommand,
-  RepeaterRegisteringError,
-  RepeaterStatusEvent
-} from '../api';
-import { Configuration, EventBus, Logger } from '@sectester/core';
-import {
-  anyOfClass,
-  anything,
-  capture,
-  instance,
-  mock,
-  objectContaining,
-  reset,
-  verify,
-  when
-} from 'ts-mockito';
-import { DependencyContainer } from 'tsyringe';
+import { RepeaterBus } from '../bus';
+import { instance, mock, reset, verify, when } from 'ts-mockito';
 
 describe('Repeater', () => {
-  const version = '42.0.1';
   const repeaterId = 'fooId';
 
   let repeater!: Repeater;
-  const mockedConfiguration = mock<Configuration>();
-  const mockedEventBus = mock<EventBus>();
-  const mockedLogger = mock<Logger>();
-  const mockedContainer = mock<DependencyContainer>();
+  const mockedRepeaterBus = mock<RepeaterBus>();
 
-  const createRepater = () =>
+  const createRepeater = () =>
     new Repeater({
       repeaterId,
-      bus: instance(mockedEventBus),
-      configuration: instance(mockedConfiguration)
+      bus: instance(mockedRepeaterBus)
     });
 
   beforeEach(() => {
-    when(mockedContainer.resolve(Logger)).thenReturn(instance(mockedLogger));
-    when(mockedContainer.isRegistered(Logger, anything())).thenReturn(true);
-    when(mockedConfiguration.repeaterVersion).thenReturn(version);
-    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
-    when(
-      mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-    ).thenResolve({ payload: { version } });
-    when(mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))).thenResolve();
-
-    jest.useFakeTimers();
-
-    repeater = createRepater();
+    repeater = createRepeater();
   });
 
-  afterEach(() => {
-    reset<Configuration | EventBus | DependencyContainer | Logger>(
-      mockedConfiguration,
-      mockedEventBus,
-      mockedLogger,
-      mockedContainer
-    );
-
-    jest.useRealTimers();
-  });
+  afterEach(() => reset<RepeaterBus>(mockedRepeaterBus));
 
   describe('start', () => {
     it('should start', async () => {
+      // act
       await repeater.start();
 
-      verify(
-        mockedEventBus.execute(
-          objectContaining({
-            type: 'RepeaterRegistering',
-            payload: {
-              repeaterId,
-              version
-            }
-          })
-        )
-      ).once();
-
-      verify(
-        mockedEventBus.publish(
-          objectContaining({
-            type: 'RepeaterStatusUpdated',
-            payload: {
-              repeaterId,
-              status: 'connected'
-            }
-          })
-        )
-      ).once();
-    });
-
-    it('should throw an error on failed registration', async () => {
-      when(
-        mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-      ).thenResolve();
-
-      await expect(repeater.start()).rejects.toThrow(
-        'Error registering repeater.'
-      );
-    });
-
-    it('should send ping periodically', async () => {
-      await repeater.start();
-      jest.advanceTimersByTime(15000);
-      jest.runOnlyPendingTimers();
-
-      verify(
-        mockedEventBus.publish(
-          objectContaining({
-            type: 'RepeaterStatusUpdated',
-            payload: {
-              repeaterId,
-              status: 'connected'
-            }
-          })
-        )
-      ).thrice();
+      // assert
+      verify(mockedRepeaterBus.connect()).once();
     });
 
     it('should have RunningStatus.STARTING just after start() call', () => {
+      // act
       void repeater.start();
+
+      // assert
       expect(repeater.runningStatus).toBe(RunningStatus.STARTING);
     });
 
     it('should have RunningStatus.RUNNING after successful start()', async () => {
+      // act
       await repeater.start();
+
+      // assert
       expect(repeater.runningStatus).toBe(RunningStatus.RUNNING);
     });
 
     it('should throw an error on start() twice', async () => {
+      // arrange
       await repeater.start();
 
+      // act
       const res = repeater.start();
 
+      // assert
       await expect(res).rejects.toThrow('Repeater is already active.');
     });
 
     it('should be possible to start() after start() error', async () => {
-      when(mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand)))
-        .thenReject()
-        .thenResolve({ payload: { version } });
+      // act
+      when(mockedRepeaterBus.connect()).thenReject().thenResolve();
 
+      // assert
       await expect(repeater.start()).rejects.toThrow();
       await expect(repeater.start()).resolves.not.toThrow();
-    });
-
-    it.each([
-      {
-        error: RepeaterRegisteringError.REQUIRES_TO_BE_UPDATED,
-        expected: 'The current running version is no longer supported'
-      },
-      {
-        error: RepeaterRegisteringError.BUSY,
-        expected: `There is an already running Repeater with ID ${repeaterId}`
-      },
-      {
-        error: RepeaterRegisteringError.NOT_FOUND,
-        expected: 'Unauthorized access'
-      },
-      {
-        error: RepeaterRegisteringError.NOT_ACTIVE,
-        expected: 'The current Repeater is not active'
-      }
-    ])(
-      'should throw an error on registration error ${error}',
-      async ({ expected, error }) => {
-        when(
-          mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-        ).thenResolve({
-          payload: { error }
-        });
-
-        await expect(repeater.start()).rejects.toThrow(expected);
-      }
-    );
-
-    it('should log a warning if a new version is available', async () => {
-      const newVersion = version.replace(/(\d+)/, (_, x) => `${+x + 1}`);
-      when(
-        mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-      ).thenResolve({
-        payload: { version: newVersion }
-      });
-
-      await repeater.start();
-
-      const [arg]: string[] = capture(mockedLogger.warn).first();
-      expect(arg).toContain('A new Repeater version (%s) is available');
     });
   });
 
   describe('stop', () => {
     it('should stop', async () => {
+      // arrange
       await repeater.start();
+
+      // act
       await repeater.stop();
 
-      verify(
-        mockedEventBus.publish(
-          objectContaining({
-            type: 'RepeaterStatusUpdated',
-            payload: {
-              repeaterId,
-              status: 'disconnected'
-            }
-          })
-        )
-      ).once();
-
-      jest.advanceTimersByTime(25000);
-      jest.runOnlyPendingTimers();
-
-      verify(
-        mockedEventBus.publish(
-          objectContaining({ payload: { status: 'connected' } })
-        )
-      ).once();
+      // assert
+      verify(mockedRepeaterBus.close()).once();
     });
 
     it('should have RunningStatus.OFF after start() and stop()', async () => {
+      // arrange
       await repeater.start();
+
+      // act
       await repeater.stop();
+
+      // assert
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
 
     it('should do nothing on stop() without start()', async () => {
+      // act
       await repeater.stop();
+
+      // assert
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
 
     it('should do nothing on second stop() call', async () => {
+      // arrange
       await repeater.start();
       await repeater.stop();
+
+      // assert
       await repeater.stop();
 
+      // assert
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
   });
 
   describe('runningStatus', () => {
     it('should have RunningStatus.OFF initially', () => {
+      // assert
       expect(repeater.runningStatus).toBe(RunningStatus.OFF);
     });
   });

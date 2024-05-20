@@ -2,8 +2,10 @@ import { Repeater, RepeaterId } from './Repeater';
 import { RequestRunner, RequestRunnerOptions } from '../request-runner';
 import { RepeaterOptions } from './RepeaterOptions';
 import { RepeatersManager } from '../api';
+import { RepeaterBusFactory } from '../bus/RepeaterBusFactory';
+import { DefaultRepeaterServerOptions } from '../bus/DefaultRepeaterServer';
 import { RepeaterRequestRunnerOptions } from './RepeaterRequestRunnerOptions';
-import { Configuration, EventBus } from '@sectester/core';
+import { Configuration } from '@sectester/core';
 import { v4 as uuidv4 } from 'uuid';
 import { DependencyContainer, injectable, Lifecycle } from 'tsyringe';
 
@@ -41,43 +43,35 @@ export class RepeaterFactory {
     return this.createRepeaterInstance(repeaterId, requestRunnerOptions);
   }
 
-  public async createRepeaterFromExisting(
-    repeaterId: string,
-    options?: RepeaterRequestRunnerOptions
-  ): Promise<Repeater> {
-    await this.repeatersManager.getRepeater(repeaterId);
-
-    return this.createRepeaterInstance(repeaterId, options);
-  }
-
   private async createRepeaterInstance(
     repeaterId: string,
     {
       requestRunnerOptions,
       requestRunners = []
     }: RepeaterRequestRunnerOptions = {}
-  ) {
+  ): Promise<Repeater> {
     const container = this.configuration.container.createChildContainer();
 
     container.register(RepeaterId, {
       useValue: repeaterId
     });
 
+    await this.registerRepeaterServerOptions(container);
     this.registerRequestRunnerOptions(container, requestRunnerOptions);
     this.registerRequestRunners(container, requestRunners);
 
-    const bus = await this.createEventBus(container);
+    const busFactory =
+      container.resolve<RepeaterBusFactory>(RepeaterBusFactory);
 
     return new Repeater({
-      bus,
       repeaterId,
-      configuration: this.configuration
+      bus: busFactory.create(repeaterId)
     });
   }
 
-  private async createEventBus(
+  private async registerRepeaterServerOptions(
     container: DependencyContainer
-  ): Promise<EventBus> {
+  ): Promise<void> {
     await this.configuration.loadCredentials();
 
     if (!this.configuration.credentials) {
@@ -86,11 +80,16 @@ export class RepeaterFactory {
       );
     }
 
-    const bus = container.resolve<EventBus>(EventBus);
-
-    await bus.init?.();
-
-    return bus;
+    container.register<DefaultRepeaterServerOptions>(
+      DefaultRepeaterServerOptions,
+      {
+        useValue: {
+          uri: `${this.configuration.api}/workstations`,
+          token: this.configuration.credentials?.token as string,
+          connectTimeout: 10000
+        }
+      }
+    );
   }
 
   private generateName(

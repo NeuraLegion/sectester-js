@@ -4,9 +4,14 @@ import { URL } from 'url';
 export interface RequestOptions {
   protocol: Protocol;
   url: string;
-  method?: string;
   headers?: Record<string, string | string[]>;
+  method?: string;
   body?: string;
+  correlationIdRegex?: string | RegExp;
+  encoding?: 'base64';
+  maxContentSize?: number;
+  timeout?: number;
+  decompress?: boolean;
 }
 
 export class Request {
@@ -26,34 +31,80 @@ export class Request {
       'referer',
       'user-agent'
     ]);
+
   public readonly protocol: Protocol;
   public readonly url: string;
   public readonly body?: string;
+  public readonly correlationIdRegex?: RegExp;
+  public readonly encoding?: 'base64';
+  public readonly maxContentSize?: number;
+  public readonly decompress?: boolean;
+  public readonly timeout?: number;
 
-  private readonly _method?: string;
+  private _method: string;
 
-  get method(): string | undefined {
+  get method(): string {
     return this._method;
   }
 
-  private _headers?: Record<string, string | string[]>;
+  private _headers: Record<string, string | string[]> = {};
 
-  get headers(): Readonly<Record<string, string | string[]>> | undefined {
+  get headers(): Readonly<Record<string, string | string[]>> {
     return this._headers;
+  }
+
+  private _ca?: Buffer;
+
+  get ca() {
+    return this._ca;
+  }
+
+  private _pfx?: Buffer;
+
+  get pfx() {
+    return this._pfx;
+  }
+
+  private _passphrase?: string;
+
+  get passphrase() {
+    return this._passphrase;
   }
 
   get secureEndpoint(): boolean {
     return this.url.startsWith('https');
   }
 
-  constructor({ protocol, method, url, body, headers = {} }: RequestOptions) {
+  constructor({
+    protocol,
+    method,
+    url,
+    body,
+    timeout,
+    correlationIdRegex,
+    maxContentSize,
+    encoding,
+    decompress = true,
+    headers = {}
+  }: RequestOptions) {
     this.protocol = protocol;
     this._method = method?.toUpperCase() ?? 'GET';
+
     this.validateUrl(url);
-    this.url = url;
-    this.setHeaders(headers);
+    this.url = url.trim();
+
     this.precheckBody(body);
     this.body = body;
+
+    this.correlationIdRegex =
+      this.normalizeCorrelationIdRegex(correlationIdRegex);
+
+    this.setHeaders(headers);
+
+    this.encoding = encoding;
+    this.timeout = timeout;
+    this.maxContentSize = maxContentSize;
+    this.decompress = !!decompress;
   }
 
   public setHeaders(headers: Record<string, string | string[]>): void {
@@ -62,16 +113,17 @@ export class Request {
       ...headers
     };
 
-    this._headers = Object.fromEntries(
-      Object.entries(mergedHeaders).map(
-        ([field, value]: [string, string | string[]]) => [
-          field,
+    this._headers = Object.entries(mergedHeaders).reduce(
+      (result, [field, value]: [string, string | string[]]) => {
+        result[field] =
           Array.isArray(value) &&
           Request.SINGLE_VALUE_HEADERS.has(field.toLowerCase())
             ? value.join(', ')
-            : value
-        ]
-      )
+            : value;
+
+        return result;
+      },
+      {}
     );
   }
 
@@ -86,6 +138,18 @@ export class Request {
   private precheckBody(body: string | undefined): void {
     if (body && typeof body !== 'string') {
       throw new Error('Body must be string.');
+    }
+  }
+
+  private normalizeCorrelationIdRegex(
+    correlationIdRegex: RegExp | string | undefined
+  ): RegExp | undefined {
+    if (correlationIdRegex) {
+      try {
+        return new RegExp(correlationIdRegex, 'i');
+      } catch {
+        throw new Error('Correlation id must be regular expression.');
+      }
     }
   }
 }

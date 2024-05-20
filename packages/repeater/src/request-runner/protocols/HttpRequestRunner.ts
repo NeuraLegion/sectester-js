@@ -81,7 +81,10 @@ export class HttpRequestRunner implements RequestRunner {
       return new Response({
         protocol: this.protocol,
         statusCode: response.statusCode,
-        headers: response.headers,
+        headers: (response.headers ?? {}) as unknown as Record<
+          string,
+          string | string[]
+        >,
         body: response.body
       });
     } catch (err) {
