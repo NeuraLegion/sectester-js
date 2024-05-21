@@ -9,7 +9,7 @@ export class DefaultRepeaterCommandHub implements RepeaterCommandHub {
     private readonly requestRunners: RequestRunner[]
   ) {}
 
-  public sendRequest(request: Request): Promise<Response> {
+  public async sendRequest(request: Request): Promise<Response> {
     const { protocol } = request;
 
     const requestRunner = this.requestRunners.find(

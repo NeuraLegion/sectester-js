@@ -5,3 +5,4 @@ export * from './RepeaterBus';
 export * from './RepeaterBusFactory';
 export * from './RepeaterCommandHub';
 export * from './RepeaterServer';
+export * from './RepeaterApplicationEvents';

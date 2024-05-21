@@ -45,12 +45,21 @@ export class DefaultRepeaterBus implements RepeaterBus {
 
     this.logger.log('Deploying the Repeater (%s)...', this.repeaterId);
 
-    await this.repeaterServer.deploy({
-      repeaterId: this.repeaterId
-    });
+    await this.deploy();
 
     this.logger.log('The Repeater (%s) started', this.repeaterId);
   }
+
+  private async deploy() {
+    await this.deployRepeater();
+    this.repeaterServer.on(RepeaterServerEvents.CONNECTED, this.deployRepeater);
+  }
+
+  private deployRepeater = async () => {
+    await this.repeaterServer.deploy({
+      repeaterId: this.repeaterId
+    });
+  };
 
   private subscribeToEvents() {
     this.repeaterServer.on(RepeaterServerEvents.ERROR, this.handleError);
@@ -118,7 +127,6 @@ export class DefaultRepeaterBus implements RepeaterBus {
       remediation
     );
     this.close().catch(this.logger.error);
-    process.exitCode = 1;
   }
 
   private reconnectionFailed = ({
@@ -126,7 +134,6 @@ export class DefaultRepeaterBus implements RepeaterBus {
   }: RepeaterServerReconnectionFailedEvent) => {
     this.logger.error(error);
     this.close().catch(this.logger.error);
-    process.exitCode = 1;
   };
 
   private requestReceived = async (event: RepeaterServerRequestEvent) => {
