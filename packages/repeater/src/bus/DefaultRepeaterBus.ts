@@ -5,8 +5,10 @@ import {
   RepeaterErrorCodes,
   RepeaterServerErrorEvent,
   RepeaterServerEvents,
+  RepeaterServerReconnectionAttemptedEvent,
   RepeaterServerReconnectionFailedEvent,
-  RepeaterServerRequestEvent
+  RepeaterServerRequestEvent,
+  RepeaterUpgradeAvailableEvent
 } from './RepeaterEventHub';
 import { Request } from '../request-runner/Request';
 import { Logger } from '@sectester/core';
@@ -78,21 +80,11 @@ export class DefaultRepeaterBus implements RepeaterBus {
     );
     this.repeaterServer.events.on(
       RepeaterServerEvents.UPDATE_AVAILABLE,
-      payload =>
-        this.logger.warn(
-          '%s: A new Repeater version (%s) is available, for update instruction visit https://docs.brightsec.com/docs/installation-options',
-          chalk.yellow('(!) IMPORTANT'),
-          payload.version
-        )
+      this.upgradeAvailable
     );
     this.repeaterServer.events.on(
       RepeaterServerEvents.RECONNECT_ATTEMPT,
-      ({ attempt, maxAttempts }) =>
-        this.logger.warn(
-          'Failed to connect to Bright cloud (attempt %d/%d)',
-          attempt,
-          maxAttempts
-        )
+      this.reconnectAttempt
     );
     this.repeaterServer.events.on(
       RepeaterServerEvents.RECONNECTION_SUCCEEDED,
@@ -139,6 +131,25 @@ export class DefaultRepeaterBus implements RepeaterBus {
     );
     this.close().catch(this.logger.error);
   }
+
+  private upgradeAvailable = (event: RepeaterUpgradeAvailableEvent) => {
+    this.logger.warn(
+      '%s: A new Repeater version (%s) is available, for update instruction visit https://docs.brightsec.com/docs/installation-options',
+      chalk.yellow('(!) IMPORTANT'),
+      event.version
+    );
+  };
+
+  private reconnectAttempt = ({
+    attempt,
+    maxAttempts
+  }: RepeaterServerReconnectionAttemptedEvent) => {
+    this.logger.warn(
+      'Failed to connect to Bright cloud (attempt %d/%d)',
+      attempt,
+      maxAttempts
+    );
+  };
 
   private reconnectionFailed = ({
     error
