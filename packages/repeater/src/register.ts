@@ -3,9 +3,11 @@ import { DefaultRepeatersManager, RepeatersManager } from './api';
 import {
   DefaultRepeaterBusFactory,
   DefaultRepeaterCommandHub,
+  DefaultRepeaterEventHub,
   DefaultRepeaterServer,
   RepeaterBusFactory,
   RepeaterCommandHub,
+  RepeaterEventHub,
   RepeaterServer
 } from './bus';
 import {
@@ -95,5 +97,6 @@ container.register(EventBus, {
 
 container.register(RepeatersManager, { useClass: DefaultRepeatersManager });
 container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
+container.register(RepeaterEventHub, { useClass: DefaultRepeaterEventHub });
 container.register(RepeaterCommandHub, { useClass: DefaultRepeaterCommandHub });
 container.register(RepeaterBusFactory, { useClass: DefaultRepeaterBusFactory });

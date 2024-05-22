@@ -1,17 +1,21 @@
 import { DefaultRepeaterBus } from './DefaultRepeaterBus';
 import { Protocol } from '../models/Protocol';
 import { Request, Response } from '../request-runner';
-import { RepeaterApplicationEvents } from './RepeaterApplicationEvents';
+import { RepeaterServer } from './RepeaterServer';
+import { DefaultRepeaterEventHub } from './DefaultRepeaterEventHub';
 import {
   RepeaterErrorCodes,
-  RepeaterServer,
+  RepeaterEventHub,
+  RepeaterServerEventHandler,
   RepeaterServerEvents,
+  RepeaterServerEventsMap,
   RepeaterServerRequestEvent
-} from './RepeaterServer';
+} from './RepeaterEventHub';
 import { RepeaterCommandHub } from './RepeaterCommandHub';
 import { delay, Logger } from '@sectester/core';
 import {
   anything,
+  deepEqual,
   instance,
   mock,
   objectContaining,
@@ -23,7 +27,7 @@ import {
 describe('DefaultRepeaterBus', () => {
   const RepeaterId = 'fooId';
 
-  let events!: RepeaterApplicationEvents;
+  let events!: RepeaterEventHub;
   let sut!: DefaultRepeaterBus;
 
   const mockedRepeaterServer = mock<RepeaterServer>();
@@ -31,14 +35,9 @@ describe('DefaultRepeaterBus', () => {
   const mockedLogger = mock<Logger>();
 
   beforeEach(() => {
-    events = new RepeaterApplicationEvents();
+    events = new DefaultRepeaterEventHub();
 
-    when(mockedRepeaterServer.on(anything(), anything())).thenCall(
-      (event, handler) => events.on(event, handler)
-    );
-    when(mockedRepeaterServer.off(anything(), anything())).thenCall(
-      (event, handler) => events.off(event, handler)
-    );
+    when(mockedRepeaterServer.events).thenReturn(events);
 
     sut = new DefaultRepeaterBus(
       RepeaterId,
@@ -55,6 +54,34 @@ describe('DefaultRepeaterBus', () => {
       mockedLogger
     )
   );
+  describe('constructor', () => {
+    it('should provide error handler', async () => {
+      // arrange
+      const error = new Error('test error');
+      const args = ['arg1', 'arg2'];
+
+      const handler: RepeaterServerEventHandler<any> = jest
+        .fn()
+        .mockRejectedValue(error);
+      const event = 'testEvent';
+
+      events.on(event as keyof RepeaterServerEventsMap, handler);
+
+      // act
+      events.emit(event as RepeaterServerEvents, ...args);
+
+      // assert
+      await delay(200);
+      verify(
+        mockedLogger.debug(
+          'An error occurred while processing the %s event with the following payload: %j',
+          event,
+          deepEqual(['arg1', 'arg2'])
+        )
+      ).once();
+      verify(mockedLogger.error(error)).once();
+    });
+  });
 
   describe('connect', () => {
     it('should connect', async () => {
@@ -68,6 +95,17 @@ describe('DefaultRepeaterBus', () => {
           objectContaining({ repeaterId: RepeaterId })
         )
       ).once();
+    });
+
+    it('should allow connect more than once', async () => {
+      // arrange
+      await sut.connect();
+
+      // act
+      const act = sut.connect();
+
+      // assert
+      await expect(act).resolves.not.toThrow();
     });
 
     it('should throw when underlying connect throws', async () => {
@@ -224,6 +262,19 @@ describe('DefaultRepeaterBus', () => {
       // assert
       verify(mockedLogger.error(error)).once();
       verify(mockedRepeaterServer.disconnect()).once();
+    });
+
+    it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_SUCCEEDED}`, async () => {
+      // arrange
+      await sut.connect();
+
+      // act
+      events.emit(RepeaterServerEvents.RECONNECTION_SUCCEEDED);
+
+      // assert
+      verify(
+        mockedLogger.log('The Repeater (%s) connected', RepeaterId)
+      ).once();
     });
   });
 });

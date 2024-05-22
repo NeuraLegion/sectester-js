@@ -1,24 +1,21 @@
 import 'reflect-metadata';
 import {
+  CallbackFunction,
+  ErrorHandlerFunction,
+  RepeaterEventHub,
   RepeaterServerEventHandler,
   RepeaterServerEvents,
   RepeaterServerEventsMap
-} from './RepeaterServer';
+} from './RepeaterEventHub';
 import { injectable, Lifecycle, scoped } from 'tsyringe';
 import { EventEmitter } from 'events';
 
-export type CallbackFunction<T = unknown> = (arg: T) => unknown;
 export type HandlerFunction = (args: unknown[]) => unknown;
-export type ErrorHandlerFunction = (
-  error: Error,
-  event: string,
-  args: unknown[]
-) => unknown;
 
 @scoped(Lifecycle.ContainerScoped)
 @injectable()
-export class RepeaterApplicationEvents {
-  public onError: ErrorHandlerFunction | undefined;
+export class DefaultRepeaterEventHub implements RepeaterEventHub {
+  public errorHandler?: ErrorHandlerFunction;
 
   protected readonly events = new EventEmitter();
 
@@ -69,7 +66,7 @@ export class RepeaterApplicationEvents {
 
       callback?.(response);
     } catch (err) {
-      this.onError?.(err, event, args);
+      this.errorHandler?.(err, event, args);
     }
   }
 

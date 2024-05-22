@@ -1,26 +1,21 @@
-// eslint-disable-next-line max-classes-per-file
+import 'reflect-metadata';
+import { RepeaterServer } from './RepeaterServer';
 import {
+  CallbackFunction,
   DeployCommandOptions,
-  DeploymentRuntime,
   RepeaterErrorCodes,
-  RepeaterServer,
+  RepeaterEventHub,
   RepeaterServerDeployedEvent,
   RepeaterServerErrorEvent,
-  RepeaterServerEventHandler,
   RepeaterServerEvents,
-  RepeaterServerEventsMap,
   RepeaterServerReconnectionAttemptedEvent,
   RepeaterServerReconnectionFailedEvent,
   RepeaterServerRequestEvent,
   RepeaterServerRequestResponse,
   RepeaterUpgradeAvailableEvent
-} from './RepeaterServer';
-import {
-  CallbackFunction,
-  RepeaterApplicationEvents
-} from './RepeaterApplicationEvents';
+} from './RepeaterEventHub';
 import { Logger } from '@sectester/core';
-import { inject, injectable } from 'tsyringe';
+import { inject, injectable, Lifecycle, scoped } from 'tsyringe';
 import io, { Socket } from 'socket.io-client';
 import parser from 'socket.io-msgpack-parser';
 import { ErrorEvent } from 'ws';
@@ -64,14 +59,12 @@ interface SocketListeningEventMap {
 }
 
 interface SocketEmitEventMap {
-  [SocketEvents.DEPLOY]: (
-    options: DeployCommandOptions,
-    runtime?: DeploymentRuntime
-  ) => void;
+  [SocketEvents.DEPLOY]: (options: DeployCommandOptions) => void;
   [SocketEvents.UNDEPLOY]: () => void;
   [SocketEvents.PING]: () => void;
 }
 
+@scoped(Lifecycle.ContainerScoped)
 @injectable()
 export class DefaultRepeaterServer implements RepeaterServer {
   private readonly MAX_DEPLOYMENT_TIMEOUT = 60_000;
@@ -98,29 +91,14 @@ export class DefaultRepeaterServer implements RepeaterServer {
 
   constructor(
     private readonly logger: Logger,
-    private readonly applicationEvents: RepeaterApplicationEvents,
+    @inject(RepeaterEventHub)
+    public readonly events: RepeaterEventHub,
     @inject(DefaultRepeaterServerOptions)
     private readonly options: DefaultRepeaterServerOptions
-  ) {
-    this.applicationEvents.onError = this.handleEventError;
-  }
-
-  public on<K extends keyof RepeaterServerEventsMap>(
-    event: K,
-    handler: RepeaterServerEventHandler<K>
-  ): void {
-    this.applicationEvents.on(event, handler);
-  }
-
-  public off<K extends keyof RepeaterServerEventsMap>(
-    event: K,
-    handler: RepeaterServerEventHandler<K>
-  ): void {
-    this.applicationEvents.off(event, handler);
-  }
+  ) {}
 
   public disconnect() {
-    this.applicationEvents.removeAllListeners();
+    this.events.removeAllListeners();
     this.clearPingTimer();
     this.clearConnectionTimer();
 
@@ -176,16 +154,16 @@ export class DefaultRepeaterServer implements RepeaterServer {
 
   private listenToApplicationEvents() {
     this.socket.on(SocketEvents.DEPLOYED, event =>
-      this.applicationEvents.emit(RepeaterServerEvents.DEPLOY, event)
+      this.events.emit(RepeaterServerEvents.DEPLOY, event)
     );
     this.socket.on(SocketEvents.REQUEST, (event, callback) =>
-      this.applicationEvents.emit(RepeaterServerEvents.REQUEST, event, callback)
+      this.events.emit(RepeaterServerEvents.REQUEST, event, callback)
     );
     this.socket.on(SocketEvents.ERROR, event => {
-      this.applicationEvents.emit(RepeaterServerEvents.ERROR, event);
+      this.events.emit(RepeaterServerEvents.ERROR, event);
     });
     this.socket.on(SocketEvents.UPDATE_AVAILABLE, event =>
-      this.applicationEvents.emit(RepeaterServerEvents.UPDATE_AVAILABLE, event)
+      this.events.emit(RepeaterServerEvents.UPDATE_AVAILABLE, event)
     );
   }
 
@@ -201,18 +179,18 @@ export class DefaultRepeaterServer implements RepeaterServer {
       error => (this.latestReconnectionError = error)
     );
     this.socket.io.on('reconnect_failed', () =>
-      this.applicationEvents.emit(RepeaterServerEvents.RECONNECTION_FAILED, {
+      this.events.emit(RepeaterServerEvents.RECONNECTION_FAILED, {
         error: this.latestReconnectionError
       } as RepeaterServerReconnectionFailedEvent)
     );
     this.socket.io.on('reconnect_attempt', attempt =>
-      this.applicationEvents.emit(RepeaterServerEvents.RECONNECT_ATTEMPT, {
+      this.events.emit(RepeaterServerEvents.RECONNECT_ATTEMPT, {
         attempt,
         maxAttempts: this.MAX_RECONNECTION_ATTEMPTS
       } as RepeaterServerReconnectionAttemptedEvent)
     );
     this.socket.io.on('reconnect', () =>
-      this.applicationEvents.emit(RepeaterServerEvents.RECONNECTION_SUCCEEDED)
+      this.events.emit(RepeaterServerEvents.RECONNECTION_SUCCEEDED)
     );
   }
 
@@ -229,7 +207,7 @@ export class DefaultRepeaterServer implements RepeaterServer {
     }
 
     if (this.suppressConnectionError(data)) {
-      this.applicationEvents.emit(RepeaterServerEvents.ERROR, {
+      this.events.emit(RepeaterServerEvents.ERROR, {
         ...data,
         message: err.message
       });
@@ -238,7 +216,7 @@ export class DefaultRepeaterServer implements RepeaterServer {
     }
 
     if (this.connectionAttempts >= this.MAX_RECONNECTION_ATTEMPTS) {
-      this.applicationEvents.emit(RepeaterServerEvents.RECONNECTION_FAILED, {
+      this.events.emit(RepeaterServerEvents.RECONNECTION_FAILED, {
         error: err
       } as RepeaterServerReconnectionFailedEvent);
 
@@ -268,7 +246,7 @@ export class DefaultRepeaterServer implements RepeaterServer {
 
     this.connectionAttempts++;
 
-    this.applicationEvents.emit(RepeaterServerEvents.RECONNECT_ATTEMPT, {
+    this.events.emit(RepeaterServerEvents.RECONNECT_ATTEMPT, {
       attempt: this.connectionAttempts,
       maxAttempts: this.MAX_RECONNECTION_ATTEMPTS
     } as RepeaterServerReconnectionAttemptedEvent);
@@ -301,33 +279,20 @@ export class DefaultRepeaterServer implements RepeaterServer {
   private handleConnect = () => {
     this.connectionAttempts = 0;
     this.clearConnectionTimer();
-    this.applicationEvents.emit(RepeaterServerEvents.CONNECTED);
+    this.events.emit(RepeaterServerEvents.CONNECTED);
   };
 
   private handleDisconnect = (reason: string): void => {
     this.clearPingTimer();
 
     if (reason !== 'io client disconnect') {
-      this.applicationEvents.emit(RepeaterServerEvents.DISCONNECTED);
+      this.events.emit(RepeaterServerEvents.DISCONNECTED);
     }
 
     // the disconnection was initiated by the server, you need to reconnect manually
     if (reason === 'io server disconnect') {
       this.socket.connect();
     }
-  };
-
-  private handleEventError = (
-    error: Error,
-    event: string,
-    args: unknown[]
-  ): void => {
-    this.logger.debug(
-      'An error occurred while processing the %s event with the following payload: %j',
-      event,
-      args
-    );
-    this.logger.error(error);
   };
 
   private createPingTimer() {

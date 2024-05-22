@@ -275,5 +275,20 @@ describe('RepeaterFactory', () => {
         'Name prefix must be less than or equal to 80 characters.'
       );
     });
+
+    it('should throw an error when credentials was not provided', async () => {
+      // arrange
+      const factory = new RepeaterFactory(configuration);
+
+      when(mockedConfiguration.credentials).thenReturn(undefined);
+
+      // act
+      const res = factory.createRepeater();
+
+      // assert
+      await expect(res).rejects.toThrow(
+        'Please provide credentials to establish a connection with the bus.'
+      );
+    });
   });
 });

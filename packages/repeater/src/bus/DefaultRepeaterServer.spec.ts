@@ -7,9 +7,9 @@ import {
   RepeaterErrorCodes,
   RepeaterServerEventHandler,
   RepeaterServerEvents
-} from './RepeaterServer';
+} from './RepeaterEventHub';
 import { Protocol } from '../models/Protocol';
-import { RepeaterApplicationEvents } from './RepeaterApplicationEvents';
+import { DefaultRepeaterEventHub } from './DefaultRepeaterEventHub';
 import { RepeaterCommandHub } from './RepeaterCommandHub';
 import { delay, Logger } from '@sectester/core';
 import { anything, instance, mock, reset, verify, when } from 'ts-mockito';
@@ -57,7 +57,7 @@ class MockSocketServer {
 describe('DefaultRepeaterServer', () => {
   const RepeaterId = 'fooId';
 
-  let events!: RepeaterApplicationEvents;
+  let events!: DefaultRepeaterEventHub;
   let sut!: DefaultRepeaterServer;
   let mockServer!: MockSocketServer;
 
@@ -68,7 +68,7 @@ describe('DefaultRepeaterServer', () => {
   beforeEach(() => {
     mockServer = new MockSocketServer();
 
-    events = new RepeaterApplicationEvents();
+    events = new DefaultRepeaterEventHub();
 
     sut = new DefaultRepeaterServer(
       instance(mockedLogger),
@@ -117,7 +117,7 @@ describe('DefaultRepeaterServer', () => {
 
       const handler: RepeaterServerEventHandler<any> = jest.fn();
 
-      sut.on(RepeaterServerEvents.DEPLOY, handler);
+      sut.events.on(RepeaterServerEvents.DEPLOY, handler);
 
       await sut.connect(RepeaterId);
 
@@ -134,7 +134,7 @@ describe('DefaultRepeaterServer', () => {
       // arrange
       const handler: RepeaterServerEventHandler<any> = jest.fn();
 
-      sut.on(RepeaterServerEvents.DEPLOY, handler);
+      sut.events.on(RepeaterServerEvents.DEPLOY, handler);
 
       await sut.connect(RepeaterId);
 
@@ -184,7 +184,7 @@ describe('DefaultRepeaterServer', () => {
         // arrange
         const handler: RepeaterServerEventHandler<any> = jest.fn();
 
-        sut.on(expected.event, handler);
+        sut.events.on(expected.event, handler);
 
         await sut.connect(RepeaterId);
 
@@ -205,11 +205,11 @@ describe('DefaultRepeaterServer', () => {
 
       const handler: RepeaterServerEventHandler<any> = jest.fn();
 
-      sut.on(RepeaterServerEvents.ERROR, handler);
+      sut.events.on(RepeaterServerEvents.ERROR, handler);
 
       await sut.connect(RepeaterId);
 
-      sut.off(RepeaterServerEvents.ERROR, handler);
+      sut.events.off(RepeaterServerEvents.ERROR, handler);
 
       // act
       mockServer.emit(SocketEvents.ERROR, event);

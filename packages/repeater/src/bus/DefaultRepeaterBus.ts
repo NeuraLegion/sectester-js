@@ -1,13 +1,13 @@
 import { RepeaterBus } from './RepeaterBus';
+import { RepeaterServer } from './RepeaterServer';
 import { RepeaterCommandHub } from './RepeaterCommandHub';
 import {
   RepeaterErrorCodes,
-  RepeaterServer,
   RepeaterServerErrorEvent,
   RepeaterServerEvents,
   RepeaterServerReconnectionFailedEvent,
   RepeaterServerRequestEvent
-} from './RepeaterServer';
+} from './RepeaterEventHub';
 import { Request } from '../request-runner/Request';
 import { Logger } from '@sectester/core';
 import chalk from 'chalk';
@@ -20,7 +20,9 @@ export class DefaultRepeaterBus implements RepeaterBus {
     private readonly logger: Logger,
     private readonly repeaterServer: RepeaterServer,
     private readonly commandHub: RepeaterCommandHub
-  ) {}
+  ) {
+    this.repeaterServer.events.errorHandler = this.handleEventError;
+  }
 
   public close() {
     this.repeaterRunning = false;
@@ -52,7 +54,10 @@ export class DefaultRepeaterBus implements RepeaterBus {
 
   private async deploy() {
     await this.deployRepeater();
-    this.repeaterServer.on(RepeaterServerEvents.CONNECTED, this.deployRepeater);
+    this.repeaterServer.events.on(
+      RepeaterServerEvents.CONNECTED,
+      this.deployRepeater
+    );
   }
 
   private deployRepeater = async () => {
@@ -62,20 +67,25 @@ export class DefaultRepeaterBus implements RepeaterBus {
   };
 
   private subscribeToEvents() {
-    this.repeaterServer.on(RepeaterServerEvents.ERROR, this.handleError);
-    this.repeaterServer.on(
+    this.repeaterServer.events.on(RepeaterServerEvents.ERROR, this.handleError);
+    this.repeaterServer.events.on(
       RepeaterServerEvents.RECONNECTION_FAILED,
       this.reconnectionFailed
     );
-    this.repeaterServer.on(RepeaterServerEvents.REQUEST, this.requestReceived);
-    this.repeaterServer.on(RepeaterServerEvents.UPDATE_AVAILABLE, payload =>
-      this.logger.warn(
-        '%s: A new Repeater version (%s) is available, for update instruction visit https://docs.brightsec.com/docs/installation-options',
-        chalk.yellow('(!) IMPORTANT'),
-        payload.version
-      )
+    this.repeaterServer.events.on(
+      RepeaterServerEvents.REQUEST,
+      this.requestReceived
     );
-    this.repeaterServer.on(
+    this.repeaterServer.events.on(
+      RepeaterServerEvents.UPDATE_AVAILABLE,
+      payload =>
+        this.logger.warn(
+          '%s: A new Repeater version (%s) is available, for update instruction visit https://docs.brightsec.com/docs/installation-options',
+          chalk.yellow('(!) IMPORTANT'),
+          payload.version
+        )
+    );
+    this.repeaterServer.events.on(
       RepeaterServerEvents.RECONNECT_ATTEMPT,
       ({ attempt, maxAttempts }) =>
         this.logger.warn(
@@ -84,8 +94,9 @@ export class DefaultRepeaterBus implements RepeaterBus {
           maxAttempts
         )
     );
-    this.repeaterServer.on(RepeaterServerEvents.RECONNECTION_SUCCEEDED, () =>
-      this.logger.log('The Repeater (%s) connected', this.repeaterId)
+    this.repeaterServer.events.on(
+      RepeaterServerEvents.RECONNECTION_SUCCEEDED,
+      () => this.logger.log('The Repeater (%s) connected', this.repeaterId)
     );
   }
 
@@ -134,6 +145,19 @@ export class DefaultRepeaterBus implements RepeaterBus {
   }: RepeaterServerReconnectionFailedEvent) => {
     this.logger.error(error);
     this.close().catch(this.logger.error);
+  };
+
+  private handleEventError = (
+    error: Error,
+    event: string,
+    args: unknown[]
+  ): void => {
+    this.logger.debug(
+      'An error occurred while processing the %s event with the following payload: %j',
+      event,
+      args
+    );
+    this.logger.error(error);
   };
 
   private requestReceived = async (event: RepeaterServerRequestEvent) => {
