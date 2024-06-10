@@ -44,7 +44,9 @@ describe('DefaultRepeaterBus', () => {
       }
     );
 
-    when(mockedRepeaterServer.deploy()).thenResolve({ repeaterId: RepeaterId });
+    when(mockedRepeaterServer.deploy(anything())).thenResolve({
+      repeaterId: RepeaterId
+    });
 
     sut = new DefaultRepeaterBus(
       instance(mockedLogger),
@@ -68,7 +70,9 @@ describe('DefaultRepeaterBus', () => {
 
       // assert
       verify(mockedRepeaterServer.connect()).once();
-      verify(mockedRepeaterServer.deploy()).once();
+      verify(
+        mockedRepeaterServer.deploy(objectContaining({ repeaterId: undefined }))
+      ).once();
     });
 
     it('should allow connect more than once', async () => {
@@ -95,7 +99,9 @@ describe('DefaultRepeaterBus', () => {
 
     it('should throw when underlying deploy throws', async () => {
       // arrange
-      when(mockedRepeaterServer.deploy()).thenReject(new Error('foo'));
+      when(mockedRepeaterServer.deploy(anything())).thenReject(
+        new Error('foo')
+      );
 
       // act
       const act = () => sut.connect();
