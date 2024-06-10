@@ -1,9 +1,9 @@
-import { RepeaterCommandHub } from './RepeaterCommandHub';
+import { RepeaterCommands } from './RepeaterCommands';
 import { Request, Response, RequestRunner } from '../request-runner';
 import { injectable, injectAll } from 'tsyringe';
 
 @injectable()
-export class DefaultRepeaterCommandHub implements RepeaterCommandHub {
+export class DefaultRepeaterCommands implements RepeaterCommands {
   constructor(
     @injectAll(RequestRunner)
     private readonly requestRunners: RequestRunner[]

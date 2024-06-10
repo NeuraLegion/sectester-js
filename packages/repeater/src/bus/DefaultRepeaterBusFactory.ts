@@ -1,7 +1,7 @@
 import { RepeaterBus } from './RepeaterBus';
 import { DefaultRepeaterBus } from './DefaultRepeaterBus';
 import { RepeaterBusFactory } from './RepeaterBusFactory';
-import { RepeaterCommandHub } from './RepeaterCommandHub';
+import { RepeaterCommands } from './RepeaterCommands';
 import { RepeaterServer } from './RepeaterServer';
 import { Configuration, Logger } from '@sectester/core';
 import { inject, injectable } from 'tsyringe';
@@ -12,22 +12,20 @@ export class DefaultRepeaterBusFactory implements RepeaterBusFactory {
     private readonly logger: Logger,
     private readonly configuration: Configuration,
     @inject(RepeaterServer) private readonly repeaterServer: RepeaterServer,
-    @inject(RepeaterCommandHub)
-    private readonly commandHub: RepeaterCommandHub
+    @inject(RepeaterCommands)
+    private readonly repeaterCommands: RepeaterCommands
   ) {}
 
-  public create(repeaterId: string): RepeaterBus {
+  public create(): RepeaterBus {
     this.logger.log(
-      'Creating the repeater (%s, %s)...',
-      repeaterId,
+      'Creating the repeater (%s)...',
       this.configuration.version
     );
 
     return new DefaultRepeaterBus(
-      repeaterId,
       this.logger,
       this.repeaterServer,
-      this.commandHub
+      this.repeaterCommands
     );
   }
 }

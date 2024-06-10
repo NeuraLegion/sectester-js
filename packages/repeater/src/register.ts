@@ -1,13 +1,11 @@
-import { RepeaterFactory, RepeaterId } from './lib';
-import { DefaultRepeatersManager, RepeatersManager } from './api';
+import { RepeaterFactory } from './lib';
 import {
   DefaultRepeaterBusFactory,
-  DefaultRepeaterCommandHub,
-  DefaultRepeaterEventHub,
+  DefaultRepeaterCommands,
   DefaultRepeaterServer,
+  RepeaterBus,
   RepeaterBusFactory,
-  RepeaterCommandHub,
-  RepeaterEventHub,
+  RepeaterCommands,
   RepeaterServer
 } from './bus';
 import {
@@ -71,7 +69,9 @@ container.register(RMQEventBusConfig, {
     (childContainer: DependencyContainer) => ({
       exchange: 'EventBus',
       appQueue: 'app',
-      clientQueue: `agent:${childContainer.resolve(RepeaterId)}`
+      clientQueue: `agent:${
+        (childContainer.resolve(RepeaterBus) as RepeaterBus).repeaterId
+      }`
     })
   )
 });
@@ -95,8 +95,6 @@ container.register(EventBus, {
   }
 });
 
-container.register(RepeatersManager, { useClass: DefaultRepeatersManager });
 container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
-container.register(RepeaterEventHub, { useClass: DefaultRepeaterEventHub });
-container.register(RepeaterCommandHub, { useClass: DefaultRepeaterCommandHub });
+container.register(RepeaterCommands, { useClass: DefaultRepeaterCommands });
 container.register(RepeaterBusFactory, { useClass: DefaultRepeaterBusFactory });

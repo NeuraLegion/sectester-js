@@ -28,12 +28,8 @@ export class Logger {
     this._logLevel = logLevel;
   }
 
-  public error(errorOrMessage: string | Error, ...args: any[]): void {
-    if (typeof errorOrMessage === 'string') {
-      this.write(errorOrMessage, LogLevel.ERROR, ...args);
-    } else {
-      this.write(errorOrMessage.message, LogLevel.ERROR, ...args);
-    }
+  public error(errorOrMessage: string, ...args: any[]): void {
+    this.write(errorOrMessage, LogLevel.ERROR, ...args);
   }
 
   public warn(message: string, ...args: any[]): void {

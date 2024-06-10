@@ -1,10 +1,11 @@
 import 'reflect-metadata';
-import { RepeaterServer } from './RepeaterServer';
 import {
+  RepeaterServer,
+  RepeaterServerEventHandler,
+  RepeaterServerEventsMap,
   CallbackFunction,
   DeployCommandOptions,
   RepeaterErrorCodes,
-  RepeaterEventHub,
   RepeaterServerDeployedEvent,
   RepeaterServerErrorEvent,
   RepeaterServerEvents,
@@ -12,14 +13,16 @@ import {
   RepeaterServerReconnectionFailedEvent,
   RepeaterServerRequestEvent,
   RepeaterServerRequestResponse,
-  RepeaterUpgradeAvailableEvent
-} from './RepeaterEventHub';
+  RepeaterUpgradeAvailableEvent,
+  HandlerFunction
+} from './RepeaterServer';
 import { Logger } from '@sectester/core';
 import { inject, injectable, Lifecycle, scoped } from 'tsyringe';
 import io, { Socket } from 'socket.io-client';
 import parser from 'socket.io-msgpack-parser';
 import { ErrorEvent } from 'ws';
-import { once } from 'events';
+import { EventEmitter, once } from 'events';
+import { hostname } from 'os';
 import Timer = NodeJS.Timer;
 
 export interface DefaultRepeaterServerOptions {
@@ -27,7 +30,6 @@ export interface DefaultRepeaterServerOptions {
   readonly token: string;
   readonly connectTimeout?: number;
   readonly proxyUrl?: string;
-  readonly insecure?: boolean;
 }
 
 export const DefaultRepeaterServerOptions: unique symbol = Symbol(
@@ -78,6 +80,12 @@ export class DefaultRepeaterServer implements RepeaterServer {
   private connectionTimer?: Timer;
   private _socket?: Socket<SocketListeningEventMap, SocketEmitEventMap>;
   private connectionAttempts = 0;
+  private events = new EventEmitter();
+
+  private readonly handlerMap = new WeakMap<
+    RepeaterServerEventHandler<any>,
+    HandlerFunction
+  >();
 
   private get socket() {
     if (!this._socket) {
@@ -91,8 +99,6 @@ export class DefaultRepeaterServer implements RepeaterServer {
 
   constructor(
     private readonly logger: Logger,
-    @inject(RepeaterEventHub)
-    public readonly events: RepeaterEventHub,
     @inject(DefaultRepeaterServerOptions)
     private readonly options: DefaultRepeaterServerOptions
   ) {}
@@ -108,7 +114,7 @@ export class DefaultRepeaterServer implements RepeaterServer {
   }
 
   public async deploy(
-    options: DeployCommandOptions
+    options: DeployCommandOptions = {}
   ): Promise<RepeaterServerDeployedEvent> {
     process.nextTick(() => this.socket.emit(SocketEvents.DEPLOY, options));
 
@@ -128,19 +134,15 @@ export class DefaultRepeaterServer implements RepeaterServer {
     return result;
   }
 
-  public async connect(repeaterId: string) {
+  public async connect(domain: string = hostname()) {
     this._socket = io(this.options.uri, {
       parser,
       path: '/api/ws/v1',
       transports: ['websocket'],
-      reconnectionDelayMax: this.MAX_RECONNECTION_DELAY,
-      reconnectionDelay: this.MIN_RECONNECTION_DELAY,
-      timeout: this.options?.connectTimeout,
-      rejectUnauthorized: !this.options.insecure,
       reconnectionAttempts: this.MAX_RECONNECTION_ATTEMPTS,
       auth: {
-        token: this.options.token,
-        domain: repeaterId
+        domain,
+        token: this.options.token
       }
     });
 
@@ -152,10 +154,60 @@ export class DefaultRepeaterServer implements RepeaterServer {
     this.logger.debug('Repeater connected to %s', this.options.uri);
   }
 
+  public off<K extends keyof RepeaterServerEventsMap>(
+    event: K,
+    handler: RepeaterServerEventHandler<K>
+  ): void {
+    const wrappedHandler = this.handlerMap.get(handler);
+    if (wrappedHandler) {
+      this.events.off(event, wrappedHandler);
+      this.handlerMap.delete(handler);
+    }
+  }
+
+  public on<K extends keyof RepeaterServerEventsMap>(
+    event: K,
+    handler: RepeaterServerEventHandler<K>
+  ): void {
+    const wrappedHandler = (...args: unknown[]) =>
+      this.wrapEventListener(event, handler, ...args);
+    this.handlerMap.set(handler, wrappedHandler);
+    this.events.on(event, wrappedHandler);
+  }
+
+  private async wrapEventListener<TArgs extends TArg[], TArg>(
+    event: string,
+    handler: (...payload: TArgs) => unknown,
+    ...args: unknown[]
+  ) {
+    try {
+      const callback = this.extractLastArgument(args);
+
+      // eslint-disable-next-line @typescript-eslint/return-await
+      const response = await handler(...(args as TArgs));
+
+      callback?.(response);
+    } catch (err) {
+      this.handleEventError(err, event, args);
+    }
+  }
+
+  private extractLastArgument(args: unknown[]): CallbackFunction | undefined {
+    const lastArg = args.pop();
+    if (typeof lastArg === 'function') {
+      return lastArg as CallbackFunction;
+    } else {
+      // If the last argument is not a function, add it back to the args array
+      args.push(lastArg);
+
+      return undefined;
+    }
+  }
+
   private listenToApplicationEvents() {
-    this.socket.on(SocketEvents.DEPLOYED, event =>
-      this.events.emit(RepeaterServerEvents.DEPLOY, event)
-    );
+    this.socket.on(SocketEvents.DEPLOYED, event => {
+      this.events.emit(RepeaterServerEvents.DEPLOY, event);
+    });
     this.socket.on(SocketEvents.REQUEST, (event, callback) =>
       this.events.emit(RepeaterServerEvents.REQUEST, event, callback)
     );
@@ -295,12 +347,22 @@ export class DefaultRepeaterServer implements RepeaterServer {
     }
   };
 
+  private handleEventError(error: Error, event: string, args: unknown[]): void {
+    this.logger.debug(
+      'An error occurred while processing the %s event with the following payload: %j',
+      event,
+      args
+    );
+    this.logger.error('An error occurred', error);
+  }
+
   private createPingTimer() {
     this.clearPingTimer();
 
-    this.pingTimer = setInterval(() => {
-      this.socket.volatile.emit(SocketEvents.PING);
-    }, this.MAX_PING_INTERVAL).unref();
+    this.pingTimer = setInterval(
+      () => this.socket.volatile.emit(SocketEvents.PING),
+      this.MAX_PING_INTERVAL
+    ).unref();
   }
 
   private clearPingTimer() {

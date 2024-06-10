@@ -1,7 +1,6 @@
 import { RepeaterBus } from './RepeaterBus';
-import { RepeaterServer } from './RepeaterServer';
-import { RepeaterCommandHub } from './RepeaterCommandHub';
 import {
+  RepeaterServer,
   RepeaterErrorCodes,
   RepeaterServerErrorEvent,
   RepeaterServerEvents,
@@ -9,22 +8,25 @@ import {
   RepeaterServerReconnectionFailedEvent,
   RepeaterServerRequestEvent,
   RepeaterUpgradeAvailableEvent
-} from './RepeaterEventHub';
+} from './RepeaterServer';
+import { RepeaterCommands } from './RepeaterCommands';
 import { Request } from '../request-runner/Request';
 import { Logger } from '@sectester/core';
 import chalk from 'chalk';
 
 export class DefaultRepeaterBus implements RepeaterBus {
   private repeaterRunning: boolean = false;
+  private _repeaterId?: string;
+
+  get repeaterId(): string | undefined {
+    return this._repeaterId;
+  }
 
   constructor(
-    private readonly repeaterId: string,
     private readonly logger: Logger,
     private readonly repeaterServer: RepeaterServer,
-    private readonly commandHub: RepeaterCommandHub
-  ) {
-    this.repeaterServer.events.errorHandler = this.handleEventError;
-  }
+    private readonly commandHub: RepeaterCommands
+  ) {}
 
   public close() {
     this.repeaterRunning = false;
@@ -41,13 +43,13 @@ export class DefaultRepeaterBus implements RepeaterBus {
 
     this.repeaterRunning = true;
 
-    this.logger.log('Connecting the Repeater (%s)...', this.repeaterId);
+    this.logger.log('Connecting the Bridges');
 
     this.subscribeToEvents();
 
-    await this.repeaterServer.connect(this.repeaterId);
+    await this.repeaterServer.connect();
 
-    this.logger.log('Deploying the Repeater (%s)...', this.repeaterId);
+    this.logger.log('Deploying the repeater');
 
     await this.deploy();
 
@@ -55,40 +57,29 @@ export class DefaultRepeaterBus implements RepeaterBus {
   }
 
   private async deploy() {
-    await this.deployRepeater();
-    this.repeaterServer.events.on(
-      RepeaterServerEvents.CONNECTED,
-      this.deployRepeater
-    );
+    const response = await this.repeaterServer.deploy();
+
+    this._repeaterId = response.repeaterId;
   }
 
-  private deployRepeater = async () => {
-    await this.repeaterServer.deploy({
-      repeaterId: this.repeaterId
-    });
-  };
-
   private subscribeToEvents() {
-    this.repeaterServer.events.on(RepeaterServerEvents.ERROR, this.handleError);
-    this.repeaterServer.events.on(
+    this.repeaterServer.on(RepeaterServerEvents.ERROR, this.handleError);
+
+    this.repeaterServer.on(
       RepeaterServerEvents.RECONNECTION_FAILED,
       this.reconnectionFailed
     );
-    this.repeaterServer.events.on(
-      RepeaterServerEvents.REQUEST,
-      this.requestReceived
-    );
-    this.repeaterServer.events.on(
+    this.repeaterServer.on(RepeaterServerEvents.REQUEST, this.requestReceived);
+    this.repeaterServer.on(
       RepeaterServerEvents.UPDATE_AVAILABLE,
       this.upgradeAvailable
     );
-    this.repeaterServer.events.on(
+    this.repeaterServer.on(
       RepeaterServerEvents.RECONNECT_ATTEMPT,
       this.reconnectAttempt
     );
-    this.repeaterServer.events.on(
-      RepeaterServerEvents.RECONNECTION_SUCCEEDED,
-      () => this.logger.log('The Repeater (%s) connected', this.repeaterId)
+    this.repeaterServer.on(RepeaterServerEvents.RECONNECTION_SUCCEEDED, () =>
+      this.logger.log('The Repeater (%s) connected', this.repeaterId)
     );
   }
 
@@ -154,21 +145,8 @@ export class DefaultRepeaterBus implements RepeaterBus {
   private reconnectionFailed = ({
     error
   }: RepeaterServerReconnectionFailedEvent) => {
-    this.logger.error(error);
+    this.logger.error(error.message);
     this.close().catch(this.logger.error);
-  };
-
-  private handleEventError = (
-    error: Error,
-    event: string,
-    args: unknown[]
-  ): void => {
-    this.logger.debug(
-      'An error occurred while processing the %s event with the following payload: %j',
-      event,
-      args
-    );
-    this.logger.error(error);
   };
 
   private requestReceived = async (event: RepeaterServerRequestEvent) => {

@@ -1,15 +1,15 @@
-import { DefaultRepeaterCommandHub } from './DefaultRepeaterCommandHub';
+import { DefaultRepeaterCommands } from './DefaultRepeaterCommands';
 import { Protocol } from '../models/Protocol';
 import { RequestRunner, Request, Response } from '../request-runner';
 import { instance, mock, reset, when } from 'ts-mockito';
 
-describe('DefaultRepeaterCommandHub', () => {
-  let sut!: DefaultRepeaterCommandHub;
+describe('DefaultRepeaterCommands', () => {
+  let sut!: DefaultRepeaterCommands;
 
   const mockedRequestRunner = mock<RequestRunner>();
 
   beforeEach(() => {
-    sut = new DefaultRepeaterCommandHub([instance(mockedRequestRunner)]);
+    sut = new DefaultRepeaterCommands([instance(mockedRequestRunner)]);
   });
 
   afterEach(() => reset<RequestRunner>(mockedRequestRunner));

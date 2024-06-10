@@ -7,10 +7,9 @@ import {
   RepeaterErrorCodes,
   RepeaterServerEventHandler,
   RepeaterServerEvents
-} from './RepeaterEventHub';
+} from './RepeaterServer';
 import { Protocol } from '../models/Protocol';
-import { DefaultRepeaterEventHub } from './DefaultRepeaterEventHub';
-import { RepeaterCommandHub } from './RepeaterCommandHub';
+import { RepeaterCommands } from './RepeaterCommands';
 import { delay, Logger } from '@sectester/core';
 import { anything, instance, mock, reset, verify, when } from 'ts-mockito';
 import { Server } from 'socket.io';
@@ -57,26 +56,22 @@ class MockSocketServer {
 describe('DefaultRepeaterServer', () => {
   const RepeaterId = 'fooId';
 
-  let events!: DefaultRepeaterEventHub;
   let sut!: DefaultRepeaterServer;
-  let mockServer!: MockSocketServer;
+  let mockSocketServer!: MockSocketServer;
 
   const mockedLogger = mock<Logger>();
   const mockedDefaultRepeaterServerOptions =
     mock<DefaultRepeaterServerOptions>();
 
   beforeEach(() => {
-    mockServer = new MockSocketServer();
-
-    events = new DefaultRepeaterEventHub();
+    mockSocketServer = new MockSocketServer();
 
     sut = new DefaultRepeaterServer(
       instance(mockedLogger),
-      events,
       instance(mockedDefaultRepeaterServerOptions)
     );
 
-    const address = mockServer.address;
+    const address = mockSocketServer.address;
 
     when(mockedDefaultRepeaterServerOptions.uri).thenReturn(address);
     when(mockedDefaultRepeaterServerOptions.token).thenReturn('token');
@@ -86,9 +81,9 @@ describe('DefaultRepeaterServer', () => {
   afterEach(() => {
     sut.disconnect();
 
-    mockServer.close();
+    mockSocketServer.close();
 
-    reset<DefaultRepeaterServerOptions | RepeaterCommandHub | Logger>(
+    reset<DefaultRepeaterServerOptions | RepeaterCommands | Logger>(
       mockedLogger,
       mockedDefaultRepeaterServerOptions
     );
@@ -109,7 +104,7 @@ describe('DefaultRepeaterServer', () => {
       // arrange
       const event = { repeaterId: RepeaterId };
 
-      mockServer.onConnection(socket => {
+      mockSocketServer.onConnection(socket => {
         socket.on('deploy', () => {
           socket.emit('deployed', event);
         });
@@ -117,7 +112,7 @@ describe('DefaultRepeaterServer', () => {
 
       const handler: RepeaterServerEventHandler<any> = jest.fn();
 
-      sut.events.on(RepeaterServerEvents.DEPLOY, handler);
+      sut.on(RepeaterServerEvents.DEPLOY, handler);
 
       await sut.connect(RepeaterId);
 
@@ -134,7 +129,7 @@ describe('DefaultRepeaterServer', () => {
       // arrange
       const handler: RepeaterServerEventHandler<any> = jest.fn();
 
-      sut.events.on(RepeaterServerEvents.DEPLOY, handler);
+      sut.on(RepeaterServerEvents.DEPLOY, handler);
 
       await sut.connect(RepeaterId);
 
@@ -184,12 +179,12 @@ describe('DefaultRepeaterServer', () => {
         // arrange
         const handler: RepeaterServerEventHandler<any> = jest.fn();
 
-        sut.events.on(expected.event, handler);
+        sut.on(expected.event, handler);
 
         await sut.connect(RepeaterId);
 
         // act
-        mockServer.emit(input.event, input.data);
+        mockSocketServer.emit(input.event, input.data);
 
         // assert
         await delay(200);
@@ -205,14 +200,14 @@ describe('DefaultRepeaterServer', () => {
 
       const handler: RepeaterServerEventHandler<any> = jest.fn();
 
-      sut.events.on(RepeaterServerEvents.ERROR, handler);
+      sut.on(RepeaterServerEvents.ERROR, handler);
 
       await sut.connect(RepeaterId);
 
-      sut.events.off(RepeaterServerEvents.ERROR, handler);
+      sut.off(RepeaterServerEvents.ERROR, handler);
 
       // act
-      mockServer.emit(SocketEvents.ERROR, event);
+      mockSocketServer.emit(SocketEvents.ERROR, event);
 
       // assert
       expect(handler).not.toHaveBeenCalled();

@@ -6,30 +6,18 @@ export enum RunningStatus {
   RUNNING
 }
 
-export type RepeaterId = string;
-export const RepeaterId = Symbol('RepeaterId');
-
 export class Repeater {
-  public readonly repeaterId: RepeaterId;
-
-  private readonly bus: RepeaterBus;
-
   private _runningStatus = RunningStatus.OFF;
+
+  get repeaterId(): string | undefined {
+    return this.bus.repeaterId;
+  }
 
   get runningStatus(): RunningStatus {
     return this._runningStatus;
   }
 
-  constructor({
-    repeaterId,
-    bus
-  }: {
-    repeaterId: RepeaterId;
-    bus: RepeaterBus;
-  }) {
-    this.repeaterId = repeaterId;
-    this.bus = bus;
-  }
+  constructor(private readonly bus: RepeaterBus) {}
 
   public async start(): Promise<void> {
     if (this.runningStatus !== RunningStatus.OFF) {

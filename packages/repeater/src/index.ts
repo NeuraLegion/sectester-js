@@ -1,7 +1,6 @@
 import './register';
 
 export {
-  RepeatersManager,
   ExecuteRequestEventHandler,
   ExecuteRequestPayload,
   ExecuteRequestResult
