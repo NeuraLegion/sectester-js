@@ -13,6 +13,7 @@ import {
   RequestRunner,
   RequestRunnerOptions
 } from './request-runner';
+import { DefaultProxyFactory, ProxyFactory } from './utils';
 import {
   container,
   DependencyContainer,
@@ -95,6 +96,7 @@ container.register(EventBus, {
   }
 });
 
+container.register(ProxyFactory, { useClass: DefaultProxyFactory });
 container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
 container.register(RepeaterCommands, { useClass: DefaultRepeaterCommands });
 container.register(RepeaterBusFactory, { useClass: DefaultRepeaterBusFactory });

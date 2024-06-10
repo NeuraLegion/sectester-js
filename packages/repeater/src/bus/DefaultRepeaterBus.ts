@@ -45,7 +45,7 @@ export class DefaultRepeaterBus implements RepeaterBus {
 
     this.logger.log('Connecting the Bridges');
 
-    this.subscribeToEvents();
+    this.subscribeDiagnosticEvents();
 
     await this.repeaterServer.connect();
 
@@ -54,15 +54,23 @@ export class DefaultRepeaterBus implements RepeaterBus {
     await this.deploy();
 
     this.logger.log('The Repeater (%s) started', this.repeaterId);
+
+    this.subscribeRedeploymentEvent();
   }
 
   private async deploy() {
-    const response = await this.repeaterServer.deploy();
+    const { repeaterId } = await this.repeaterServer.deploy({
+      repeaterId: this.repeaterId
+    });
 
-    this._repeaterId = response.repeaterId;
+    this._repeaterId = repeaterId;
   }
 
-  private subscribeToEvents() {
+  private subscribeRedeploymentEvent() {
+    this.repeaterServer.on(RepeaterServerEvents.CONNECTED, this.deploy);
+  }
+
+  private subscribeDiagnosticEvents() {
     this.repeaterServer.on(RepeaterServerEvents.ERROR, this.handleError);
 
     this.repeaterServer.on(

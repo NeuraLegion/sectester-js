@@ -42,9 +42,7 @@ export class ExecuteRequestEventHandler
       throw new Error(`Unsupported protocol "${protocol}"`);
     }
 
-    const response: Response = await runner.run(
-      new Request({ ...event, correlationIdRegex: event.correlation_id_regex })
-    );
+    const response: Response = await runner.run(new Request({ ...event }));
 
     const { statusCode, message, errorCode, body, headers } = response;
 

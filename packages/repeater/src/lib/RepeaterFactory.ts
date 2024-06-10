@@ -50,7 +50,7 @@ export class RepeaterFactory {
       {
         useValue: {
           uri: `${this.configuration.api}/workstations`,
-          token: this.configuration.credentials?.token as string,
+          token: this.configuration.credentials.token,
           connectTimeout: 10000
         }
       }

@@ -7,7 +7,6 @@ export interface RequestOptions {
   headers?: Record<string, string | string[]>;
   method?: string;
   body?: string;
-  correlationIdRegex?: string | RegExp;
   encoding?: 'base64';
   maxContentSize?: number;
   timeout?: number;
@@ -34,41 +33,17 @@ export class Request {
 
   public readonly protocol: Protocol;
   public readonly url: string;
+  public readonly method: string;
   public readonly body?: string;
-  public readonly correlationIdRegex?: RegExp;
   public readonly encoding?: 'base64';
   public readonly maxContentSize?: number;
   public readonly decompress?: boolean;
   public readonly timeout?: number;
 
-  private _method: string;
-
-  get method(): string {
-    return this._method;
-  }
-
   private _headers: Record<string, string | string[]> = {};
 
   get headers(): Readonly<Record<string, string | string[]>> {
     return this._headers;
-  }
-
-  private _ca?: Buffer;
-
-  get ca() {
-    return this._ca;
-  }
-
-  private _pfx?: Buffer;
-
-  get pfx() {
-    return this._pfx;
-  }
-
-  private _passphrase?: string;
-
-  get passphrase() {
-    return this._passphrase;
   }
 
   get secureEndpoint(): boolean {
@@ -81,23 +56,19 @@ export class Request {
     url,
     body,
     timeout,
-    correlationIdRegex,
     maxContentSize,
     encoding,
     decompress = true,
     headers = {}
   }: RequestOptions) {
     this.protocol = protocol;
-    this._method = method?.toUpperCase() ?? 'GET';
+    this.method = method?.toUpperCase() ?? 'GET';
 
     this.validateUrl(url);
     this.url = url.trim();
 
     this.precheckBody(body);
     this.body = body;
-
-    this.correlationIdRegex =
-      this.normalizeCorrelationIdRegex(correlationIdRegex);
 
     this.setHeaders(headers);
 
@@ -113,17 +84,16 @@ export class Request {
       ...headers
     };
 
-    this._headers = Object.entries(mergedHeaders).reduce(
-      (result, [field, value]: [string, string | string[]]) => {
-        result[field] =
+    this._headers = Object.fromEntries(
+      Object.entries(mergedHeaders).map(
+        ([field, value]: [string, string | string[]]) => [
+          field,
           Array.isArray(value) &&
           Request.SINGLE_VALUE_HEADERS.has(field.toLowerCase())
             ? value.join(', ')
-            : value;
-
-        return result;
-      },
-      {}
+            : value
+        ]
+      )
     );
   }
 
@@ -138,18 +108,6 @@ export class Request {
   private precheckBody(body: string | undefined): void {
     if (body && typeof body !== 'string') {
       throw new Error('Body must be string.');
-    }
-  }
-
-  private normalizeCorrelationIdRegex(
-    correlationIdRegex: RegExp | string | undefined
-  ): RegExp | undefined {
-    if (correlationIdRegex) {
-      try {
-        return new RegExp(correlationIdRegex, 'i');
-      } catch {
-        throw new Error('Correlation id must be regular expression.');
-      }
     }
   }
 }
