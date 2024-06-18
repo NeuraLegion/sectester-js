@@ -164,8 +164,6 @@ await new Ping({ status: 'connected' }).execute(dispatcher);
 await dispatcher.execute(new Ping({ status: 'disconnected' }));
 ```
 
-The same is applicable for the `Event`. You just need to use the `EventDispatcher` instead of `CommandDispatcher`.
-
 Each message have a correlation ID to ensure atomicity. The regular UUID is used, but you might also want to consider other options.
 
 ### Request-response
@@ -200,79 +198,8 @@ To adjust its behavior you can use next options:
 | `expectReply`  | Indicates whether to wait for a reply. By default `true`.                                    |
 | `ttl`          | Period of time that command should be handled before being discarded. By default `10000` ms. |
 | `type`         | The name of a command. By default, it is the name of specific class.                         |
-| `corelationId` | Used to ensure atomicity while working with EventBus. By default, random UUID.               |
+| `corelationId` | Used to ensure atomicity. By default, random UUID.                                           |
 | `createdAt`    | The exact date and time the command was created.                                             |
-
-### Publish-subscribe
-
-When you just want to publish events without waiting for a response, it is better to use the `Event`.
-The ideal use case for the publish-subscribe model is when you want to simply notify another service that a certain condition has occurred.
-
-To create an instance of `Event` use the abstract class as follows:
-
-```ts
-import { Event } from '@sectester/core';
-
-interface Issue {
-  name: string;
-  details: string;
-  type: string;
-  cvss?: string;
-  cwe?: string;
-}
-
-class IssueDetected extends Event<Issue> {
-  constructor(payload: Issue) {
-    super(payload);
-  }
-}
-```
-
-To adjust its behavior you can use next options:
-
-| Option         | Description                                                                    |
-| :------------- | ------------------------------------------------------------------------------ |
-| `payload`      | Message that we want to transmit to the remote service.                        |
-| `type`         | The name of a command. By default, it is the name of specific class.           |
-| `corelationId` | Used to ensure atomicity while working with EventBus. By default, random UUID. |
-| `createdAt`    | The exact date and time the event was created.                                 |
-
-To create an event handler, you should implement the `Handler` interface and use the `@bind()` decorator to subscribe a handler to an event:
-
-```ts
-@bind(IssueDetected)
-class IssueDetectedHandler implements EventHandler<Issue> {
-  public handle(payload: Issue): Promise<void> {
-    // implementation
-  }
-}
-```
-
-You can register multiple event handlers for a single event pattern and all of them will be automatically triggered in parallel.
-
-```ts
-@bind(IssueDetected, IssueReopened)
-class IssueDetectedHandler implements EventHandler<Issue> {
-  public handle(payload: Issue): Promise<void> {
-    // implementation
-  }
-}
-```
-
-You can also use a string and symbol to subscribe a handler to events:
-
-```ts
-const IssueReopened = Symbol('IssueReopened');
-
-@bind('IssueDetected', IssueReopened)
-class IssueDetectedHandler implements EventHandler<Issue> {
-  public handle(payload: Issue): Promise<void> {
-    // implementation
-  }
-}
-```
-
-As soon as the `IssueDetected` event appears, the event handler takes a single argument, the data passed from the client (in this case, an event payload which has been sent over the network).
 
 ## License
 

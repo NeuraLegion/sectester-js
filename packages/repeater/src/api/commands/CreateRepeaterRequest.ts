@@ -1,4 +1,4 @@
-import { HttpRequest } from '@sectester/bus';
+import { HttpRequest } from '@sectester/core';
 
 export interface CreateRepeaterRequestPayload {
   name: string;

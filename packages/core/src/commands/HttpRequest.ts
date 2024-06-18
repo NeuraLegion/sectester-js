@@ -1,4 +1,4 @@
-import { Command } from '@sectester/core';
+import { Command } from './Command';
 import { Method } from 'axios';
 
 export interface HttpOptions<T> {

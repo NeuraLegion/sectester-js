@@ -49,7 +49,7 @@ export class DefaultRepeatersManager implements RepeatersManager {
     return { repeaterId: repeater.id };
   }
 
-  public async deleteRepeater(repeaterId: string): Promise<void> {
+  public deleteRepeater(repeaterId: string): Promise<void> {
     return this.commandDispatcher.execute(
       new DeleteRepeaterRequest({ repeaterId })
     );

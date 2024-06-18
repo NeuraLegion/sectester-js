@@ -1,5 +1,6 @@
 import { HttpCommandError } from '../exceptions';
-import { delay, RetryStrategy } from '@sectester/core';
+import { RetryStrategy } from '../commands';
+import { delay } from '../utils';
 import { injectable } from 'tsyringe';
 import ErrnoException = NodeJS.ErrnoException;
 
