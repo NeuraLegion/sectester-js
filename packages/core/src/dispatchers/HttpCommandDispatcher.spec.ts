@@ -1,8 +1,9 @@
-import { HttpRequest } from '../commands';
+import 'reflect-metadata';
+import { HttpRequest, RetryStrategy } from '../commands';
 import { HttpCommandDispatcher } from './HttpCommandDispatcher';
 import { HttpCommandDispatcherConfig } from './HttpCommandDispatcherConfig';
 import { HttpCommandError } from '../exceptions';
-import { Logger, RetryStrategy } from '@sectester/core';
+import { Logger } from '../logger';
 import {
   anyFunction,
   instance,

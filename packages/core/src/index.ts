@@ -1,9 +1,10 @@
 import 'reflect-metadata';
 import './register';
 
-export * from './bus';
+export * from './commands';
 export * from './configuration';
 export * from './credentials-provider';
+export * from './dispatchers';
 export * from './exceptions';
 export * from './logger';
 export {

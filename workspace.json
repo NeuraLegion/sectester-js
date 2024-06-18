@@ -1,7 +1,6 @@
 {
   "version": 2,
   "projects": {
-    "bus": "packages/bus",
     "core": "packages/core",
     "repeater": "packages/repeater",
     "reporter": "packages/reporter",

@@ -1,5 +1,5 @@
 import { ScanState } from '../models';
-import { HttpRequest } from '@sectester/bus';
+import { HttpRequest } from '@sectester/core';
 
 export class GetScan extends HttpRequest<undefined, ScanState> {
   constructor(id: string) {

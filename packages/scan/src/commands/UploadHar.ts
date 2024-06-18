@@ -1,6 +1,6 @@
 import { UploadHarOptions } from '../Scans';
 import FormData from 'form-data';
-import { HttpRequest } from '@sectester/bus';
+import { HttpRequest } from '@sectester/core';
 
 export class UploadHar extends HttpRequest<FormData, { id: string }> {
   constructor({ filename, har, discard = false }: UploadHarOptions) {

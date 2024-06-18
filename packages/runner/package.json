@@ -33,7 +33,6 @@
     "brightsec"
   ],
   "peerDependencies": {
-    "@sectester/bus": ">=0.16.0 <1.0.0",
     "@sectester/core": ">=0.16.0 <1.0.0",
     "@sectester/repeater": ">=0.16.0 <1.0.0",
     "@sectester/reporter": ">=0.16.0 <1.0.0",
