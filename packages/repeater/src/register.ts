@@ -1,13 +1,14 @@
-import { RepeaterFactory, RepeaterId } from './lib';
 import {
-  DefaultRepeaterBusFactory,
+  RepeaterFactory,
+  RepeaterId,
   DefaultRepeaterCommands,
   DefaultRepeaterServer,
+  DefaultRepeater,
   DefaultRepeaterServerOptions,
-  RepeaterBusFactory,
   RepeaterCommands,
-  RepeaterServer
-} from './bus';
+  RepeaterServer,
+  Repeater
+} from './lib';
 import {
   HttpRequestRunner,
   RequestRunner,
@@ -113,8 +114,8 @@ container.register(DefaultRepeaterServerOptions, {
   }
 });
 
+container.register(Repeater, { useClass: DefaultRepeater });
 container.register(ProxyFactory, { useClass: DefaultProxyFactory });
 container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
 container.register(RepeaterCommands, { useClass: DefaultRepeaterCommands });
-container.register(RepeaterBusFactory, { useClass: DefaultRepeaterBusFactory });
 container.register(RepeatersManager, { useClass: DefaultRepeatersManager });

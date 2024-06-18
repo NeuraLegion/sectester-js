@@ -1,4 +1,4 @@
-import { RepeaterBus } from './RepeaterBus';
+import { Repeater, RepeaterId, RunningStatus } from './Repeater';
 import {
   RepeaterServer,
   RepeaterErrorCodes,
@@ -9,37 +9,61 @@ import {
   RepeaterServerRequestEvent,
   RepeaterUpgradeAvailableEvent
 } from './RepeaterServer';
-import { RepeaterId } from '../lib/Repeater';
 import { RepeaterCommands } from './RepeaterCommands';
 import { Request } from '../request-runner/Request';
 import { Logger } from '@sectester/core';
 import chalk from 'chalk';
+import { inject, injectable, Lifecycle, scoped } from 'tsyringe';
 
-export class DefaultRepeaterBus implements RepeaterBus {
-  private repeaterRunning: boolean = false;
+@scoped(Lifecycle.ContainerScoped)
+@injectable()
+export class DefaultRepeater implements Repeater {
+  private _runningStatus = RunningStatus.OFF;
+
+  get runningStatus(): RunningStatus {
+    return this._runningStatus;
+  }
 
   constructor(
-    private readonly repeaterId: RepeaterId,
+    @inject(RepeaterId)
+    public readonly repeaterId: RepeaterId,
     private readonly logger: Logger,
+    @inject(RepeaterServer)
     private readonly repeaterServer: RepeaterServer,
+    @inject(RepeaterCommands)
     private readonly repeaterCommands: RepeaterCommands
   ) {}
 
-  public close() {
-    this.repeaterRunning = false;
+  public async start(): Promise<void> {
+    if (this.runningStatus !== RunningStatus.OFF) {
+      throw new Error('Repeater is already active.');
+    }
+
+    this._runningStatus = RunningStatus.STARTING;
+
+    try {
+      await this.connect();
+
+      this._runningStatus = RunningStatus.RUNNING;
+    } catch (e) {
+      this._runningStatus = RunningStatus.OFF;
+      throw e;
+    }
+  }
+
+  public async stop(): Promise<void> {
+    if (this.runningStatus !== RunningStatus.RUNNING) {
+      return;
+    }
+
+    this._runningStatus = RunningStatus.OFF;
 
     this.repeaterServer.disconnect();
 
     return Promise.resolve();
   }
 
-  public async connect(): Promise<void> {
-    if (this.repeaterRunning) {
-      return;
-    }
-
-    this.repeaterRunning = true;
-
+  private async connect(): Promise<void> {
     this.logger.log('Connecting the Bridges');
 
     this.subscribeDiagnosticEvents();
@@ -123,7 +147,7 @@ export class DefaultRepeaterBus implements RepeaterBus {
       message,
       remediation
     );
-    this.close().catch(this.logger.error);
+    this.stop().catch(this.logger.error);
   }
 
   private upgradeAvailable = (event: RepeaterUpgradeAvailableEvent) => {
@@ -149,7 +173,7 @@ export class DefaultRepeaterBus implements RepeaterBus {
     error
   }: RepeaterServerReconnectionFailedEvent) => {
     this.logger.error(error.message);
-    this.close().catch(this.logger.error);
+    this.stop().catch(this.logger.error);
   };
 
   private requestReceived = async (event: RepeaterServerRequestEvent) => {

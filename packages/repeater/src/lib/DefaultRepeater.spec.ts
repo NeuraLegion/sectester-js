@@ -1,4 +1,5 @@
-import { DefaultRepeaterBus } from './DefaultRepeaterBus';
+import { RunningStatus } from './Repeater';
+import { DefaultRepeater } from './DefaultRepeater';
 import { Protocol } from '../models/Protocol';
 import { Request, Response } from '../request-runner';
 import {
@@ -20,11 +21,11 @@ import {
 } from 'ts-mockito';
 import { EventEmitter } from 'events';
 
-describe('DefaultRepeaterBus', () => {
+describe('DefaultRepeater', () => {
   const RepeaterId = 'fooId';
 
   let events!: EventEmitter;
-  let sut!: DefaultRepeaterBus;
+  let sut!: DefaultRepeater;
 
   const mockedRepeaterServer = mock<RepeaterServer>();
   const repeaterCommands = mock<RepeaterCommands>();
@@ -48,7 +49,7 @@ describe('DefaultRepeaterBus', () => {
       repeaterId: RepeaterId
     });
 
-    sut = new DefaultRepeaterBus(
+    sut = new DefaultRepeater(
       RepeaterId,
       instance(mockedLogger),
       instance(mockedRepeaterServer),
@@ -64,10 +65,10 @@ describe('DefaultRepeaterBus', () => {
     )
   );
 
-  describe('connect', () => {
-    it('should connect', async () => {
+  describe('start', () => {
+    it('should start', async () => {
       // act
-      await sut.connect();
+      await sut.start();
 
       // assert
       verify(mockedRepeaterServer.connect()).once();
@@ -78,23 +79,12 @@ describe('DefaultRepeaterBus', () => {
       ).once();
     });
 
-    it('should allow connect more than once', async () => {
-      // arrange
-      await sut.connect();
-
-      // act
-      const act = sut.connect();
-
-      // assert
-      await expect(act).resolves.not.toThrow();
-    });
-
     it('should throw when underlying connect throws', async () => {
       // arrange
       when(mockedRepeaterServer.connect()).thenReject(new Error('foo'));
 
       // act
-      const act = () => sut.connect();
+      const act = () => sut.start();
 
       // assert
       await expect(act).rejects.toThrowError('foo');
@@ -107,27 +97,104 @@ describe('DefaultRepeaterBus', () => {
       );
 
       // act
-      const act = () => sut.connect();
+      const act = () => sut.start();
 
       // assert
       await expect(act).rejects.toThrowError('foo');
     });
+
+    it('should have RunningStatus.STARTING just after start() call', () => {
+      // act
+      void sut.start();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.STARTING);
+    });
+
+    it('should have RunningStatus.RUNNING after successful start()', async () => {
+      // act
+      await sut.start();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.RUNNING);
+    });
+
+    it('should throw an error on start() twice', async () => {
+      // arrange
+      await sut.start();
+
+      // act
+      const res = sut.start();
+
+      // assert
+      await expect(res).rejects.toThrow('Repeater is already active.');
+    });
+
+    it('should be possible to start() after start() error', async () => {
+      // act
+      when(mockedRepeaterServer.connect()).thenReject().thenResolve();
+
+      // assert
+      await expect(sut.start()).rejects.toThrow();
+      await expect(sut.start()).resolves.not.toThrow();
+    });
   });
 
-  describe('close', () => {
-    it('should close', async () => {
+  describe('stop', () => {
+    it('should stop', async () => {
+      // arrange
+      await sut.start();
+
       // act
-      await sut.close();
+      await sut.stop();
 
       // assert
       verify(mockedRepeaterServer.disconnect()).once();
+    });
+
+    it('should have RunningStatus.OFF after start() and stop()', async () => {
+      // arrange
+      await sut.start();
+
+      // act
+      await sut.stop();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.OFF);
+    });
+
+    it('should do nothing on stop() without start()', async () => {
+      // act
+      await sut.stop();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.OFF);
+    });
+
+    it('should do nothing on second stop() call', async () => {
+      // arrange
+      await sut.start();
+      await sut.stop();
+
+      // assert
+      await sut.stop();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.OFF);
+    });
+  });
+
+  describe('runningStatus', () => {
+    it('should have RunningStatus.OFF initially', () => {
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.OFF);
     });
   });
 
   describe('events', () => {
     it(`should subscribe to ${RepeaterServerEvents.UPDATE_AVAILABLE}`, async () => {
       // arrange
-      await sut.connect();
+      await sut.start();
 
       // act
       events.emit(RepeaterServerEvents.UPDATE_AVAILABLE, { version: '1.0.0' });
@@ -159,7 +226,7 @@ describe('DefaultRepeaterBus', () => {
         })
       );
 
-      await sut.connect();
+      await sut.start();
 
       // act
       events.emit(RepeaterServerEvents.REQUEST, requestEvent);
@@ -171,7 +238,7 @@ describe('DefaultRepeaterBus', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.RECONNECT_ATTEMPT}`, async () => {
       // arrange
-      await sut.connect();
+      await sut.start();
 
       // act
       events.emit(RepeaterServerEvents.RECONNECT_ATTEMPT, {
@@ -191,7 +258,7 @@ describe('DefaultRepeaterBus', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.ERROR} and proceed on error`, async () => {
       // arrange
-      await sut.connect();
+      await sut.start();
 
       // act
       events.emit(RepeaterServerEvents.ERROR, {
@@ -205,7 +272,7 @@ describe('DefaultRepeaterBus', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.ERROR} and proceed on critical error`, async () => {
       // arrange
-      await sut.connect();
+      await sut.start();
 
       // act
       events.emit(RepeaterServerEvents.ERROR, {
@@ -229,7 +296,7 @@ describe('DefaultRepeaterBus', () => {
     it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_FAILED}`, async () => {
       // arrange
       const error = new Error('test error');
-      await sut.connect();
+      await sut.start();
 
       // act
       events.emit(RepeaterServerEvents.RECONNECTION_FAILED, {
@@ -243,7 +310,7 @@ describe('DefaultRepeaterBus', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_SUCCEEDED}`, async () => {
       // arrange
-      await sut.connect();
+      await sut.start();
 
       // act
       events.emit(RepeaterServerEvents.RECONNECTION_SUCCEEDED);

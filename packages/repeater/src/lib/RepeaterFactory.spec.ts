@@ -1,6 +1,4 @@
 import { RepeaterFactory } from './RepeaterFactory';
-import { RepeaterBus } from '../bus/RepeaterBus';
-import { RepeaterBusFactory } from '../bus/RepeaterBusFactory';
 import {
   HttpRequestRunner,
   RequestRunner,
@@ -49,8 +47,6 @@ describe('RepeaterFactory', () => {
   const mockedContainer = mock<DependencyContainer>();
   const mockedChildContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();
-  const mockedRepeaterBus = mock<RepeaterBus>();
-  const mockedRepeaterBusFactory = mock<RepeaterBusFactory>();
   const mockedRepeaterManager = mock<RepeatersManager>();
 
   const configuration = instance(mockedConfiguration);
@@ -65,16 +61,8 @@ describe('RepeaterFactory', () => {
     );
 
     when(
-      mockedChildContainer.resolve<RepeaterBusFactory>(RepeaterBusFactory)
-    ).thenReturn(instance(mockedRepeaterBusFactory));
-
-    when(
       mockedContainer.resolve<RepeatersManager>(RepeatersManager)
     ).thenReturn(instance(mockedRepeaterManager));
-
-    when(mockedRepeaterBusFactory.create()).thenReturn(
-      instance(mockedRepeaterBus)
-    );
 
     when(mockedRepeaterManager.createRepeater(anything())).thenResolve({
       repeaterId
@@ -82,14 +70,10 @@ describe('RepeaterFactory', () => {
   });
 
   afterEach(() => {
-    reset<
-      DependencyContainer | Configuration | RepeaterBus | RepeaterBusFactory
-    >(
+    reset<DependencyContainer | Configuration>(
       mockedContainer,
       mockedChildContainer,
-      mockedConfiguration,
-      mockedRepeaterBus,
-      mockedRepeaterBusFactory
+      mockedConfiguration
     );
   });
 
@@ -99,10 +83,10 @@ describe('RepeaterFactory', () => {
       const factory = new RepeaterFactory(configuration);
 
       // act
-      const res = await factory.createRepeater();
+      await factory.createRepeater();
 
       // assert
-      expect(res).toBeInstanceOf(Repeater);
+      verify(mockedChildContainer.resolve(Repeater)).once();
     });
 
     it('should register custom request runner options', async () => {

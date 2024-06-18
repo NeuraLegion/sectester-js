@@ -2,7 +2,6 @@ import { Repeater, RepeaterId } from './Repeater';
 import { RequestRunner, RequestRunnerOptions } from '../request-runner';
 import { RepeatersManager } from '../api';
 import { RepeaterOptions } from './RepeaterOptions';
-import { RepeaterBusFactory } from '../bus/RepeaterBusFactory';
 import { Configuration } from '@sectester/core';
 import { v4 as uuidv4 } from 'uuid';
 import { DependencyContainer, injectable, Lifecycle } from 'tsyringe';
@@ -46,10 +45,7 @@ export class RepeaterFactory {
     this.registerRequestRunnerOptions(container, requestRunnerOptions);
     this.registerRequestRunners(container, requestRunners ?? []);
 
-    const busFactory =
-      container.resolve<RepeaterBusFactory>(RepeaterBusFactory);
-
-    return new Repeater(repeaterId, busFactory.create());
+    return container.resolve(Repeater);
   }
 
   private registerRequestRunners(
