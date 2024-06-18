@@ -134,14 +134,14 @@ export class DefaultRepeaterServer implements RepeaterServer {
     return result;
   }
 
-  public async connect(domain: string = hostname()) {
+  public async connect(namePrefix: string = hostname()) {
     this._socket = io(this.options.uri, {
       parser,
       path: '/api/ws/v1',
       transports: ['websocket'],
       reconnectionAttempts: this.MAX_RECONNECTION_ATTEMPTS,
       auth: {
-        domain,
+        domain: namePrefix,
         token: this.options.token
       }
     });

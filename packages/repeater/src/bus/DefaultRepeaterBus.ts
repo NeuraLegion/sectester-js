@@ -9,6 +9,7 @@ import {
   RepeaterServerRequestEvent,
   RepeaterUpgradeAvailableEvent
 } from './RepeaterServer';
+import { RepeaterId } from '../lib/Repeater';
 import { RepeaterCommands } from './RepeaterCommands';
 import { Request } from '../request-runner/Request';
 import { Logger } from '@sectester/core';
@@ -16,16 +17,12 @@ import chalk from 'chalk';
 
 export class DefaultRepeaterBus implements RepeaterBus {
   private repeaterRunning: boolean = false;
-  private _repeaterId?: string;
-
-  get repeaterId(): string | undefined {
-    return this._repeaterId;
-  }
 
   constructor(
+    private readonly repeaterId: RepeaterId,
     private readonly logger: Logger,
     private readonly repeaterServer: RepeaterServer,
-    private readonly commandHub: RepeaterCommands
+    private readonly repeaterCommands: RepeaterCommands
   ) {}
 
   public close() {
@@ -59,11 +56,9 @@ export class DefaultRepeaterBus implements RepeaterBus {
   }
 
   private async deploy() {
-    const { repeaterId } = await this.repeaterServer.deploy({
+    await this.repeaterServer.deploy({
       repeaterId: this.repeaterId
     });
-
-    this._repeaterId = repeaterId;
   }
 
   private subscribeRedeploymentEvent() {
@@ -158,7 +153,7 @@ export class DefaultRepeaterBus implements RepeaterBus {
   };
 
   private requestReceived = async (event: RepeaterServerRequestEvent) => {
-    const response = await this.commandHub.sendRequest(
+    const response = await this.repeaterCommands.sendRequest(
       new Request({ ...event })
     );
 

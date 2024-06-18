@@ -1,7 +1,11 @@
 import { SecScanOptions } from './SecScanOptions';
 import { SecScan } from './SecScan';
 import { Configuration, ConfigurationOptions, Logger } from '@sectester/core';
-import { Repeater, RepeaterFactory } from '@sectester/repeater';
+import {
+  Repeater,
+  RepeaterFactory,
+  RepeatersManager
+} from '@sectester/repeater';
 import { ScanFactory } from '@sectester/scan';
 import { Formatter, PlainTextFormatter } from '@sectester/reporter';
 
@@ -15,6 +19,7 @@ export class SecRunner {
   private readonly logger: Logger;
   private repeater: Repeater | undefined;
   private repeaterFactory: RepeaterFactory | undefined;
+  private repeatersManager: RepeatersManager | undefined;
 
   get repeaterId(): string | undefined {
     return this.repeater?.repeaterId;
@@ -27,12 +32,14 @@ export class SecRunner {
   }
 
   public async init(): Promise<void> {
-    if (this.repeaterFactory) {
+    if (this.repeatersManager && this.repeaterFactory) {
       throw new Error('Already initialized.');
     }
 
     await this.initConfiguration(this.configuration);
 
+    this.repeatersManager =
+      this.configuration.container.resolve(RepeatersManager);
     this.repeaterFactory =
       this.configuration.container.resolve(RepeaterFactory);
 
@@ -45,12 +52,14 @@ export class SecRunner {
 
   public async clear(): Promise<void> {
     try {
-      if (this.repeater) {
+      if (this.repeater && this.repeatersManager) {
         await this.repeater.stop();
+        await this.repeatersManager.deleteRepeater(this.repeater.repeaterId);
       }
     } finally {
       this.removeShutdownHandler();
       delete this.repeater;
+      delete this.repeatersManager;
       delete this.repeaterFactory;
     }
   }

@@ -49,6 +49,7 @@ describe('DefaultRepeaterBus', () => {
     });
 
     sut = new DefaultRepeaterBus(
+      RepeaterId,
       instance(mockedLogger),
       instance(mockedRepeaterServer),
       instance(repeaterCommands)
@@ -71,7 +72,9 @@ describe('DefaultRepeaterBus', () => {
       // assert
       verify(mockedRepeaterServer.connect()).once();
       verify(
-        mockedRepeaterServer.deploy(objectContaining({ repeaterId: undefined }))
+        mockedRepeaterServer.deploy(
+          objectContaining({ repeaterId: RepeaterId })
+        )
       ).once();
     });
 

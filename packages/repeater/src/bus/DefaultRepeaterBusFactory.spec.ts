@@ -6,6 +6,7 @@ import { Configuration, Logger } from '@sectester/core';
 import { instance, mock, reset } from 'ts-mockito';
 
 describe('DefaultRepeaterBusFactory', () => {
+  const repeaterId = 'fooId';
   const mockedLogger = mock<Logger>();
   const mockedConfiguration = mock<Configuration>();
   const mockedRepeaterServer = mock<RepeaterServer>();
@@ -17,6 +18,7 @@ describe('DefaultRepeaterBusFactory', () => {
 
   beforeEach(() => {
     sut = new DefaultRepeaterBusFactory(
+      repeaterId,
       instance(mockedLogger),
       configuration,
       instance(mockedRepeaterServer),
@@ -40,6 +42,9 @@ describe('DefaultRepeaterBusFactory', () => {
 
       // assert
       expect(res).toBeInstanceOf(DefaultRepeaterBus);
+      expect(res).toMatchObject({
+        repeaterId
+      });
     });
   });
 });

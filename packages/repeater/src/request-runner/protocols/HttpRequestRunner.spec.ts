@@ -37,7 +37,17 @@ describe('HttpRequestRunner', () => {
 
   let sut!: HttpRequestRunner;
 
+  beforeAll(() => {
+    nock.disableNetConnect();
+    nock.enableNetConnect('127.0.0.1');
+  });
+  afterAll(() => nock.enableNetConnect());
+
   beforeEach(() => {
+    if (!nock.isActive()) {
+      nock.activate();
+    }
+
     const RunnerOptions: RequestRunnerOptions = {};
     spiedRunnerOptions = spy(RunnerOptions);
 
@@ -48,13 +58,16 @@ describe('HttpRequestRunner', () => {
     );
   });
 
-  afterEach(() =>
+  afterEach(() => {
+    nock.cleanAll();
+    nock.restore();
+
     reset<Logger | RequestRunnerOptions | ProxyFactory>(
       loggerMock,
       spiedRunnerOptions,
       proxyFactoryMock
-    )
-  );
+    );
+  });
 
   describe('protocol', () => {
     it('should return HTTP', () => {

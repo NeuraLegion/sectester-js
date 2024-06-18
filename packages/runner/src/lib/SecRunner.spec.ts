@@ -13,7 +13,11 @@ import {
   when
 } from 'ts-mockito';
 import { DependencyContainer } from 'tsyringe';
-import { Repeater, RepeaterFactory } from '@sectester/repeater';
+import {
+  Repeater,
+  RepeaterFactory,
+  RepeatersManager
+} from '@sectester/repeater';
 
 // eslint-disable-next-line jest/no-export
 export const resolvableInstance = <T extends object>(m: T): T =>
@@ -40,6 +44,7 @@ describe('SecRunner', () => {
   const mockedContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();
   const mockedRepeaterFactory = mock<RepeaterFactory>();
+  const mockedRepeaterManager = mock<RepeatersManager>();
   const mockedRepeater = mock<Repeater>();
   const mockedLogger = mock<Logger>();
 
@@ -52,6 +57,9 @@ describe('SecRunner', () => {
   afterAll(() => process.setMaxListeners(maxListeners));
 
   beforeEach(() => {
+    when(
+      mockedContainer.resolve<RepeatersManager>(RepeatersManager)
+    ).thenReturn(instance(mockedRepeaterManager));
     when(mockedContainer.resolve<Logger>(Logger)).thenReturn(
       instance(mockedLogger)
     );
@@ -87,6 +95,7 @@ describe('SecRunner', () => {
       | DependencyContainer
       | Configuration
       | RepeaterFactory
+      | RepeatersManager
       | Repeater
       | Logger
       | NodeJS.Process
@@ -94,6 +103,7 @@ describe('SecRunner', () => {
       mockedContainer,
       mockedConfiguration,
       mockedRepeaterFactory,
+      mockedRepeaterManager,
       mockedRepeater,
       mockedLogger,
       spiedProcess
@@ -109,6 +119,7 @@ describe('SecRunner', () => {
       await terminationCallback();
 
       verify(mockedRepeater.stop()).once();
+      verify(mockedRepeaterManager.deleteRepeater(repeaterId)).once();
     });
 
     it('should log an error on failed stop() on process termination', async () => {
@@ -150,6 +161,7 @@ describe('SecRunner', () => {
       await secRunner.clear();
 
       verify(mockedRepeater.stop()).once();
+      verify(mockedRepeaterManager.deleteRepeater(repeaterId)).once();
       expect(secRunner.repeaterId).toBeUndefined();
     });
 

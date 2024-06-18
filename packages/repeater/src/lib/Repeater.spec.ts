@@ -8,10 +8,10 @@ describe('Repeater', () => {
   let repeater!: Repeater;
   const mockedRepeaterBus = mock<RepeaterBus>();
 
-  const createRepeater = () => new Repeater(instance(mockedRepeaterBus));
+  const createRepeater = () =>
+    new Repeater(repeaterId, instance(mockedRepeaterBus));
 
   beforeEach(() => {
-    when(mockedRepeaterBus.repeaterId).thenReturn(repeaterId);
     repeater = createRepeater();
   });
 

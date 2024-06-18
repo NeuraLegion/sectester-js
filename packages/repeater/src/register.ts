@@ -1,9 +1,9 @@
-import { RepeaterFactory } from './lib';
+import { RepeaterFactory, RepeaterId } from './lib';
 import {
   DefaultRepeaterBusFactory,
   DefaultRepeaterCommands,
   DefaultRepeaterServer,
-  RepeaterBus,
+  DefaultRepeaterServerOptions,
   RepeaterBusFactory,
   RepeaterCommands,
   RepeaterServer
@@ -13,6 +13,7 @@ import {
   RequestRunner,
   RequestRunnerOptions
 } from './request-runner';
+import { DefaultRepeatersManager, RepeatersManager } from './api';
 import { DefaultProxyFactory, ProxyFactory } from './utils';
 import {
   container,
@@ -70,9 +71,7 @@ container.register(RMQEventBusConfig, {
     (childContainer: DependencyContainer) => ({
       exchange: 'EventBus',
       appQueue: 'app',
-      clientQueue: `agent:${
-        (childContainer.resolve(RepeaterBus) as RepeaterBus).repeaterId
-      }`
+      clientQueue: `agent:${childContainer.resolve(RepeaterId)}`
     })
   )
 });
@@ -96,7 +95,26 @@ container.register(EventBus, {
   }
 });
 
+container.register(DefaultRepeaterServerOptions, {
+  useFactory: (childContainer: DependencyContainer) => {
+    const configuration = childContainer.resolve<Configuration>(Configuration);
+
+    if (!configuration.credentials) {
+      throw new Error(
+        'Please provide credentials to establish a connection with the bridges.'
+      );
+    }
+
+    return {
+      uri: `${configuration.api}/workstations`,
+      token: configuration.credentials.token,
+      connectTimeout: 10000
+    };
+  }
+});
+
 container.register(ProxyFactory, { useClass: DefaultProxyFactory });
 container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
 container.register(RepeaterCommands, { useClass: DefaultRepeaterCommands });
 container.register(RepeaterBusFactory, { useClass: DefaultRepeaterBusFactory });
+container.register(RepeatersManager, { useClass: DefaultRepeatersManager });

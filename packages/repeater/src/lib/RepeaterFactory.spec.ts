@@ -7,6 +7,7 @@ import {
   RequestRunnerOptions
 } from '../request-runner';
 import { Repeater } from './Repeater';
+import { RepeatersManager } from '../api';
 import { Configuration } from '@sectester/core';
 import {
   anything,
@@ -21,6 +22,8 @@ import {
 import { DependencyContainer, Lifecycle } from 'tsyringe';
 
 describe('RepeaterFactory', () => {
+  const repeaterId = 'fooId';
+
   const defaultOptions = {
     timeout: 30000,
     maxContentLength: 100,
@@ -48,6 +51,7 @@ describe('RepeaterFactory', () => {
   const mockedConfiguration = mock<Configuration>();
   const mockedRepeaterBus = mock<RepeaterBus>();
   const mockedRepeaterBusFactory = mock<RepeaterBusFactory>();
+  const mockedRepeaterManager = mock<RepeatersManager>();
 
   const configuration = instance(mockedConfiguration);
 
@@ -64,9 +68,17 @@ describe('RepeaterFactory', () => {
       mockedChildContainer.resolve<RepeaterBusFactory>(RepeaterBusFactory)
     ).thenReturn(instance(mockedRepeaterBusFactory));
 
+    when(
+      mockedContainer.resolve<RepeatersManager>(RepeatersManager)
+    ).thenReturn(instance(mockedRepeaterManager));
+
     when(mockedRepeaterBusFactory.create()).thenReturn(
       instance(mockedRepeaterBus)
     );
+
+    when(mockedRepeaterManager.createRepeater(anything())).thenResolve({
+      repeaterId
+    });
   });
 
   afterEach(() => {
@@ -166,21 +178,6 @@ describe('RepeaterFactory', () => {
           })
         )
       ).once();
-    });
-
-    it('should throw an error when credentials was not provided', async () => {
-      // arrange
-      const factory = new RepeaterFactory(configuration);
-
-      when(mockedConfiguration.credentials).thenReturn(undefined);
-
-      // act
-      const res = factory.createRepeater();
-
-      // assert
-      await expect(res).rejects.toThrow(
-        'Please provide credentials to establish a connection with the bus.'
-      );
     });
   });
 });

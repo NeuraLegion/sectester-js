@@ -109,7 +109,7 @@ export class HttpRequestRunner implements RequestRunner {
       Object.entries(headers).map(
         ([name, value]: [string, string | string[] | undefined]) => [
           name,
-          value === undefined ? '' : value
+          value ?? ''
         ]
       )
     );
