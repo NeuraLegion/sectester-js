@@ -20,7 +20,6 @@ import { Logger } from '@sectester/core';
 import { inject, injectable, Lifecycle, scoped } from 'tsyringe';
 import io, { Socket } from 'socket.io-client';
 import parser from 'socket.io-msgpack-parser';
-import { type ErrorEvent } from 'ws';
 import { EventEmitter, once } from 'events';
 import { hostname } from 'os';
 import Timer = NodeJS.Timer;
@@ -141,7 +140,7 @@ export class DefaultRepeaterServer implements RepeaterServer {
       transports: ['websocket'],
       reconnectionAttempts: this.MAX_RECONNECTION_ATTEMPTS,
       auth: {
-        domain: namePrefix,
+        domain: namePrefix + '123',
         token: this.options.token
       }
     });
@@ -312,7 +311,9 @@ export class DefaultRepeaterServer implements RepeaterServer {
     );
 
     const { description, cause } = err as {
-      description?: ErrorEvent;
+      description?: {
+        error?: Error;
+      };
       cause?: Error;
     };
     const nestedError = description?.error ?? cause;

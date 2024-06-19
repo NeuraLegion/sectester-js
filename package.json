@@ -118,7 +118,6 @@
     "@types/request-promise": "^4.1.48",
     "@types/semver": "^7.3.9",
     "@types/uuid": "^8.3.4",
-    "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
     "eslint": "8.15.0",
