@@ -164,4 +164,81 @@ describe('RepeaterFactory', () => {
       ).once();
     });
   });
+
+  describe('createRepeaterFromExisting', () => {
+    it('should create repeater from existing repeater ID', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const existingRepeaterId = '123';
+
+      await factory.createRepeaterFromExisting(existingRepeaterId);
+
+      verify(mockedChildContainer.resolve(Repeater)).once();
+    });
+
+    it('should register custom request runner options', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const existingRepeaterId = '123';
+      when(
+        mockedChildContainer.register(RequestRunnerOptions, anything())
+      ).thenReturn();
+
+      const requestRunnerOptions = {
+        timeout: 10000,
+        maxContentLength: 200,
+        allowedMimes: ['text/html']
+      };
+
+      await factory.createRepeaterFromExisting(existingRepeaterId, {
+        requestRunnerOptions
+      });
+
+      verify(
+        mockedChildContainer.register(
+          RequestRunnerOptions,
+          objectContaining({
+            useValue: requestRunnerOptions
+          })
+        )
+      ).once();
+    });
+
+    it('should register request runner options', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const existingRepeaterId = '123';
+
+      await factory.createRepeaterFromExisting(existingRepeaterId, {
+        requestRunnerOptions: defaultOptions
+      });
+
+      verify(
+        mockedChildContainer.register(
+          RequestRunnerOptions,
+          deepEqual({
+            useValue: defaultOptions
+          })
+        )
+      ).once();
+    });
+
+    it('should register request runners', async () => {
+      const factory = new RepeaterFactory(configuration);
+      const existingRepeaterId = '123';
+
+      await factory.createRepeaterFromExisting(existingRepeaterId, {
+        requestRunners: [HttpRequestRunner]
+      });
+
+      verify(
+        mockedChildContainer.register(
+          RequestRunner,
+          deepEqual({
+            useClass: HttpRequestRunner
+          }),
+          deepEqual({
+            lifecycle: Lifecycle.ContainerScoped
+          })
+        )
+      ).once();
+    });
+  });
 });

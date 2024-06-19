@@ -95,6 +95,33 @@ export interface RequestRunnerOptions {
 }
 ```
 
+The `RepeaterFactory` also provides a method to create a `Repeater` instance using an existing repeater ID. You can use the `createRepeaterFromExisting` method to accomplish this:
+
+```ts
+const existingRepeaterId = '<your repater ID>';
+const repeater = await repeaterFactory.createRepeaterFromExisting(
+  existingRepeaterId
+);
+```
+
+This method retrieves the existing repeater's details from the cloud using its ID and returns a `Repeater` instance associated with the specified ID.
+
+You can also customize the request runner options for the existing repeater by passing them as options:
+
+```ts
+const existingRepeaterId = '<your repater ID>';
+const repeater = await repeaterFactory.createRepeaterFromExisting(
+  existingRepeaterId,
+  {
+    requestRunnerOptions: {
+      timeout: 10000,
+      maxContentLength: 200,
+      allowedMimes: ['text/html']
+    }
+  }
+);
+```
+
 The `Repeater` instance provides the `start` method. This method is required to establish a connection with the Bright cloud engine and interact with other services.
 
 ```ts
@@ -142,8 +169,8 @@ describe('Scan', () => {
 
 ### Implementation details
 
-Under the hood `Repeater` connects to the Bright engine using web socket protocol, then listens for incoming commands from the engine.
-Which in turn get executed with the `RequestRunner` to proceed with the request coming from the engine:
+Under the hood, `Repeater` connects to the Bright engine using the WebSocket protocol and then listens for incoming commands from the engine.
+These commands are executed by the `RequestRunner` to process the requests coming from the engine:
 
 ```ts
 export interface RequestRunner {

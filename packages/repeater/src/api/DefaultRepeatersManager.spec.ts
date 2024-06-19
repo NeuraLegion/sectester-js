@@ -1,5 +1,9 @@
 import 'reflect-metadata';
-import { CreateRepeaterRequest, DeleteRepeaterRequest } from './commands';
+import {
+  CreateRepeaterRequest,
+  DeleteRepeaterRequest,
+  GetRepeaterRequest
+} from './commands';
 import { DefaultRepeatersManager } from './DefaultRepeatersManager';
 import { RepeatersManager } from './RepeatersManager';
 import { CommandDispatcher } from '@sectester/core';
@@ -60,6 +64,32 @@ describe('DefaultRepeatersManager', () => {
       const res = manager.createRepeater({ name: 'foo' });
 
       await expect(res).rejects.toThrow('Cannot create a new repeater');
+    });
+  });
+
+  describe('getRepeater', () => {
+    it('should return repeater', async () => {
+      const repeaterId = '142';
+      when(
+        mockedCommandDispatcher.execute(anyOfClass(GetRepeaterRequest))
+      ).thenResolve({ id: repeaterId });
+
+      const result = await manager.getRepeater(repeaterId);
+
+      verify(
+        mockedCommandDispatcher.execute(anyOfClass(GetRepeaterRequest))
+      ).once();
+      expect(result).toMatchObject({ repeaterId });
+    });
+
+    it('should throw an error if cannot find repeater', async () => {
+      when(
+        mockedCommandDispatcher.execute(anyOfClass(GetRepeaterRequest))
+      ).thenResolve();
+
+      const act = manager.getRepeater('123');
+
+      await expect(act).rejects.toThrow('Cannot find repeater');
     });
   });
 

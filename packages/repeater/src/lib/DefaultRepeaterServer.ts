@@ -20,7 +20,7 @@ import { Logger } from '@sectester/core';
 import { inject, injectable, Lifecycle, scoped } from 'tsyringe';
 import io, { Socket } from 'socket.io-client';
 import parser from 'socket.io-msgpack-parser';
-import { ErrorEvent } from 'ws';
+import { type ErrorEvent } from 'ws';
 import { EventEmitter, once } from 'events';
 import { hostname } from 'os';
 import Timer = NodeJS.Timer;

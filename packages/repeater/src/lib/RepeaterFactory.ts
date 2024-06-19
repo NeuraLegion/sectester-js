@@ -1,5 +1,6 @@
 import { Repeater, RepeaterId } from './Repeater';
 import { RequestRunner, RequestRunnerOptions } from '../request-runner';
+import { RepeaterRequestRunnerOptions } from './RepeaterRequestRunnerOptions';
 import { RepeatersManager } from '../api';
 import { RepeaterOptions } from './RepeaterOptions';
 import { Configuration } from '@sectester/core';
@@ -27,8 +28,7 @@ export class RepeaterFactory {
     description,
     disableRandomNameGeneration,
     namePrefix = 'sectester',
-    requestRunnerOptions,
-    requestRunners
+    ...options
   }: RepeaterOptions = {}): Promise<Repeater> {
     await this.configuration.loadCredentials();
 
@@ -38,6 +38,25 @@ export class RepeaterFactory {
       name: this.generateName(namePrefix, disableRandomNameGeneration)
     });
 
+    return this.createRepeaterInstance(repeaterId, options);
+  }
+
+  public async createRepeaterFromExisting(
+    repeaterId: string,
+    options?: RepeaterRequestRunnerOptions
+  ): Promise<Repeater> {
+    await this.repeatersManager.getRepeater(repeaterId);
+
+    return this.createRepeaterInstance(repeaterId, options);
+  }
+
+  private createRepeaterInstance(
+    repeaterId: string,
+    {
+      requestRunnerOptions,
+      requestRunners = []
+    }: RepeaterRequestRunnerOptions = {}
+  ): Repeater {
     const container = this.configuration.container.createChildContainer();
 
     container.register(RepeaterId, { useValue: repeaterId });

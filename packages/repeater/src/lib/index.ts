@@ -2,7 +2,6 @@ export * from './Repeater';
 export * from './RepeaterFactory';
 export * from './RepeaterOptions';
 export * from './RepeaterRequestRunnerOptions';
-export * from './DefaultRepeater';
 export * from './DefaultRepeaterCommands';
 export * from './DefaultRepeaterServer';
 export * from './RepeaterCommands';

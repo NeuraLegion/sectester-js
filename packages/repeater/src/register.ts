@@ -3,11 +3,9 @@ import {
   RepeaterId,
   DefaultRepeaterCommands,
   DefaultRepeaterServer,
-  DefaultRepeater,
   DefaultRepeaterServerOptions,
   RepeaterCommands,
-  RepeaterServer,
-  Repeater
+  RepeaterServer
 } from './lib';
 import {
   HttpRequestRunner,
@@ -114,7 +112,6 @@ container.register(DefaultRepeaterServerOptions, {
   }
 });
 
-container.register(Repeater, { useClass: DefaultRepeater });
 container.register(ProxyFactory, { useClass: DefaultProxyFactory });
 container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
 container.register(RepeaterCommands, { useClass: DefaultRepeaterCommands });
