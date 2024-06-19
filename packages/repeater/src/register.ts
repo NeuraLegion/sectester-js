@@ -13,7 +13,6 @@ import {
   RequestRunner,
   RequestRunnerOptions
 } from './request-runner';
-import { DefaultRepeatersManager, RepeatersManager } from './api';
 import { DefaultProxyFactory, ProxyFactory } from './utils';
 import { container, DependencyContainer } from 'tsyringe';
 import { Configuration } from '@sectester/core';
@@ -74,4 +73,3 @@ container.register(Repeater, { useClass: DefaultRepeater });
 container.register(ProxyFactory, { useClass: DefaultProxyFactory });
 container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
 container.register(RepeaterCommands, { useClass: DefaultRepeaterCommands });
-container.register(RepeatersManager, { useClass: DefaultRepeatersManager });

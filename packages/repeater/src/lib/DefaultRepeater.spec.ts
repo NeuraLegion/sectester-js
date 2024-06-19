@@ -2,6 +2,7 @@ import { RunningStatus } from './Repeater';
 import { DefaultRepeater } from './DefaultRepeater';
 import { Protocol } from '../models/Protocol';
 import { Request, Response } from '../request-runner';
+import { RepeaterBridgesOptions } from './RepeaterBridgesOptions';
 import {
   RepeaterErrorCodes,
   RepeaterServer,
@@ -23,10 +24,12 @@ import { EventEmitter } from 'events';
 
 describe('DefaultRepeater', () => {
   const RepeaterId = 'fooId';
+  const RepeaterNamePrefix = 'localhost';
 
   let events!: EventEmitter;
   let sut!: DefaultRepeater;
 
+  const mockedRepeaterBridgesOptions = mock<RepeaterBridgesOptions>();
   const mockedRepeaterServer = mock<RepeaterServer>();
   const repeaterCommands = mock<RepeaterCommands>();
   const mockedLogger = mock<Logger>();
@@ -45,12 +48,14 @@ describe('DefaultRepeater', () => {
       }
     );
 
-    when(mockedRepeaterServer.deploy(anything())).thenResolve({
+    when(mockedRepeaterServer.deploy()).thenResolve({
       repeaterId: RepeaterId
     });
 
+    when(mockedRepeaterBridgesOptions.domain).thenReturn(RepeaterNamePrefix);
+
     sut = new DefaultRepeater(
-      RepeaterId,
+      instance(mockedRepeaterBridgesOptions),
       instance(mockedLogger),
       instance(mockedRepeaterServer),
       instance(repeaterCommands)
@@ -71,17 +76,15 @@ describe('DefaultRepeater', () => {
       await sut.start();
 
       // assert
-      verify(mockedRepeaterServer.connect()).once();
-      verify(
-        mockedRepeaterServer.deploy(
-          objectContaining({ repeaterId: RepeaterId })
-        )
-      ).once();
+      verify(mockedRepeaterServer.connect(RepeaterNamePrefix)).once();
+      verify(mockedRepeaterServer.deploy()).once();
     });
 
     it('should throw when underlying connect throws', async () => {
       // arrange
-      when(mockedRepeaterServer.connect()).thenReject(new Error('foo'));
+      when(mockedRepeaterServer.connect(RepeaterNamePrefix)).thenReject(
+        new Error('foo')
+      );
 
       // act
       const act = () => sut.start();
@@ -92,9 +95,7 @@ describe('DefaultRepeater', () => {
 
     it('should throw when underlying deploy throws', async () => {
       // arrange
-      when(mockedRepeaterServer.deploy(anything())).thenReject(
-        new Error('foo')
-      );
+      when(mockedRepeaterServer.deploy()).thenReject(new Error('foo'));
 
       // act
       const act = () => sut.start();
@@ -132,7 +133,9 @@ describe('DefaultRepeater', () => {
 
     it('should be possible to start() after start() error', async () => {
       // act
-      when(mockedRepeaterServer.connect()).thenReject().thenResolve();
+      when(mockedRepeaterServer.connect(RepeaterNamePrefix))
+        .thenReject()
+        .thenResolve();
 
       // assert
       await expect(sut.start()).rejects.toThrow();

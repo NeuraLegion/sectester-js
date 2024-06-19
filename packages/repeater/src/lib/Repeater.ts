@@ -4,11 +4,8 @@ export enum RunningStatus {
   RUNNING
 }
 
-export type RepeaterId = string;
-export const RepeaterId = Symbol('RepeaterId');
-
 export interface Repeater {
-  readonly repeaterId: RepeaterId;
+  readonly repeaterId: string;
   readonly runningStatus: RunningStatus;
   start(): Promise<void>;
   stop(): Promise<void>;

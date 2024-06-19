@@ -22,7 +22,6 @@ import io, { Socket } from 'socket.io-client';
 import parser from 'socket.io-msgpack-parser';
 import { ErrorEvent } from 'ws';
 import { EventEmitter, once } from 'events';
-import { hostname } from 'os';
 import Timer = NodeJS.Timer;
 
 export interface DefaultRepeaterServerOptions {
@@ -134,14 +133,14 @@ export class DefaultRepeaterServer implements RepeaterServer {
     return result;
   }
 
-  public async connect(namePrefix: string = hostname()) {
+  public async connect(domain: string) {
     this._socket = io(this.options.uri, {
       parser,
       path: '/api/ws/v1',
       transports: ['websocket'],
       reconnectionAttempts: this.MAX_RECONNECTION_ATTEMPTS,
       auth: {
-        domain: namePrefix,
+        domain,
         token: this.options.token
       }
     });

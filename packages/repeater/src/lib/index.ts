@@ -1,5 +1,6 @@
 export * from './Repeater';
 export * from './RepeaterFactory';
+export * from './RepeaterBridgesOptions';
 export * from './RepeaterOptions';
 export * from './RepeaterRequestRunnerOptions';
 export * from './DefaultRepeater';

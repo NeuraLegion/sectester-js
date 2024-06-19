@@ -1,10 +1,11 @@
-import { Repeater, RepeaterId } from './Repeater';
-import { RequestRunner, RequestRunnerOptions } from '../request-runner';
-import { RepeatersManager } from '../api';
+import { Repeater } from './Repeater';
 import { RepeaterOptions } from './RepeaterOptions';
+import { RepeaterBridgesOptions } from './RepeaterBridgesOptions';
+import { RequestRunner, RequestRunnerOptions } from '../request-runner';
 import { Configuration } from '@sectester/core';
 import { v4 as uuidv4 } from 'uuid';
 import { DependencyContainer, injectable, Lifecycle } from 'tsyringe';
+import { hostname } from 'os';
 
 /**
  *  A factory that is able to create a dedicated instance of the repeater with a bus and other dependencies.
@@ -12,35 +13,30 @@ import { DependencyContainer, injectable, Lifecycle } from 'tsyringe';
 @injectable()
 export class RepeaterFactory {
   private readonly MAX_NAME_LENGTH = 80;
-  private readonly repeatersManager: RepeatersManager;
   private readonly runnerOptions: Readonly<RequestRunnerOptions>;
 
   constructor(private readonly configuration: Configuration) {
-    this.repeatersManager =
-      this.configuration.container.resolve(RepeatersManager);
     this.runnerOptions =
       this.configuration.container.resolve(RequestRunnerOptions);
   }
 
   public async createRepeater({
-    projectId,
-    description,
     disableRandomNameGeneration,
-    namePrefix = 'sectester',
     requestRunnerOptions,
-    requestRunners
+    requestRunners,
+    namePrefix = hostname()
   }: RepeaterOptions = {}): Promise<Repeater> {
     await this.configuration.loadCredentials();
 
-    const { repeaterId } = await this.repeatersManager.createRepeater({
-      description,
-      projectId,
-      name: this.generateName(namePrefix, disableRandomNameGeneration)
-    });
-
     const container = this.configuration.container.createChildContainer();
 
-    container.register(RepeaterId, { useValue: repeaterId });
+    const repeaterBridgesOptions: RepeaterBridgesOptions = {
+      domain: this.generateName(namePrefix, disableRandomNameGeneration)
+    };
+
+    container.register(RepeaterBridgesOptions, {
+      useValue: repeaterBridgesOptions
+    });
 
     this.registerRequestRunnerOptions(container, requestRunnerOptions);
     this.registerRequestRunners(container, requestRunners ?? []);

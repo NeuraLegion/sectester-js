@@ -41,20 +41,17 @@ You can customize some properties, e.g. name prefix or description, passing opti
 
 ```ts
 const repeater = await repeaterFactory.createRepeater({
-  namePrefix: 'my-repeater',
-  description: 'My repeater'
+  namePrefix: 'my-repeater'
 });
 ```
 
 The `createRepeater` method accepts the options described below:
 
-| Option                        | Description                                                                                           |
-| :---------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `namePrefix`                  | Enter a name prefix that will be used as a constant part of the unique name. By default, `sectester`. |
-| `description`                 | Set a short description of the Repeater.                                                              |
-| `requestRunnerOptions`        | Custom the request runner settings that will be used to execute requests to your application.         |
-| `projectId`                   | Specify the project ID to associate the Repeater with.                                                |
-| `disableRandomNameGeneration` | Disable random name generation for the Repeater's name.                                               |
+| Option                        | Description                                                                                                       |
+| :---------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `namePrefix`                  | Enter a name prefix that will be used as a constant part of the unique name. By default, the hostname value used. |
+| `disableRandomNameGeneration` | Disable random name generation for the Repeater's name.                                                           |
+| `requestRunnerOptions`        | Custom the request runner settings that will be used to execute requests to your application.                     |
 
 The default `requestRunnerOptions` is as follows:
 

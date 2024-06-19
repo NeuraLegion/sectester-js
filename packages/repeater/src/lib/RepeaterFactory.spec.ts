@@ -5,7 +5,6 @@ import {
   RequestRunnerOptions
 } from '../request-runner';
 import { Repeater } from './Repeater';
-import { RepeatersManager } from '../api';
 import { Configuration } from '@sectester/core';
 import {
   anything,
@@ -20,8 +19,6 @@ import {
 import { DependencyContainer, Lifecycle } from 'tsyringe';
 
 describe('RepeaterFactory', () => {
-  const repeaterId = 'fooId';
-
   const defaultOptions = {
     timeout: 30000,
     maxContentLength: 100,
@@ -47,7 +44,6 @@ describe('RepeaterFactory', () => {
   const mockedContainer = mock<DependencyContainer>();
   const mockedChildContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();
-  const mockedRepeaterManager = mock<RepeatersManager>();
 
   const configuration = instance(mockedConfiguration);
 
@@ -59,14 +55,6 @@ describe('RepeaterFactory', () => {
     when(mockedContainer.createChildContainer()).thenReturn(
       instance(mockedChildContainer)
     );
-
-    when(
-      mockedContainer.resolve<RepeatersManager>(RepeatersManager)
-    ).thenReturn(instance(mockedRepeaterManager));
-
-    when(mockedRepeaterManager.createRepeater(anything())).thenResolve({
-      repeaterId
-    });
   });
 
   afterEach(() => {

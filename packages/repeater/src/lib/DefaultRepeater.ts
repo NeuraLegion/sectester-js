@@ -1,4 +1,5 @@
-import { Repeater, RepeaterId, RunningStatus } from './Repeater';
+import { Repeater, RunningStatus } from './Repeater';
+import { RepeaterBridgesOptions } from './RepeaterBridgesOptions';
 import {
   RepeaterServer,
   RepeaterErrorCodes,
@@ -18,15 +19,21 @@ import { inject, injectable, Lifecycle, scoped } from 'tsyringe';
 @scoped(Lifecycle.ContainerScoped)
 @injectable()
 export class DefaultRepeater implements Repeater {
+  private _repeaterId = '';
+
   private _runningStatus = RunningStatus.OFF;
+
+  get repeaterId(): string {
+    return this._repeaterId;
+  }
 
   get runningStatus(): RunningStatus {
     return this._runningStatus;
   }
 
   constructor(
-    @inject(RepeaterId)
-    public readonly repeaterId: RepeaterId,
+    @inject(RepeaterBridgesOptions)
+    private readonly repeaterBridgesOptions: RepeaterBridgesOptions,
     private readonly logger: Logger,
     @inject(RepeaterServer)
     private readonly repeaterServer: RepeaterServer,
@@ -68,7 +75,7 @@ export class DefaultRepeater implements Repeater {
 
     this.subscribeDiagnosticEvents();
 
-    await this.repeaterServer.connect();
+    await this.repeaterServer.connect(this.repeaterBridgesOptions.domain);
 
     this.logger.log('Deploying the repeater');
 
@@ -80,9 +87,9 @@ export class DefaultRepeater implements Repeater {
   }
 
   private async deploy() {
-    await this.repeaterServer.deploy({
-      repeaterId: this.repeaterId
-    });
+    const { repeaterId } = await this.repeaterServer.deploy();
+
+    this._repeaterId = repeaterId;
   }
 
   private subscribeRedeploymentEvent() {

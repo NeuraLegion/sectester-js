@@ -105,7 +105,7 @@ export type CallbackFunction<T = unknown> = (arg: T) => unknown;
 export type HandlerFunction = (args: unknown[]) => unknown;
 
 export interface RepeaterServer {
-  connect(domain?: string): Promise<void>;
+  connect(domain: string): Promise<void>;
 
   disconnect(): void;
 
