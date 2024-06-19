@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { ExecuteRequestEventHandler } from './ExecuteRequestEventHandler';
 import { Protocol } from '../models';
-import { Request, RequestRunner } from '../request-runner';
-import { anything, capture, instance, mock, reset, when } from 'ts-mockito';
+import { RequestRunner } from '../request-runner';
+import { anything, instance, mock, reset, when } from 'ts-mockito';
 
 describe('ExecuteRequestEventHandler', () => {
   const requestRunnerResponse = {
@@ -64,25 +64,6 @@ describe('ExecuteRequestEventHandler', () => {
       });
 
       await expect(res).rejects.toThrow(`Unsupported protocol "http"`);
-    });
-
-    it('`correlation_id_regex` should become `correlationIdRegex` in runner input', async () => {
-      const payload = {
-        protocol: Protocol.HTTP,
-        url: 'http://foo.bar/',
-        headers: {},
-        correlation_id_regex: 'baz'
-      };
-      const handler = new ExecuteRequestEventHandler([
-        instance(mockedRequestRunner)
-      ]);
-
-      await handler.handle(payload);
-
-      const [request]: [Request] = capture<Request>(
-        mockedRequestRunner.run
-      ).first();
-      expect(request.correlationIdRegex).toBeInstanceOf(RegExp);
     });
   });
 });

@@ -1,15 +1,18 @@
 import {
-  ExecuteRequestEventHandler,
-  RegisterRepeaterCommand,
-  RegisterRepeaterResult,
-  RepeaterRegisteringError,
-  RepeaterStatusEvent
-} from '../api';
-import { RepeaterStatus } from '../models';
-import { Configuration, EventBus, Logger } from '@sectester/core';
-import { gt } from 'semver';
+  RepeaterServer,
+  RepeaterErrorCodes,
+  RepeaterServerErrorEvent,
+  RepeaterServerEvents,
+  RepeaterServerReconnectionAttemptedEvent,
+  RepeaterServerReconnectionFailedEvent,
+  RepeaterServerRequestEvent,
+  RepeaterUpgradeAvailableEvent
+} from './RepeaterServer';
+import { RepeaterCommands } from './RepeaterCommands';
+import { Request } from '../request-runner/Request';
+import { Logger } from '@sectester/core';
 import chalk from 'chalk';
-import Timer = NodeJS.Timer;
+import { inject, injectable, Lifecycle, scoped } from 'tsyringe';
 
 export enum RunningStatus {
   OFF,
@@ -20,37 +23,24 @@ export enum RunningStatus {
 export type RepeaterId = string;
 export const RepeaterId = Symbol('RepeaterId');
 
+@scoped(Lifecycle.ContainerScoped)
+@injectable()
 export class Repeater {
-  public readonly repeaterId: RepeaterId;
-
-  private readonly bus: EventBus;
-  private readonly configuration: Configuration;
-  private readonly logger: Logger;
-
-  private timer?: Timer;
-
   private _runningStatus = RunningStatus.OFF;
 
   get runningStatus(): RunningStatus {
     return this._runningStatus;
   }
 
-  constructor({
-    repeaterId,
-    bus,
-    configuration
-  }: {
-    repeaterId: RepeaterId;
-    bus: EventBus;
-    configuration: Configuration;
-  }) {
-    this.repeaterId = repeaterId;
-    this.bus = bus;
-    this.configuration = configuration;
-
-    const { container } = this.configuration;
-    this.logger = container.resolve(Logger);
-  }
+  constructor(
+    @inject(RepeaterId)
+    public readonly repeaterId: RepeaterId,
+    private readonly logger: Logger,
+    @inject(RepeaterServer)
+    private readonly repeaterServer: RepeaterServer,
+    @inject(RepeaterCommands)
+    private readonly repeaterCommands: RepeaterCommands
+  ) {}
 
   public async start(): Promise<void> {
     if (this.runningStatus !== RunningStatus.OFF) {
@@ -60,9 +50,7 @@ export class Repeater {
     this._runningStatus = RunningStatus.STARTING;
 
     try {
-      await this.register();
-      await this.subscribeToEvents();
-      await this.schedulePing();
+      await this.connect();
 
       this._runningStatus = RunningStatus.RUNNING;
     } catch (e) {
@@ -78,85 +66,147 @@ export class Repeater {
 
     this._runningStatus = RunningStatus.OFF;
 
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
+    this.repeaterServer.disconnect();
 
-    await this.sendStatus('disconnected');
-    await this.bus.destroy?.();
+    return Promise.resolve();
   }
 
-  private async register(): Promise<void> {
-    const res = await this.bus.execute(
-      new RegisterRepeaterCommand({
-        version: this.configuration.repeaterVersion,
-        repeaterId: this.repeaterId
-      })
+  private async connect(): Promise<void> {
+    this.logger.log('Connecting the Bridges');
+
+    this.subscribeDiagnosticEvents();
+
+    await this.repeaterServer.connect();
+
+    this.logger.log('Deploying the repeater');
+
+    await this.deploy();
+
+    this.logger.log('The Repeater (%s) started', this.repeaterId);
+
+    this.subscribeConnectedEvent();
+  }
+
+  private async deploy() {
+    await this.repeaterServer.deploy({
+      repeaterId: this.repeaterId
+    });
+  }
+
+  private subscribeConnectedEvent() {
+    this.repeaterServer.on(RepeaterServerEvents.CONNECTED, this.deploy);
+  }
+
+  private subscribeDiagnosticEvents() {
+    this.repeaterServer.on(RepeaterServerEvents.ERROR, this.handleError);
+
+    this.repeaterServer.on(
+      RepeaterServerEvents.RECONNECTION_FAILED,
+      this.reconnectionFailed
     );
-
-    if (!res) {
-      throw new Error('Error registering repeater.');
-    }
-
-    this.handleRegisterResult(res);
-  }
-
-  private async subscribeToEvents(): Promise<void> {
-    await Promise.all(
-      [
-        ExecuteRequestEventHandler
-        // TODO repeater scripts
-      ].map(type => this.bus.register(type))
+    this.repeaterServer.on(RepeaterServerEvents.REQUEST, this.requestReceived);
+    this.repeaterServer.on(
+      RepeaterServerEvents.UPDATE_AVAILABLE,
+      this.upgradeAvailable
+    );
+    this.repeaterServer.on(
+      RepeaterServerEvents.RECONNECT_ATTEMPT,
+      this.reconnectAttempt
+    );
+    this.repeaterServer.on(RepeaterServerEvents.RECONNECTION_SUCCEEDED, () =>
+      this.logger.log('The Repeater (%s) connected', this.repeaterId)
     );
   }
 
-  private async schedulePing(): Promise<void> {
-    await this.sendStatus('connected');
-    this.timer = setInterval(() => this.sendStatus('connected'), 10000);
-    this.timer.unref();
-  }
+  private handleError = ({
+    code,
+    message,
+    remediation
+  }: RepeaterServerErrorEvent) => {
+    const normalizedMessage = this.normalizeMessage(message);
+    const normalizedRemediation = this.normalizeMessage(remediation ?? '');
 
-  private async sendStatus(status: RepeaterStatus): Promise<void> {
-    await this.bus.publish(
-      new RepeaterStatusEvent({
-        status,
-        repeaterId: this.repeaterId
-      })
-    );
-  }
-
-  private handleRegisterResult(res: { payload: RegisterRepeaterResult }): void {
-    const { payload } = res;
-
-    if ('error' in payload) {
-      this.handleRegisterError(payload.error);
+    if (this.isCriticalError(code)) {
+      this.handleCriticalError(normalizedMessage, normalizedRemediation);
     } else {
-      if (gt(payload.version, this.configuration.repeaterVersion)) {
-        this.logger.warn(
-          '%s: A new Repeater version (%s) is available, please update @sectester.',
-          chalk.yellow('(!) IMPORTANT'),
-          payload.version
-        );
-      }
+      this.logger.error(normalizedMessage);
     }
+  };
+
+  private normalizeMessage(message: string): string {
+    return message.replace(/\.$/, '');
   }
 
-  private handleRegisterError(error: RepeaterRegisteringError): never {
-    switch (error) {
-      case RepeaterRegisteringError.NOT_ACTIVE:
-        throw new Error(`Access Refused: The current Repeater is not active.`);
-      case RepeaterRegisteringError.NOT_FOUND:
-        throw new Error(`Unauthorized access. Please check your credentials.`);
-      case RepeaterRegisteringError.BUSY:
-        throw new Error(
-          `Access Refused: There is an already running Repeater with ID ${this.repeaterId}`
-        );
-      case RepeaterRegisteringError.REQUIRES_TO_BE_UPDATED:
-        throw new Error(
-          `${chalk.red(
-            '(!) CRITICAL'
-          )}: The current running version is no longer supported, please update @sectester.`
-        );
-    }
+  private isCriticalError(code: RepeaterErrorCodes): boolean {
+    return [
+      RepeaterErrorCodes.REPEATER_DEACTIVATED,
+      RepeaterErrorCodes.REPEATER_NO_LONGER_SUPPORTED,
+      RepeaterErrorCodes.REPEATER_UNAUTHORIZED,
+      RepeaterErrorCodes.REPEATER_ALREADY_STARTED,
+      RepeaterErrorCodes.REPEATER_NOT_PERMITTED,
+      RepeaterErrorCodes.UNEXPECTED_ERROR
+    ].includes(code);
   }
+
+  private handleCriticalError(message: string, remediation: string): void {
+    this.logger.error(
+      '%s: %s. %s',
+      chalk.red('(!) CRITICAL'),
+      message,
+      remediation
+    );
+    this.stop().catch(this.logger.error);
+  }
+
+  private upgradeAvailable = (event: RepeaterUpgradeAvailableEvent) => {
+    this.logger.warn(
+      '%s: A new Repeater version (%s) is available, for update instruction visit https://docs.brightsec.com/docs/installation-options',
+      chalk.yellow('(!) IMPORTANT'),
+      event.version
+    );
+  };
+
+  private reconnectAttempt = ({
+    attempt,
+    maxAttempts
+  }: RepeaterServerReconnectionAttemptedEvent) => {
+    this.logger.warn(
+      'Failed to connect to Bright cloud (attempt %d/%d)',
+      attempt,
+      maxAttempts
+    );
+  };
+
+  private reconnectionFailed = ({
+    error
+  }: RepeaterServerReconnectionFailedEvent) => {
+    this.logger.error(error.message);
+    this.stop().catch(this.logger.error);
+  };
+
+  private requestReceived = async (event: RepeaterServerRequestEvent) => {
+    const response = await this.repeaterCommands.sendRequest(
+      new Request({ ...event })
+    );
+
+    const {
+      statusCode,
+      message,
+      errorCode,
+      body,
+      headers,
+      protocol,
+      encoding
+    } = response;
+
+    return {
+      protocol,
+      body,
+      headers,
+      statusCode,
+      errorCode,
+      message,
+      encoding
+    };
+  };
 }

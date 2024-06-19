@@ -4,10 +4,13 @@ import { URL } from 'url';
 export interface RequestOptions {
   protocol: Protocol;
   url: string;
-  method?: string;
   headers?: Record<string, string | string[]>;
+  method?: string;
   body?: string;
-  correlationIdRegex?: string | RegExp;
+  encoding?: 'base64';
+  maxContentSize?: number;
+  timeout?: number;
+  decompress?: boolean;
 }
 
 export class Request {
@@ -27,20 +30,19 @@ export class Request {
       'referer',
       'user-agent'
     ]);
+
   public readonly protocol: Protocol;
   public readonly url: string;
+  public readonly method: string;
   public readonly body?: string;
-  public readonly correlationIdRegex?: RegExp;
+  public readonly encoding?: 'base64';
+  public readonly maxContentSize?: number;
+  public readonly decompress?: boolean;
+  public readonly timeout?: number;
 
-  private readonly _method?: string;
+  private _headers: Record<string, string | string[]> = {};
 
-  get method(): string | undefined {
-    return this._method;
-  }
-
-  private _headers?: Record<string, string | string[]>;
-
-  get headers(): Readonly<Record<string, string | string[]>> | undefined {
+  get headers(): Readonly<Record<string, string | string[]>> {
     return this._headers;
   }
 
@@ -53,18 +55,27 @@ export class Request {
     method,
     url,
     body,
-    correlationIdRegex,
+    timeout,
+    maxContentSize,
+    encoding,
+    decompress = true,
     headers = {}
   }: RequestOptions) {
     this.protocol = protocol;
-    this._method = method?.toUpperCase() ?? 'GET';
+    this.method = method?.toUpperCase() ?? 'GET';
+
     this.validateUrl(url);
-    this.url = url;
-    this.correlationIdRegex =
-      this.normalizeCorrelationIdRegex(correlationIdRegex);
-    this.setHeaders(headers);
+    this.url = url.trim();
+
     this.precheckBody(body);
     this.body = body;
+
+    this.setHeaders(headers);
+
+    this.encoding = encoding;
+    this.timeout = timeout;
+    this.maxContentSize = maxContentSize;
+    this.decompress = !!decompress;
   }
 
   public setHeaders(headers: Record<string, string | string[]>): void {
@@ -97,18 +108,6 @@ export class Request {
   private precheckBody(body: string | undefined): void {
     if (body && typeof body !== 'string') {
       throw new Error('Body must be string.');
-    }
-  }
-
-  private normalizeCorrelationIdRegex(
-    correlationIdRegex: RegExp | string | undefined
-  ): RegExp | undefined {
-    if (correlationIdRegex) {
-      try {
-        return new RegExp(correlationIdRegex, 'i');
-      } catch {
-        throw new Error('Correlation id must be regular expression.');
-      }
     }
   }
 }

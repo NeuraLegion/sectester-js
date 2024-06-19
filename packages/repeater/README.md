@@ -169,8 +169,8 @@ describe('Scan', () => {
 
 ### Implementation details
 
-Under the hood `Repeater` register `ExecuteRequestEventHandler` in bus,
-which in turn uses the `RequestRunner` to proceed with request:
+Under the hood, `Repeater` connects to the Bright engine using the WebSocket protocol and then listens for incoming commands from the engine.
+These commands are executed by the `RequestRunner` to process the requests coming from the engine:
 
 ```ts
 export interface RequestRunner {
@@ -179,7 +179,7 @@ export interface RequestRunner {
 }
 ```
 
-Package contains `RequestRunner` implementations for both HTTP and WS protocols.
+Package contains `RequestRunner` implementations for HTTP protocol only.
 To support other protocol new class implementation of `RequestRunner` should be registered in global IoC container:
 
 ```ts

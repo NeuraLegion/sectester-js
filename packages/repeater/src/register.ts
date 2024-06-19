@@ -1,11 +1,19 @@
-import { RepeaterFactory, RepeaterId } from './lib';
-import { DefaultRepeatersManager, RepeatersManager } from './api';
+import {
+  RepeaterFactory,
+  RepeaterId,
+  DefaultRepeaterCommands,
+  DefaultRepeaterServer,
+  DefaultRepeaterServerOptions,
+  RepeaterCommands,
+  RepeaterServer
+} from './lib';
 import {
   HttpRequestRunner,
   RequestRunner,
-  RequestRunnerOptions,
-  WsRequestRunner
+  RequestRunnerOptions
 } from './request-runner';
+import { DefaultRepeatersManager, RepeatersManager } from './api';
+import { DefaultProxyFactory, ProxyFactory } from './utils';
 import {
   container,
   DependencyContainer,
@@ -25,10 +33,6 @@ import {
 
 container.register(RequestRunner, {
   useClass: HttpRequestRunner
-});
-
-container.register(RequestRunner, {
-  useClass: WsRequestRunner
 });
 
 container.register(RequestRunnerOptions, {
@@ -90,4 +94,25 @@ container.register(EventBus, {
   }
 });
 
+container.register(DefaultRepeaterServerOptions, {
+  useFactory: (childContainer: DependencyContainer) => {
+    const configuration = childContainer.resolve<Configuration>(Configuration);
+
+    if (!configuration.credentials) {
+      throw new Error(
+        'Please provide credentials to establish a connection with the bridges.'
+      );
+    }
+
+    return {
+      uri: `${configuration.api}/workstations`,
+      token: configuration.credentials.token,
+      connectTimeout: 10000
+    };
+  }
+});
+
+container.register(ProxyFactory, { useClass: DefaultProxyFactory });
+container.register(RepeaterServer, { useClass: DefaultRepeaterServer });
+container.register(RepeaterCommands, { useClass: DefaultRepeaterCommands });
 container.register(RepeatersManager, { useClass: DefaultRepeatersManager });

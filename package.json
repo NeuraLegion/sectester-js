@@ -83,15 +83,20 @@
     "chalk": "^4.1.2",
     "ci-info": "^3.3.0",
     "content-type": "^1.0.4",
+    "fast-content-type-parse": "^1.1.0",
     "form-data": "^4.0.0",
+    "http-proxy-agent": "^7.0.2",
+    "https-proxy-agent": "^7.0.4",
+    "iconv-lite": "^0.6.3",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
+    "socket.io-client": "^4.7.5",
+    "socket.io-msgpack-parser": "^3.0.2",
     "socks-proxy-agent": "^6.2.0-beta.0",
     "tslib": "~2.3.1",
     "tsyringe": "^4.6.0",
     "tty-table": "^4.1.5",
-    "uuid": "^8.3.2",
-    "ws": "^8.17.1"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",
@@ -113,7 +118,6 @@
     "@types/request-promise": "^4.1.48",
     "@types/semver": "^7.3.9",
     "@types/uuid": "^8.3.4",
-    "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
     "eslint": "8.15.0",
@@ -129,8 +133,14 @@
     "nx": "14.5.6",
     "prettier": "2.7.1",
     "semantic-release": "~19.0.3",
+    "socket.io": "^4.7.5",
     "ts-jest": "27.1.4",
     "ts-mockito": "^2.6.1",
     "typescript": "4.7.4"
+  },
+  "overrides": {
+    "socket.io-msgpack-parser": {
+      "notepack.io": "~3.0.1"
+    }
   }
 }

@@ -42,7 +42,6 @@ export class DefaultRepeatersManager implements RepeatersManager {
         ...(projectId ? { projectIds: [projectId] } : {})
       })
     );
-
     if (!repeater?.id) {
       throw new Error('Cannot create a new repeater.');
     }

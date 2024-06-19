@@ -1,9 +1,9 @@
 import { Repeater, RepeaterId } from './Repeater';
 import { RequestRunner, RequestRunnerOptions } from '../request-runner';
-import { RepeaterOptions } from './RepeaterOptions';
-import { RepeatersManager } from '../api';
 import { RepeaterRequestRunnerOptions } from './RepeaterRequestRunnerOptions';
-import { Configuration, EventBus } from '@sectester/core';
+import { RepeatersManager } from '../api';
+import { RepeaterOptions } from './RepeaterOptions';
+import { Configuration } from '@sectester/core';
 import { v4 as uuidv4 } from 'uuid';
 import { DependencyContainer, injectable, Lifecycle } from 'tsyringe';
 
@@ -28,17 +28,17 @@ export class RepeaterFactory {
     description,
     disableRandomNameGeneration,
     namePrefix = 'sectester',
-    ...requestRunnerOptions
+    ...options
   }: RepeaterOptions = {}): Promise<Repeater> {
-    const name = this.generateName(namePrefix, disableRandomNameGeneration);
+    await this.configuration.loadCredentials();
 
     const { repeaterId } = await this.repeatersManager.createRepeater({
       description,
       projectId,
-      name
+      name: this.generateName(namePrefix, disableRandomNameGeneration)
     });
 
-    return this.createRepeaterInstance(repeaterId, requestRunnerOptions);
+    return this.createRepeaterInstance(repeaterId, options);
   }
 
   public async createRepeaterFromExisting(
@@ -50,66 +50,21 @@ export class RepeaterFactory {
     return this.createRepeaterInstance(repeaterId, options);
   }
 
-  private async createRepeaterInstance(
+  private createRepeaterInstance(
     repeaterId: string,
     {
       requestRunnerOptions,
       requestRunners = []
     }: RepeaterRequestRunnerOptions = {}
-  ) {
+  ): Repeater {
     const container = this.configuration.container.createChildContainer();
 
-    container.register(RepeaterId, {
-      useValue: repeaterId
-    });
+    container.register(RepeaterId, { useValue: repeaterId });
 
     this.registerRequestRunnerOptions(container, requestRunnerOptions);
-    this.registerRequestRunners(container, requestRunners);
+    this.registerRequestRunners(container, requestRunners ?? []);
 
-    const bus = await this.createEventBus(container);
-
-    return new Repeater({
-      bus,
-      repeaterId,
-      configuration: this.configuration
-    });
-  }
-
-  private async createEventBus(
-    container: DependencyContainer
-  ): Promise<EventBus> {
-    await this.configuration.loadCredentials();
-
-    if (!this.configuration.credentials) {
-      throw new Error(
-        'Please provide credentials to establish a connection with the bus.'
-      );
-    }
-
-    const bus = container.resolve<EventBus>(EventBus);
-
-    await bus.init?.();
-
-    return bus;
-  }
-
-  private generateName(
-    namePrefix: string,
-    disableRandomNameGeneration: boolean = false
-  ) {
-    const normalizedPrefix = namePrefix?.trim();
-    const randomPostfix = disableRandomNameGeneration ? '' : `-${uuidv4()}`;
-    const name = `${normalizedPrefix}${randomPostfix}`;
-
-    if (name.length > this.MAX_NAME_LENGTH) {
-      const maxPrefixLength = this.MAX_NAME_LENGTH - randomPostfix.length;
-
-      throw new Error(
-        `Name prefix must be less than or equal to ${maxPrefixLength} characters.`
-      );
-    }
-
-    return name;
+    return container.resolve(Repeater);
   }
 
   private registerRequestRunners(
@@ -148,5 +103,24 @@ export class RepeaterFactory {
         ...(options ?? {})
       }
     });
+  }
+
+  private generateName(
+    namePrefix: string,
+    disableRandomNameGeneration: boolean = false
+  ) {
+    const normalizedPrefix = namePrefix?.trim();
+    const randomPostfix = disableRandomNameGeneration ? '' : `-${uuidv4()}`;
+    const name = `${normalizedPrefix}${randomPostfix}`;
+
+    if (name.length > this.MAX_NAME_LENGTH) {
+      const maxPrefixLength = this.MAX_NAME_LENGTH - randomPostfix.length;
+
+      throw new Error(
+        `Name prefix must be less than or equal to ${maxPrefixLength} characters.`
+      );
+    }
+
+    return name;
   }
 }

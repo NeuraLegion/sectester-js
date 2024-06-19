@@ -1,15 +1,16 @@
-import 'reflect-metadata';
 import { Repeater, RunningStatus } from './Repeater';
+import { Protocol } from '../models/Protocol';
+import { Request, Response } from '../request-runner';
 import {
-  RegisterRepeaterCommand,
-  RepeaterRegisteringError,
-  RepeaterStatusEvent
-} from '../api';
-import { Configuration, EventBus, Logger } from '@sectester/core';
+  RepeaterErrorCodes,
+  RepeaterServer,
+  RepeaterServerEvents,
+  RepeaterServerRequestEvent
+} from './RepeaterServer';
+import { RepeaterCommands } from './RepeaterCommands';
+import { delay, Logger } from '@sectester/core';
 import {
-  anyOfClass,
   anything,
-  capture,
   instance,
   mock,
   objectContaining,
@@ -17,230 +18,329 @@ import {
   verify,
   when
 } from 'ts-mockito';
-import { DependencyContainer } from 'tsyringe';
 
 describe('Repeater', () => {
-  const version = '42.0.1';
-  const repeaterId = 'fooId';
+  const RepeaterId = 'fooId';
 
-  let repeater!: Repeater;
-  const mockedConfiguration = mock<Configuration>();
-  const mockedEventBus = mock<EventBus>();
+  let sut!: Repeater;
+
+  const mockedRepeaterServer = mock<RepeaterServer>();
+  const repeaterCommands = mock<RepeaterCommands>();
   const mockedLogger = mock<Logger>();
-  const mockedContainer = mock<DependencyContainer>();
-
-  const createRepater = () =>
-    new Repeater({
-      repeaterId,
-      bus: instance(mockedEventBus),
-      configuration: instance(mockedConfiguration)
-    });
 
   beforeEach(() => {
-    when(mockedContainer.resolve(Logger)).thenReturn(instance(mockedLogger));
-    when(mockedContainer.isRegistered(Logger, anything())).thenReturn(true);
-    when(mockedConfiguration.repeaterVersion).thenReturn(version);
-    when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
-    when(
-      mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-    ).thenResolve({ payload: { version } });
-    when(mockedEventBus.publish(anyOfClass(RepeaterStatusEvent))).thenResolve();
+    when(mockedRepeaterServer.deploy(anything())).thenResolve({
+      repeaterId: RepeaterId
+    });
 
-    jest.useFakeTimers();
-
-    repeater = createRepater();
-  });
-
-  afterEach(() => {
-    reset<Configuration | EventBus | DependencyContainer | Logger>(
-      mockedConfiguration,
-      mockedEventBus,
-      mockedLogger,
-      mockedContainer
+    sut = new Repeater(
+      RepeaterId,
+      instance(mockedLogger),
+      instance(mockedRepeaterServer),
+      instance(repeaterCommands)
     );
-
-    jest.useRealTimers();
   });
+
+  afterEach(() =>
+    reset<RepeaterServer | RepeaterCommands | Logger>(
+      mockedRepeaterServer,
+      repeaterCommands,
+      mockedLogger
+    )
+  );
 
   describe('start', () => {
     it('should start', async () => {
-      await repeater.start();
+      // act
+      await sut.start();
 
+      // assert
+      verify(mockedRepeaterServer.connect()).once();
       verify(
-        mockedEventBus.execute(
-          objectContaining({
-            type: 'RepeaterRegistering',
-            payload: {
-              repeaterId,
-              version
-            }
-          })
-        )
-      ).once();
-
-      verify(
-        mockedEventBus.publish(
-          objectContaining({
-            type: 'RepeaterStatusUpdated',
-            payload: {
-              repeaterId,
-              status: 'connected'
-            }
-          })
+        mockedRepeaterServer.deploy(
+          objectContaining({ repeaterId: RepeaterId })
         )
       ).once();
     });
 
-    it('should throw an error on failed registration', async () => {
-      when(
-        mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-      ).thenResolve();
+    it('should throw when underlying connect throws', async () => {
+      // arrange
+      when(mockedRepeaterServer.connect()).thenReject(new Error('foo'));
 
-      await expect(repeater.start()).rejects.toThrow(
-        'Error registering repeater.'
+      // act
+      const act = () => sut.start();
+
+      // assert
+      await expect(act).rejects.toThrowError('foo');
+    });
+
+    it('should throw when underlying deploy throws', async () => {
+      // arrange
+      when(mockedRepeaterServer.deploy(anything())).thenReject(
+        new Error('foo')
       );
-    });
 
-    it('should send ping periodically', async () => {
-      await repeater.start();
-      jest.advanceTimersByTime(15000);
-      jest.runOnlyPendingTimers();
+      // act
+      const act = () => sut.start();
 
-      verify(
-        mockedEventBus.publish(
-          objectContaining({
-            type: 'RepeaterStatusUpdated',
-            payload: {
-              repeaterId,
-              status: 'connected'
-            }
-          })
-        )
-      ).thrice();
+      // assert
+      await expect(act).rejects.toThrowError('foo');
     });
 
     it('should have RunningStatus.STARTING just after start() call', () => {
-      void repeater.start();
-      expect(repeater.runningStatus).toBe(RunningStatus.STARTING);
+      // act
+      void sut.start();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.STARTING);
     });
 
     it('should have RunningStatus.RUNNING after successful start()', async () => {
-      await repeater.start();
-      expect(repeater.runningStatus).toBe(RunningStatus.RUNNING);
+      // act
+      await sut.start();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.RUNNING);
     });
 
     it('should throw an error on start() twice', async () => {
-      await repeater.start();
+      // arrange
+      await sut.start();
 
-      const res = repeater.start();
+      // act
+      const res = sut.start();
 
+      // assert
       await expect(res).rejects.toThrow('Repeater is already active.');
     });
 
     it('should be possible to start() after start() error', async () => {
-      when(mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand)))
-        .thenReject()
-        .thenResolve({ payload: { version } });
+      // act
+      when(mockedRepeaterServer.connect()).thenReject().thenResolve();
 
-      await expect(repeater.start()).rejects.toThrow();
-      await expect(repeater.start()).resolves.not.toThrow();
+      // assert
+      await expect(sut.start()).rejects.toThrow();
+      await expect(sut.start()).resolves.not.toThrow();
     });
 
-    it.each([
-      {
-        error: RepeaterRegisteringError.REQUIRES_TO_BE_UPDATED,
-        expected: 'The current running version is no longer supported'
-      },
-      {
-        error: RepeaterRegisteringError.BUSY,
-        expected: `There is an already running Repeater with ID ${repeaterId}`
-      },
-      {
-        error: RepeaterRegisteringError.NOT_FOUND,
-        expected: 'Unauthorized access'
-      },
-      {
-        error: RepeaterRegisteringError.NOT_ACTIVE,
-        expected: 'The current Repeater is not active'
-      }
-    ])(
-      'should throw an error on registration error ${error}',
-      async ({ expected, error }) => {
-        when(
-          mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-        ).thenResolve({
-          payload: { error }
-        });
+    it(`should subscribe to ${RepeaterServerEvents.UPDATE_AVAILABLE} and proceed on event`, async () => {
+      // arrange
+      const event = { version: '1.0.0' };
 
-        await expect(repeater.start()).rejects.toThrow(expected);
-      }
-    );
-
-    it('should log a warning if a new version is available', async () => {
-      const newVersion = version.replace(/(\d+)/, (_, x) => `${+x + 1}`);
       when(
-        mockedEventBus.execute(anyOfClass(RegisterRepeaterCommand))
-      ).thenResolve({
-        payload: { version: newVersion }
+        mockedRepeaterServer.on(
+          RepeaterServerEvents.UPDATE_AVAILABLE,
+          anything()
+        )
+      ).thenCall((_, handler) => handler(event));
+
+      // act
+      await sut.start();
+
+      // assert
+      verify(
+        mockedLogger.warn(
+          '%s: A new Repeater version (%s) is available, for update instruction visit https://docs.brightsec.com/docs/installation-options',
+          anything(),
+          '1.0.0'
+        )
+      ).once();
+    });
+
+    it(`should subscribe to ${RepeaterServerEvents.REQUEST} and proceed on event`, async () => {
+      // arrange
+      const event: RepeaterServerRequestEvent = {
+        protocol: Protocol.HTTP,
+        url: 'http://foo.bar',
+        method: 'GET'
+      };
+
+      const request = new Request(event);
+
+      const response = new Response({
+        protocol: Protocol.HTTP,
+        statusCode: 200
       });
 
-      await repeater.start();
+      when(
+        mockedRepeaterServer.on(RepeaterServerEvents.REQUEST, anything())
+      ).thenCall((_, handler) => setImmediate(() => handler(event)));
 
-      const [arg]: string[] = capture(mockedLogger.warn).first();
-      expect(arg).toContain('A new Repeater version (%s) is available');
+      when(repeaterCommands.sendRequest(objectContaining(request))).thenResolve(
+        response
+      );
+
+      // act
+      await sut.start();
+
+      // assert
+      await delay(200);
+      verify(repeaterCommands.sendRequest(objectContaining(request))).once();
+    });
+
+    it(`should subscribe to ${RepeaterServerEvents.RECONNECT_ATTEMPT} and proceed on event`, async () => {
+      // arrange
+      const event = {
+        attempt: 1,
+        maxAttempts: 3
+      };
+
+      when(
+        mockedRepeaterServer.on(
+          RepeaterServerEvents.RECONNECT_ATTEMPT,
+          anything()
+        )
+      ).thenCall((_, handler) => handler(event));
+
+      // act
+      await sut.start();
+
+      // assert
+      verify(
+        mockedLogger.warn(
+          'Failed to connect to Bright cloud (attempt %d/%d)',
+          anything(),
+          anything()
+        )
+      ).once();
+    });
+
+    it(`should subscribe to ${RepeaterServerEvents.ERROR} and proceed on error`, async () => {
+      // arrange
+      const event = {
+        code: RepeaterErrorCodes.UNKNOWN_ERROR,
+        message: 'error'
+      };
+
+      when(
+        mockedRepeaterServer.on(RepeaterServerEvents.ERROR, anything())
+      ).thenCall((_, handler) => handler(event));
+
+      // act
+      await sut.start();
+
+      // assert
+      verify(mockedLogger.error('error')).once();
+    });
+
+    it(`should subscribe to ${RepeaterServerEvents.ERROR} and proceed on critical error`, async () => {
+      // arrange
+      const event = {
+        code: RepeaterErrorCodes.UNEXPECTED_ERROR,
+        message: 'unexpected error',
+        remediation: 'remediation'
+      };
+
+      when(
+        mockedRepeaterServer.on(RepeaterServerEvents.ERROR, anything())
+      ).thenCall((_, handler) => setImmediate(() => handler(event)));
+
+      // act
+      await sut.start();
+
+      // assert
+      await delay(200);
+      verify(
+        mockedLogger.error(
+          '%s: %s. %s',
+          anything(),
+          'unexpected error',
+          'remediation'
+        )
+      ).once();
+      verify(mockedRepeaterServer.disconnect()).once();
+    });
+
+    it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_FAILED} and proceed on event`, async () => {
+      // arrange
+      const error = new Error('test error');
+      const event = {
+        error
+      };
+
+      when(
+        mockedRepeaterServer.on(
+          RepeaterServerEvents.RECONNECTION_FAILED,
+          anything()
+        )
+      ).thenCall((_, handler) => setImmediate(() => handler(event)));
+
+      // act
+      await sut.start();
+
+      // assert
+      await delay(200);
+      verify(mockedLogger.error(error.message)).once();
+      verify(mockedRepeaterServer.disconnect()).once();
+    });
+
+    it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_SUCCEEDED} and proceed on event`, async () => {
+      // arrange
+      when(
+        mockedRepeaterServer.on(
+          RepeaterServerEvents.RECONNECTION_SUCCEEDED,
+          anything()
+        )
+      ).thenCall((_, handler) => handler());
+
+      // act
+      await sut.start();
+
+      // assert
+      verify(
+        mockedLogger.log('The Repeater (%s) connected', RepeaterId)
+      ).once();
     });
   });
 
   describe('stop', () => {
     it('should stop', async () => {
-      await repeater.start();
-      await repeater.stop();
+      // arrange
+      await sut.start();
 
-      verify(
-        mockedEventBus.publish(
-          objectContaining({
-            type: 'RepeaterStatusUpdated',
-            payload: {
-              repeaterId,
-              status: 'disconnected'
-            }
-          })
-        )
-      ).once();
+      // act
+      await sut.stop();
 
-      jest.advanceTimersByTime(25000);
-      jest.runOnlyPendingTimers();
-
-      verify(
-        mockedEventBus.publish(
-          objectContaining({ payload: { status: 'connected' } })
-        )
-      ).once();
+      // assert
+      verify(mockedRepeaterServer.disconnect()).once();
     });
 
     it('should have RunningStatus.OFF after start() and stop()', async () => {
-      await repeater.start();
-      await repeater.stop();
-      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
+      // arrange
+      await sut.start();
+
+      // act
+      await sut.stop();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.OFF);
     });
 
     it('should do nothing on stop() without start()', async () => {
-      await repeater.stop();
-      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
+      // act
+      await sut.stop();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.OFF);
     });
 
     it('should do nothing on second stop() call', async () => {
-      await repeater.start();
-      await repeater.stop();
-      await repeater.stop();
+      // arrange
+      await sut.start();
+      await sut.stop();
 
-      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
+      // assert
+      await sut.stop();
+
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.OFF);
     });
   });
 
   describe('runningStatus', () => {
     it('should have RunningStatus.OFF initially', () => {
-      expect(repeater.runningStatus).toBe(RunningStatus.OFF);
+      // assert
+      expect(sut.runningStatus).toBe(RunningStatus.OFF);
     });
   });
 });
