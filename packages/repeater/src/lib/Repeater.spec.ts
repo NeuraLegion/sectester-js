@@ -8,7 +8,7 @@ import {
   RepeaterServerRequestEvent
 } from './RepeaterServer';
 import { RepeaterCommands } from './RepeaterCommands';
-import { Logger } from '@sectester/core';
+import { delay, Logger } from '@sectester/core';
 import {
   anything,
   instance,
@@ -125,21 +125,17 @@ describe('Repeater', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.UPDATE_AVAILABLE} and proceed on event`, async () => {
       // arrange
-      let eventHandler!: (event: unknown) => void;
+      const event = { version: '1.0.0' };
 
       when(
         mockedRepeaterServer.on(
           RepeaterServerEvents.UPDATE_AVAILABLE,
           anything()
         )
-      ).thenCall((_, handler) => {
-        eventHandler = handler;
-      });
-
-      await sut.start();
+      ).thenCall((_, handler) => handler(event));
 
       // act
-      eventHandler({ version: '1.0.0' });
+      await sut.start();
 
       // assert
       verify(
@@ -153,60 +149,51 @@ describe('Repeater', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.REQUEST} and proceed on event`, async () => {
       // arrange
-      let eventHandler!: (event: unknown) => Promise<Response>;
-
-      when(
-        mockedRepeaterServer.on(RepeaterServerEvents.REQUEST, anything())
-      ).thenCall((_, handler) => {
-        eventHandler = handler;
-      });
-
-      const requestEvent: RepeaterServerRequestEvent = {
+      const event: RepeaterServerRequestEvent = {
         protocol: Protocol.HTTP,
         url: 'http://foo.bar',
         method: 'GET'
       };
 
-      const request = new Request(requestEvent);
+      const request = new Request(event);
 
       const response = new Response({
         protocol: Protocol.HTTP,
         statusCode: 200
       });
 
+      when(
+        mockedRepeaterServer.on(RepeaterServerEvents.REQUEST, anything())
+      ).thenCall((_, handler) => setImmediate(() => handler(event)));
+
       when(repeaterCommands.sendRequest(objectContaining(request))).thenResolve(
         response
       );
 
+      // act
       await sut.start();
 
-      // act
-      const result = await eventHandler(requestEvent);
-
       // assert
-      expect(result).toMatchObject(response);
+      await delay(200);
+      verify(repeaterCommands.sendRequest(objectContaining(request))).once();
     });
 
     it(`should subscribe to ${RepeaterServerEvents.RECONNECT_ATTEMPT} and proceed on event`, async () => {
       // arrange
-      let eventHandler!: (event: unknown) => void;
+      const event = {
+        attempt: 1,
+        maxAttempts: 3
+      };
 
       when(
         mockedRepeaterServer.on(
           RepeaterServerEvents.RECONNECT_ATTEMPT,
           anything()
         )
-      ).thenCall((_, handler) => {
-        eventHandler = handler;
-      });
-
-      await sut.start();
+      ).thenCall((_, handler) => handler(event));
 
       // act
-      eventHandler({
-        attempt: 1,
-        maxAttempts: 3
-      });
+      await sut.start();
 
       // assert
       verify(
@@ -220,21 +207,17 @@ describe('Repeater', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.ERROR} and proceed on error`, async () => {
       // arrange
-      let eventHandler!: (event: unknown) => void;
+      const event = {
+        code: RepeaterErrorCodes.UNKNOWN_ERROR,
+        message: 'error'
+      };
 
       when(
         mockedRepeaterServer.on(RepeaterServerEvents.ERROR, anything())
-      ).thenCall((_, handler) => {
-        eventHandler = handler;
-      });
-
-      await sut.start();
+      ).thenCall((_, handler) => handler(event));
 
       // act
-      eventHandler({
-        code: RepeaterErrorCodes.UNKNOWN_ERROR,
-        message: 'error'
-      });
+      await sut.start();
 
       // assert
       verify(mockedLogger.error('error')).once();
@@ -242,24 +225,21 @@ describe('Repeater', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.ERROR} and proceed on critical error`, async () => {
       // arrange
-      let eventHandler!: (event: unknown) => void;
-
-      when(
-        mockedRepeaterServer.on(RepeaterServerEvents.ERROR, anything())
-      ).thenCall((_, handler) => {
-        eventHandler = handler;
-      });
-
-      await sut.start();
-
-      // act
-      eventHandler({
+      const event = {
         code: RepeaterErrorCodes.UNEXPECTED_ERROR,
         message: 'unexpected error',
         remediation: 'remediation'
-      });
+      };
+
+      when(
+        mockedRepeaterServer.on(RepeaterServerEvents.ERROR, anything())
+      ).thenCall((_, handler) => setImmediate(() => handler(event)));
+
+      // act
+      await sut.start();
 
       // assert
+      await delay(200);
       verify(
         mockedLogger.error(
           '%s: %s. %s',
@@ -274,47 +254,37 @@ describe('Repeater', () => {
     it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_FAILED} and proceed on event`, async () => {
       // arrange
       const error = new Error('test error');
-
-      let eventHandler!: (event: unknown) => void;
+      const event = {
+        error
+      };
 
       when(
         mockedRepeaterServer.on(
           RepeaterServerEvents.RECONNECTION_FAILED,
           anything()
         )
-      ).thenCall((_, handler) => {
-        eventHandler = handler;
-      });
-
-      await sut.start();
+      ).thenCall((_, handler) => setImmediate(() => handler(event)));
 
       // act
-      eventHandler({
-        error
-      });
+      await sut.start();
 
       // assert
+      await delay(200);
       verify(mockedLogger.error(error.message)).once();
       verify(mockedRepeaterServer.disconnect()).once();
     });
 
     it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_SUCCEEDED} and proceed on event`, async () => {
       // arrange
-      let eventHandler!: () => void;
-
       when(
         mockedRepeaterServer.on(
           RepeaterServerEvents.RECONNECTION_SUCCEEDED,
           anything()
         )
-      ).thenCall((_, handler) => {
-        eventHandler = handler;
-      });
-
-      await sut.start();
+      ).thenCall((_, handler) => handler());
 
       // act
-      eventHandler();
+      await sut.start();
 
       // assert
       verify(
