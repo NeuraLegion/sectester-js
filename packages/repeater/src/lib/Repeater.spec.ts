@@ -189,7 +189,6 @@ describe('Repeater', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.RECONNECT_ATTEMPT} and proceed on event`, async () => {
       // arrange
-
       let eventHandler!: (event: unknown) => void;
 
       when(
@@ -221,7 +220,6 @@ describe('Repeater', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.ERROR} and proceed on error`, async () => {
       // arrange
-
       let eventHandler!: (event: unknown) => void;
 
       when(
@@ -244,7 +242,6 @@ describe('Repeater', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.ERROR} and proceed on critical error`, async () => {
       // arrange
-
       let eventHandler!: (event: unknown) => void;
 
       when(
@@ -277,7 +274,6 @@ describe('Repeater', () => {
     it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_FAILED} and proceed on event`, async () => {
       // arrange
       const error = new Error('test error');
-      // arrange
 
       let eventHandler!: (event: unknown) => void;
 
@@ -304,7 +300,6 @@ describe('Repeater', () => {
 
     it(`should subscribe to ${RepeaterServerEvents.RECONNECTION_SUCCEEDED} and proceed on event`, async () => {
       // arrange
-
       let eventHandler!: () => void;
 
       when(
