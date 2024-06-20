@@ -140,7 +140,7 @@ export class DefaultRepeaterServer implements RepeaterServer {
       transports: ['websocket'],
       reconnectionAttempts: this.MAX_RECONNECTION_ATTEMPTS,
       auth: {
-        domain: namePrefix + '123',
+        domain: namePrefix,
         token: this.options.token
       }
     });
