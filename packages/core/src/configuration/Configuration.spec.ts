@@ -94,61 +94,57 @@ describe('Configuration', () => {
     it.each([
       {
         input: 'localhost',
-        expected: { bus: 'amqp://localhost:5672', api: 'http://localhost:8000' }
+        expected: { api: 'http://localhost:8000' }
       },
       {
         input: 'localhost:8080',
-        expected: { bus: 'amqp://localhost:5672', api: 'http://localhost:8000' }
+        expected: { api: 'http://localhost:8000' }
       },
       {
         input: 'http://localhost',
-        expected: { bus: 'amqp://localhost:5672', api: 'http://localhost:8000' }
+        expected: { api: 'http://localhost:8000' }
       },
       {
         input: 'http://localhost:8080',
-        expected: { bus: 'amqp://localhost:5672', api: 'http://localhost:8000' }
+        expected: { api: 'http://localhost:8000' }
       },
       {
         input: '127.0.0.1',
-        expected: { bus: 'amqp://127.0.0.1:5672', api: 'http://127.0.0.1:8000' }
+        expected: { api: 'http://127.0.0.1:8000' }
       },
       {
         input: '127.0.0.1:8080',
-        expected: { bus: 'amqp://127.0.0.1:5672', api: 'http://127.0.0.1:8000' }
+        expected: { api: 'http://127.0.0.1:8000' }
       },
       {
         input: 'http://127.0.0.1',
-        expected: { bus: 'amqp://127.0.0.1:5672', api: 'http://127.0.0.1:8000' }
+        expected: { api: 'http://127.0.0.1:8000' }
       },
       {
         input: 'http://127.0.0.1:8080',
-        expected: { bus: 'amqp://127.0.0.1:5672', api: 'http://127.0.0.1:8000' }
+        expected: { api: 'http://127.0.0.1:8000' }
       },
       {
         input: 'example.com',
         expected: {
-          bus: 'amqps://amq.example.com:5672',
           api: 'https://example.com'
         }
       },
       {
         input: 'example.com:443',
         expected: {
-          bus: 'amqps://amq.example.com:5672',
           api: 'https://example.com'
         }
       },
       {
         input: 'http://example.com',
         expected: {
-          bus: 'amqps://amq.example.com:5672',
           api: 'https://example.com'
         }
       },
       {
         input: 'http://example.com:443',
         expected: {
-          bus: 'amqps://amq.example.com:5672',
           api: 'https://example.com'
         }
       }

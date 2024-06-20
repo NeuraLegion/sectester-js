@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { ExponentialBackoffRetryStrategy } from './ExponentialBackoffRetryStrategy';
 import { HttpCommandError } from '../exceptions';
 import { AxiosRequestConfig } from 'axios';

@@ -38,12 +38,6 @@ export class Configuration {
     return this._credentials;
   }
 
-  private _bus!: string;
-
-  get bus() {
-    return this._bus;
-  }
-
   private _api!: string;
 
   get api() {
@@ -132,10 +126,8 @@ export class Configuration {
     }
 
     if (['localhost', '127.0.0.1'].includes(hostname)) {
-      this._bus = `amqp://${hostname}:5672`;
       this._api = `http://${hostname}:8000`;
     } else {
-      this._bus = `amqps://amq.${hostname}:5672`;
       this._api = `https://${hostname}`;
     }
   }

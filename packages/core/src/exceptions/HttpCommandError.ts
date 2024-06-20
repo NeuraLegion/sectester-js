@@ -1,5 +1,6 @@
+import { SecTesterError } from './SecTesterError';
+import { isStream, isPresent } from '../utils';
 import { AxiosError } from 'axios';
-import { SecTesterError, isStream, isPresent } from '@sectester/core';
 
 export class HttpCommandError extends SecTesterError {
   public readonly status: number | undefined;
