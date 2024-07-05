@@ -7,8 +7,8 @@
     "url": "git+https://github.com/NeuraLegion/sectester-js.git"
   },
   "engines": {
-    "node": ">=16",
-    "npm": ">=8"
+    "node": ">=18",
+    "npm": ">=10"
   },
   "author": {
     "name": "Artem Derevnjuk",
