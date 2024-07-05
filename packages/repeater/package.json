@@ -1,6 +1,6 @@
 {
   "name": "@sectester/repeater",
-  "version": "0.29.1",
+  "version": "0.30.0",
   "description": "Package for managing repeaters, which are mandatory for scanning targets on a local network.",
   "repository": {
     "type": "git",
