@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { ExponentialBackoffRetryStrategy } from './ExponentialBackoffRetryStrategy';
 import { HttpCommandError } from '../exceptions';
-import { AxiosRequestConfig } from 'axios';
+import { AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
 
 class TestError extends Error {
   constructor(
@@ -103,7 +103,10 @@ describe('ExponentialBackoffRetryStrategy', () => {
       const retryStrategy = new ExponentialBackoffRetryStrategy({
         maxDepth: 1
       });
-      const config: AxiosRequestConfig<undefined> = { method: 'POST' };
+      const config: InternalAxiosRequestConfig = {
+        method: 'POST',
+        headers: new AxiosHeaders()
+      };
       const error = new HttpCommandError({
         config,
         name: 'Error',

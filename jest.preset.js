@@ -8,5 +8,9 @@ module.exports = {
     '!**/node_modules/**',
     '!**/index.ts',
     '!**/register.ts'
-  ]
+  ],
+  moduleNameMapper: {
+    // see https://github.com/uuidjs/uuid/issues/451
+    uuid: require.resolve('uuid')
+  }
 };
