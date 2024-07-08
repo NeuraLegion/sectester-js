@@ -1,4 +1,5 @@
 import { IssueFound } from './IssueFound';
+import { PayloadScanTarget } from './PayloadScanTarget';
 import { Formatter } from '@sectester/reporter';
 import {
   Issue,
@@ -37,6 +38,37 @@ export class SecScan {
       await this.assert(scan);
     } finally {
       await scan.stop();
+    }
+  }
+
+  public async runPayloadScan<T>(
+    sampleData: unknown,
+    fn: (input: T) => Promise<string>
+  ): Promise<void> {
+    const target = new PayloadScanTarget();
+    const { url } = await target.start(fn);
+
+    const scan = await this.scanFactory.createScan(
+      {
+        ...this.settings,
+        target: {
+          url,
+          method: 'POST',
+          body: sampleData
+        }
+      },
+      {
+        timeout: this._timeout
+      }
+    );
+
+    try {
+      await scan.expect(this._threshold);
+
+      await this.assert(scan);
+    } finally {
+      await scan.stop();
+      await target.stop();
     }
   }
 
