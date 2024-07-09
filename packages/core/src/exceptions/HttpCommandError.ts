@@ -1,5 +1,4 @@
 import { SecTesterError } from './SecTesterError';
-import { isStream, isPresent } from '../utils';
 import { AxiosError } from 'axios';
 
 export class HttpCommandError extends SecTesterError {
@@ -17,7 +16,7 @@ export class HttpCommandError extends SecTesterError {
     } = cause;
 
     this.method = method;
-    this.message = !isStream(data) && isPresent(data) ? data : message;
+    this.message = data && typeof data === 'string' ? data : message;
     this.status = status;
     this.code = code;
   }
