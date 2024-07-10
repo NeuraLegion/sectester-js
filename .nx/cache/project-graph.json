@@ -46,22 +46,17 @@
                   "input": "",
                   "output": ""
                 }
-              ],
-              "buildableProjectDepsInPackageJsonType": "dependencies"
+              ]
             },
             "configurations": {}
           },
           "lint": {
             "cache": true,
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": [
               "{options.outputFile}"
             ],
-            "options": {
-              "lintFilePatterns": [
-                "packages/repeater/**/*.ts"
-              ]
-            },
+            "options": {},
             "configurations": {}
           },
           "test": {
@@ -130,22 +125,17 @@
                   "input": "",
                   "output": ""
                 }
-              ],
-              "buildableProjectDepsInPackageJsonType": "dependencies"
+              ]
             },
             "configurations": {}
           },
           "lint": {
             "cache": true,
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": [
               "{options.outputFile}"
             ],
-            "options": {
-              "lintFilePatterns": [
-                "packages/reporter/**/*.ts"
-              ]
-            },
+            "options": {},
             "configurations": {}
           },
           "test": {
@@ -214,22 +204,17 @@
                   "input": "",
                   "output": ""
                 }
-              ],
-              "buildableProjectDepsInPackageJsonType": "dependencies"
+              ]
             },
             "configurations": {}
           },
           "lint": {
             "cache": true,
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": [
               "{options.outputFile}"
             ],
-            "options": {
-              "lintFilePatterns": [
-                "packages/runner/**/*.ts"
-              ]
-            },
+            "options": {},
             "configurations": {}
           },
           "test": {
@@ -298,22 +283,17 @@
                   "input": "",
                   "output": ""
                 }
-              ],
-              "buildableProjectDepsInPackageJsonType": "dependencies"
+              ]
             },
             "configurations": {}
           },
           "lint": {
             "cache": true,
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": [
               "{options.outputFile}"
             ],
-            "options": {
-              "lintFilePatterns": [
-                "packages/core/**/*.ts"
-              ]
-            },
+            "options": {},
             "configurations": {}
           },
           "test": {
@@ -382,22 +362,17 @@
                   "input": "",
                   "output": ""
                 }
-              ],
-              "buildableProjectDepsInPackageJsonType": "dependencies"
+              ]
             },
             "configurations": {}
           },
           "lint": {
             "cache": true,
-            "executor": "@nrwl/linter:eslint",
+            "executor": "@nx/eslint:lint",
             "outputs": [
               "{options.outputFile}"
             ],
-            "options": {
-              "lintFilePatterns": [
-                "packages/scan/**/*.ts"
-              ]
-            },
+            "options": {},
             "configurations": {}
           },
           "test": {

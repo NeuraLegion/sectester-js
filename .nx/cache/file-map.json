@@ -26,7 +26,6 @@
     "@commitlint/config-conventional": "^19.2.2",
     "@nrwl/eslint-plugin-nx": "17.3.2",
     "@nrwl/jest": "17.3.2",
-    "@nrwl/linter": "17.3.2",
     "@nrwl/node": "17.3.2",
     "@nx/devkit": "17.3.2",
     "@nx/jest": "17.3.2",
@@ -65,7 +64,8 @@
     "ts-jest": "29.1.5",
     "ts-mockito": "^2.6.1",
     "ts-node": "10.9.1",
-    "typescript": "~5.3.2"
+    "typescript": "~5.3.2",
+    "@nx/eslint": "17.3.2"
   },
   "pathMappings": {
     "@sectester/bus": [
@@ -93,6 +93,444 @@
   "nxJsonPlugins": [],
   "fileMap": {
     "projectFileMap": {
+      "repeater": [
+        {
+          "file": "packages/repeater/.babelrc",
+          "hash": "2685020516260856122"
+        },
+        {
+          "file": "packages/repeater/.eslintrc.js",
+          "hash": "13141881670955050404"
+        },
+        {
+          "file": "packages/repeater/README.md",
+          "hash": "2595536565739497187"
+        },
+        {
+          "file": "packages/repeater/jest.config.ts",
+          "hash": "687849668675123868"
+        },
+        {
+          "file": "packages/repeater/package.json",
+          "hash": "11419175300973750149",
+          "deps": [
+            "core"
+          ]
+        },
+        {
+          "file": "packages/repeater/project.json",
+          "hash": "7387173356943146779"
+        },
+        {
+          "file": "packages/repeater/src/api/DefaultRepeatersManager.spec.ts",
+          "hash": "13472827803563727687",
+          "deps": [
+            "npm:reflect-metadata",
+            "core",
+            "npm:ts-mockito"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/api/DefaultRepeatersManager.ts",
+          "hash": "12923029840327233177",
+          "deps": [
+            "npm:tsyringe",
+            "core"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/api/RepeatersManager.ts",
+          "hash": "5291982723686120985"
+        },
+        {
+          "file": "packages/repeater/src/api/commands/CreateRepeaterRequest.ts",
+          "hash": "17622344249152277585",
+          "deps": [
+            "core"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/api/commands/DeleteRepeaterRequest.ts",
+          "hash": "13783832127805199054",
+          "deps": [
+            "core"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/api/commands/GetRepeaterRequest.ts",
+          "hash": "9676639018751714697",
+          "deps": [
+            "core"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/api/commands/index.ts",
+          "hash": "17350631268479033748"
+        },
+        {
+          "file": "packages/repeater/src/api/index.ts",
+          "hash": "6240598278911034471"
+        },
+        {
+          "file": "packages/repeater/src/index.ts",
+          "hash": "11928402624052563006"
+        },
+        {
+          "file": "packages/repeater/src/lib/DefaultRepeaterCommands.spec.ts",
+          "hash": "14207105499257786450",
+          "deps": [
+            "npm:ts-mockito"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/lib/DefaultRepeaterCommands.ts",
+          "hash": "9598591157131962274",
+          "deps": [
+            "npm:tsyringe"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/lib/DefaultRepeaterServer.spec.ts",
+          "hash": "10783618866528940524",
+          "deps": [
+            "core",
+            "npm:ts-mockito",
+            "npm:socket.io",
+            "npm:socket.io-msgpack-parser",
+            "npm:http"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/lib/DefaultRepeaterServer.ts",
+          "hash": "10484910272955742328",
+          "deps": [
+            "npm:reflect-metadata",
+            "core",
+            "npm:tsyringe",
+            "npm:socket.io-client",
+            "npm:socket.io-msgpack-parser",
+            "npm:events",
+            "npm:os",
+            "npm:DefaultRepeaterServerOptions"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/lib/Repeater.spec.ts",
+          "hash": "15801705174483272263",
+          "deps": [
+            "core",
+            "npm:ts-mockito"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/lib/Repeater.ts",
+          "hash": "8234066332288772303",
+          "deps": [
+            "core",
+            "npm:chalk",
+            "npm:tsyringe"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/lib/RepeaterCommands.ts",
+          "hash": "18181459242801130642"
+        },
+        {
+          "file": "packages/repeater/src/lib/RepeaterFactory.spec.ts",
+          "hash": "12233995249591410389",
+          "deps": [
+            "core",
+            "npm:ts-mockito",
+            "npm:tsyringe"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/lib/RepeaterFactory.ts",
+          "hash": "13242791588460762772",
+          "deps": [
+            "core",
+            "npm:uuid",
+            "npm:tsyringe"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/lib/RepeaterOptions.ts",
+          "hash": "12453714940010928444"
+        },
+        {
+          "file": "packages/repeater/src/lib/RepeaterRequestRunnerOptions.ts",
+          "hash": "8273058077542608817"
+        },
+        {
+          "file": "packages/repeater/src/lib/RepeaterServer.ts",
+          "hash": "5423348071495835129"
+        },
+        {
+          "file": "packages/repeater/src/lib/index.ts",
+          "hash": "13352330810642117053"
+        },
+        {
+          "file": "packages/repeater/src/models/Protocol.ts",
+          "hash": "3985017882683473585"
+        },
+        {
+          "file": "packages/repeater/src/models/RepeaterStatus.ts",
+          "hash": "9686560822565059969"
+        },
+        {
+          "file": "packages/repeater/src/models/index.ts",
+          "hash": "3181552755750533234"
+        },
+        {
+          "file": "packages/repeater/src/register.ts",
+          "hash": "14466704589703028041",
+          "deps": [
+            "npm:tsyringe",
+            "core"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/request-runner/Request.spec.ts",
+          "hash": "13843221235897367157"
+        },
+        {
+          "file": "packages/repeater/src/request-runner/Request.ts",
+          "hash": "14334221566733334614",
+          "deps": [
+            "npm:url"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/request-runner/RequestRunner.ts",
+          "hash": "2949596563274798112"
+        },
+        {
+          "file": "packages/repeater/src/request-runner/RequestRunnerOptions.ts",
+          "hash": "14609995366253685246"
+        },
+        {
+          "file": "packages/repeater/src/request-runner/Response.spec.ts",
+          "hash": "12083185833571079886"
+        },
+        {
+          "file": "packages/repeater/src/request-runner/Response.ts",
+          "hash": "6097881522390978536"
+        },
+        {
+          "file": "packages/repeater/src/request-runner/index.ts",
+          "hash": "3993404630538062352"
+        },
+        {
+          "file": "packages/repeater/src/request-runner/protocols/HttpRequestRunner.spec.ts",
+          "hash": "2365049205907666087",
+          "deps": [
+            "npm:reflect-metadata",
+            "core",
+            "npm:nock",
+            "npm:ts-mockito",
+            "npm:node:util",
+            "npm:node:zlib"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/request-runner/protocols/HttpRequestRunner.ts",
+          "hash": "17825261422074997388",
+          "deps": [
+            "core",
+            "npm:tsyringe",
+            "npm:iconv-lite",
+            "npm:fast-content-type-parse",
+            "npm:node:url",
+            "npm:node:http",
+            "npm:node:https",
+            "npm:node:events",
+            "npm:node:stream",
+            "npm:node:zlib",
+            "npm:http"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/request-runner/protocols/index.ts",
+          "hash": "4132570033724657002"
+        },
+        {
+          "file": "packages/repeater/src/utils/DefaultProxyFactory.spec.ts",
+          "hash": "5588850992174226757",
+          "deps": [
+            "npm:https-proxy-agent",
+            "npm:http-proxy-agent",
+            "npm:socks-proxy-agent"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/utils/DefaultProxyFactory.ts",
+          "hash": "4438229724630131372",
+          "deps": [
+            "npm:http-proxy-agent",
+            "npm:socks-proxy-agent",
+            "npm:node:https",
+            "npm:node:http"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/utils/NormalizeZlibDeflateTransformStream.spec.ts",
+          "hash": "12530197031604884508",
+          "deps": [
+            "npm:node:util",
+            "npm:node:zlib",
+            "npm:node:stream"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/utils/NormalizeZlibDeflateTransformStream.ts",
+          "hash": "11503337903839777238",
+          "deps": [
+            "npm:node:stream"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/utils/PatchedHttpsProxyAgent.ts",
+          "hash": "12205024879014523600",
+          "deps": [
+            "npm:https-proxy-agent",
+            "npm:node:url",
+            "npm:node:http",
+            "npm:node:net"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/utils/ProxyFactory.ts",
+          "hash": "4019220132613649124",
+          "deps": [
+            "npm:node:https",
+            "npm:node:http"
+          ]
+        },
+        {
+          "file": "packages/repeater/src/utils/index.ts",
+          "hash": "9212344655760679601"
+        },
+        {
+          "file": "packages/repeater/tsconfig.json",
+          "hash": "11481695713853314943"
+        },
+        {
+          "file": "packages/repeater/tsconfig.lib.json",
+          "hash": "2078470775619492653"
+        },
+        {
+          "file": "packages/repeater/tsconfig.spec.json",
+          "hash": "9571156425590174700"
+        }
+      ],
+      "runner": [
+        {
+          "file": "packages/runner/.babelrc",
+          "hash": "2685020516260856122"
+        },
+        {
+          "file": "packages/runner/.eslintrc.js",
+          "hash": "11171732028439522445"
+        },
+        {
+          "file": "packages/runner/README.md",
+          "hash": "16748790041748487518"
+        },
+        {
+          "file": "packages/runner/jest.config.ts",
+          "hash": "16671857208184441230"
+        },
+        {
+          "file": "packages/runner/package.json",
+          "hash": "4812715311612626453",
+          "deps": [
+            "core",
+            "repeater",
+            "reporter",
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/runner/project.json",
+          "hash": "2554518639690126262"
+        },
+        {
+          "file": "packages/runner/src/index.ts",
+          "hash": "14428353282588746736"
+        },
+        {
+          "file": "packages/runner/src/lib/IssueFound.ts",
+          "hash": "12981141914434393613",
+          "deps": [
+            "reporter",
+            "core",
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/runner/src/lib/SecRunner.spec.ts",
+          "hash": "18076616354571530507",
+          "deps": [
+            "core",
+            "scan",
+            "npm:ts-mockito",
+            "npm:tsyringe",
+            "repeater"
+          ]
+        },
+        {
+          "file": "packages/runner/src/lib/SecRunner.ts",
+          "hash": "14817007188115455852",
+          "deps": [
+            "core",
+            "repeater",
+            "scan",
+            "reporter"
+          ]
+        },
+        {
+          "file": "packages/runner/src/lib/SecScan.spec.ts",
+          "hash": "865075981609812220",
+          "deps": [
+            "scan",
+            "npm:ts-mockito",
+            "npm:tsyringe",
+            "core",
+            "reporter"
+          ]
+        },
+        {
+          "file": "packages/runner/src/lib/SecScan.ts",
+          "hash": "12916023075353779369",
+          "deps": [
+            "reporter",
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/runner/src/lib/SecScanOptions.ts",
+          "hash": "1234870689671567856",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/runner/src/lib/index.ts",
+          "hash": "6683310078091338463"
+        },
+        {
+          "file": "packages/runner/tsconfig.json",
+          "hash": "11481695713853314943"
+        },
+        {
+          "file": "packages/runner/tsconfig.lib.json",
+          "hash": "2078470775619492653"
+        },
+        {
+          "file": "packages/runner/tsconfig.spec.json",
+          "hash": "9571156425590174700"
+        }
+      ],
       "core": [
         {
           "file": "packages/core/.babelrc",
@@ -399,259 +837,6 @@
         },
         {
           "file": "packages/core/tsconfig.spec.json",
-          "hash": "9571156425590174700"
-        }
-      ],
-      "runner": [
-        {
-          "file": "packages/runner/.babelrc",
-          "hash": "2685020516260856122"
-        },
-        {
-          "file": "packages/runner/.eslintrc.js",
-          "hash": "11171732028439522445"
-        },
-        {
-          "file": "packages/runner/README.md",
-          "hash": "16748790041748487518"
-        },
-        {
-          "file": "packages/runner/jest.config.ts",
-          "hash": "16671857208184441230"
-        },
-        {
-          "file": "packages/runner/package.json",
-          "hash": "4812715311612626453",
-          "deps": [
-            "core",
-            "repeater",
-            "reporter",
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/runner/project.json",
-          "hash": "2554518639690126262"
-        },
-        {
-          "file": "packages/runner/src/index.ts",
-          "hash": "14428353282588746736"
-        },
-        {
-          "file": "packages/runner/src/lib/IssueFound.ts",
-          "hash": "12981141914434393613",
-          "deps": [
-            "reporter",
-            "core",
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/runner/src/lib/SecRunner.spec.ts",
-          "hash": "18076616354571530507",
-          "deps": [
-            "core",
-            "scan",
-            "npm:ts-mockito",
-            "npm:tsyringe",
-            "repeater"
-          ]
-        },
-        {
-          "file": "packages/runner/src/lib/SecRunner.ts",
-          "hash": "14817007188115455852",
-          "deps": [
-            "core",
-            "repeater",
-            "scan",
-            "reporter"
-          ]
-        },
-        {
-          "file": "packages/runner/src/lib/SecScan.spec.ts",
-          "hash": "865075981609812220",
-          "deps": [
-            "scan",
-            "npm:ts-mockito",
-            "npm:tsyringe",
-            "core",
-            "reporter"
-          ]
-        },
-        {
-          "file": "packages/runner/src/lib/SecScan.ts",
-          "hash": "12916023075353779369",
-          "deps": [
-            "reporter",
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/runner/src/lib/SecScanOptions.ts",
-          "hash": "1234870689671567856",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/runner/src/lib/index.ts",
-          "hash": "6683310078091338463"
-        },
-        {
-          "file": "packages/runner/tsconfig.json",
-          "hash": "11481695713853314943"
-        },
-        {
-          "file": "packages/runner/tsconfig.lib.json",
-          "hash": "2078470775619492653"
-        },
-        {
-          "file": "packages/runner/tsconfig.spec.json",
-          "hash": "9571156425590174700"
-        }
-      ],
-      "reporter": [
-        {
-          "file": "packages/reporter/.babelrc",
-          "hash": "2685020516260856122"
-        },
-        {
-          "file": "packages/reporter/.eslintrc.js",
-          "hash": "2970184768840360306"
-        },
-        {
-          "file": "packages/reporter/README.md",
-          "hash": "1219278829502750834"
-        },
-        {
-          "file": "packages/reporter/jest.config.ts",
-          "hash": "12931308141467227141"
-        },
-        {
-          "file": "packages/reporter/package.json",
-          "hash": "14134299190132222133",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/project.json",
-          "hash": "9014999894823236517"
-        },
-        {
-          "file": "packages/reporter/reporter-sample.png",
-          "hash": "6456662436610818223"
-        },
-        {
-          "file": "packages/reporter/src/__fixtures__/issues.ts",
-          "hash": "14542382177153751250",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/formatters/PlainTextFormatter.spec.ts",
-          "hash": "9548588233789257371",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/formatters/PlainTextFormatter.ts",
-          "hash": "14180312566312375781",
-          "deps": [
-            "scan",
-            "npm:util"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/formatters/index.ts",
-          "hash": "3019043333776219608"
-        },
-        {
-          "file": "packages/reporter/src/index.ts",
-          "hash": "12538030585068375865"
-        },
-        {
-          "file": "packages/reporter/src/lib/Formatter.ts",
-          "hash": "13337541064046409174",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/lib/Reporter.ts",
-          "hash": "15640326724999853114",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/lib/index.ts",
-          "hash": "16529091058963636272"
-        },
-        {
-          "file": "packages/reporter/src/models/IssuesGroup.ts",
-          "hash": "17883052952879419091",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/models/index.ts",
-          "hash": "777167401903752271"
-        },
-        {
-          "file": "packages/reporter/src/std/StdReporter.spec.ts",
-          "hash": "12734196120701286753",
-          "deps": [
-            "npm:reflect-metadata",
-            "scan",
-            "npm:ts-mockito"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/std/StdReporter.ts",
-          "hash": "13970739725346525402",
-          "deps": [
-            "scan",
-            "npm:tty-table",
-            "npm:chalk"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/std/index.ts",
-          "hash": "9948109880811267889"
-        },
-        {
-          "file": "packages/reporter/src/utils/index.ts",
-          "hash": "14273265444564827000"
-        },
-        {
-          "file": "packages/reporter/src/utils/issues-grouper.spec.ts",
-          "hash": "12674928616391076174",
-          "deps": [
-            "npm:reflect-metadata",
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/utils/issues-grouper.ts",
-          "hash": "3308828784767120711",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/tsconfig.json",
-          "hash": "11481695713853314943"
-        },
-        {
-          "file": "packages/reporter/tsconfig.lib.json",
-          "hash": "2078470775619492653"
-        },
-        {
-          "file": "packages/reporter/tsconfig.spec.json",
           "hash": "9571156425590174700"
         }
       ],
@@ -1037,333 +1222,148 @@
           "hash": "9571156425590174700"
         }
       ],
-      "repeater": [
+      "reporter": [
         {
-          "file": "packages/repeater/.babelrc",
+          "file": "packages/reporter/.babelrc",
           "hash": "2685020516260856122"
         },
         {
-          "file": "packages/repeater/.eslintrc.js",
-          "hash": "13141881670955050404"
+          "file": "packages/reporter/.eslintrc.js",
+          "hash": "2970184768840360306"
         },
         {
-          "file": "packages/repeater/README.md",
-          "hash": "2595536565739497187"
+          "file": "packages/reporter/README.md",
+          "hash": "1219278829502750834"
         },
         {
-          "file": "packages/repeater/jest.config.ts",
-          "hash": "687849668675123868"
+          "file": "packages/reporter/jest.config.ts",
+          "hash": "12931308141467227141"
         },
         {
-          "file": "packages/repeater/package.json",
-          "hash": "11419175300973750149",
+          "file": "packages/reporter/package.json",
+          "hash": "14134299190132222133",
           "deps": [
-            "core"
+            "scan"
           ]
         },
         {
-          "file": "packages/repeater/project.json",
-          "hash": "7387173356943146779"
+          "file": "packages/reporter/project.json",
+          "hash": "9014999894823236517"
         },
         {
-          "file": "packages/repeater/src/api/DefaultRepeatersManager.spec.ts",
-          "hash": "13472827803563727687",
+          "file": "packages/reporter/reporter-sample.png",
+          "hash": "6456662436610818223"
+        },
+        {
+          "file": "packages/reporter/src/__fixtures__/issues.ts",
+          "hash": "14542382177153751250",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/formatters/PlainTextFormatter.spec.ts",
+          "hash": "9548588233789257371",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/formatters/PlainTextFormatter.ts",
+          "hash": "14180312566312375781",
+          "deps": [
+            "scan",
+            "npm:util"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/formatters/index.ts",
+          "hash": "3019043333776219608"
+        },
+        {
+          "file": "packages/reporter/src/index.ts",
+          "hash": "12538030585068375865"
+        },
+        {
+          "file": "packages/reporter/src/lib/Formatter.ts",
+          "hash": "13337541064046409174",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/lib/Reporter.ts",
+          "hash": "15640326724999853114",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/lib/index.ts",
+          "hash": "16529091058963636272"
+        },
+        {
+          "file": "packages/reporter/src/models/IssuesGroup.ts",
+          "hash": "17883052952879419091",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/models/index.ts",
+          "hash": "777167401903752271"
+        },
+        {
+          "file": "packages/reporter/src/std/StdReporter.spec.ts",
+          "hash": "12734196120701286753",
           "deps": [
             "npm:reflect-metadata",
-            "core",
+            "scan",
             "npm:ts-mockito"
           ]
         },
         {
-          "file": "packages/repeater/src/api/DefaultRepeatersManager.ts",
-          "hash": "12923029840327233177",
+          "file": "packages/reporter/src/std/StdReporter.ts",
+          "hash": "13970739725346525402",
           "deps": [
-            "npm:tsyringe",
-            "core"
+            "scan",
+            "npm:tty-table",
+            "npm:chalk"
           ]
         },
         {
-          "file": "packages/repeater/src/api/RepeatersManager.ts",
-          "hash": "5291982723686120985"
+          "file": "packages/reporter/src/std/index.ts",
+          "hash": "9948109880811267889"
         },
         {
-          "file": "packages/repeater/src/api/commands/CreateRepeaterRequest.ts",
-          "hash": "17622344249152277585",
-          "deps": [
-            "core"
-          ]
+          "file": "packages/reporter/src/utils/index.ts",
+          "hash": "14273265444564827000"
         },
         {
-          "file": "packages/repeater/src/api/commands/DeleteRepeaterRequest.ts",
-          "hash": "13783832127805199054",
-          "deps": [
-            "core"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/api/commands/GetRepeaterRequest.ts",
-          "hash": "9676639018751714697",
-          "deps": [
-            "core"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/api/commands/index.ts",
-          "hash": "17350631268479033748"
-        },
-        {
-          "file": "packages/repeater/src/api/index.ts",
-          "hash": "6240598278911034471"
-        },
-        {
-          "file": "packages/repeater/src/index.ts",
-          "hash": "11928402624052563006"
-        },
-        {
-          "file": "packages/repeater/src/lib/DefaultRepeaterCommands.spec.ts",
-          "hash": "14207105499257786450",
-          "deps": [
-            "npm:ts-mockito"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/lib/DefaultRepeaterCommands.ts",
-          "hash": "9598591157131962274",
-          "deps": [
-            "npm:tsyringe"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/lib/DefaultRepeaterServer.spec.ts",
-          "hash": "10783618866528940524",
-          "deps": [
-            "core",
-            "npm:ts-mockito",
-            "npm:socket.io",
-            "npm:socket.io-msgpack-parser",
-            "npm:http"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/lib/DefaultRepeaterServer.ts",
-          "hash": "10484910272955742328",
+          "file": "packages/reporter/src/utils/issues-grouper.spec.ts",
+          "hash": "12674928616391076174",
           "deps": [
             "npm:reflect-metadata",
-            "core",
-            "npm:tsyringe",
-            "npm:socket.io-client",
-            "npm:socket.io-msgpack-parser",
-            "npm:events",
-            "npm:os",
-            "npm:DefaultRepeaterServerOptions"
+            "scan"
           ]
         },
         {
-          "file": "packages/repeater/src/lib/Repeater.spec.ts",
-          "hash": "15801705174483272263",
+          "file": "packages/reporter/src/utils/issues-grouper.ts",
+          "hash": "3308828784767120711",
           "deps": [
-            "core",
-            "npm:ts-mockito"
+            "scan"
           ]
         },
         {
-          "file": "packages/repeater/src/lib/Repeater.ts",
-          "hash": "8234066332288772303",
-          "deps": [
-            "core",
-            "npm:chalk",
-            "npm:tsyringe"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/lib/RepeaterCommands.ts",
-          "hash": "18181459242801130642"
-        },
-        {
-          "file": "packages/repeater/src/lib/RepeaterFactory.spec.ts",
-          "hash": "12233995249591410389",
-          "deps": [
-            "core",
-            "npm:ts-mockito",
-            "npm:tsyringe"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/lib/RepeaterFactory.ts",
-          "hash": "13242791588460762772",
-          "deps": [
-            "core",
-            "npm:uuid",
-            "npm:tsyringe"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/lib/RepeaterOptions.ts",
-          "hash": "12453714940010928444"
-        },
-        {
-          "file": "packages/repeater/src/lib/RepeaterRequestRunnerOptions.ts",
-          "hash": "8273058077542608817"
-        },
-        {
-          "file": "packages/repeater/src/lib/RepeaterServer.ts",
-          "hash": "5423348071495835129"
-        },
-        {
-          "file": "packages/repeater/src/lib/index.ts",
-          "hash": "13352330810642117053"
-        },
-        {
-          "file": "packages/repeater/src/models/Protocol.ts",
-          "hash": "3985017882683473585"
-        },
-        {
-          "file": "packages/repeater/src/models/RepeaterStatus.ts",
-          "hash": "9686560822565059969"
-        },
-        {
-          "file": "packages/repeater/src/models/index.ts",
-          "hash": "3181552755750533234"
-        },
-        {
-          "file": "packages/repeater/src/register.ts",
-          "hash": "14466704589703028041",
-          "deps": [
-            "npm:tsyringe",
-            "core"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/request-runner/Request.spec.ts",
-          "hash": "13843221235897367157"
-        },
-        {
-          "file": "packages/repeater/src/request-runner/Request.ts",
-          "hash": "14334221566733334614",
-          "deps": [
-            "npm:url"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/request-runner/RequestRunner.ts",
-          "hash": "2949596563274798112"
-        },
-        {
-          "file": "packages/repeater/src/request-runner/RequestRunnerOptions.ts",
-          "hash": "14609995366253685246"
-        },
-        {
-          "file": "packages/repeater/src/request-runner/Response.spec.ts",
-          "hash": "12083185833571079886"
-        },
-        {
-          "file": "packages/repeater/src/request-runner/Response.ts",
-          "hash": "6097881522390978536"
-        },
-        {
-          "file": "packages/repeater/src/request-runner/index.ts",
-          "hash": "3993404630538062352"
-        },
-        {
-          "file": "packages/repeater/src/request-runner/protocols/HttpRequestRunner.spec.ts",
-          "hash": "2365049205907666087",
-          "deps": [
-            "npm:reflect-metadata",
-            "core",
-            "npm:nock",
-            "npm:ts-mockito",
-            "npm:node:util",
-            "npm:node:zlib"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/request-runner/protocols/HttpRequestRunner.ts",
-          "hash": "17825261422074997388",
-          "deps": [
-            "core",
-            "npm:tsyringe",
-            "npm:iconv-lite",
-            "npm:fast-content-type-parse",
-            "npm:node:url",
-            "npm:node:http",
-            "npm:node:https",
-            "npm:node:events",
-            "npm:node:stream",
-            "npm:node:zlib",
-            "npm:http"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/request-runner/protocols/index.ts",
-          "hash": "4132570033724657002"
-        },
-        {
-          "file": "packages/repeater/src/utils/DefaultProxyFactory.spec.ts",
-          "hash": "5588850992174226757",
-          "deps": [
-            "npm:https-proxy-agent",
-            "npm:http-proxy-agent",
-            "npm:socks-proxy-agent"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/utils/DefaultProxyFactory.ts",
-          "hash": "4438229724630131372",
-          "deps": [
-            "npm:http-proxy-agent",
-            "npm:socks-proxy-agent",
-            "npm:node:https",
-            "npm:node:http"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/utils/NormalizeZlibDeflateTransformStream.spec.ts",
-          "hash": "12530197031604884508",
-          "deps": [
-            "npm:node:util",
-            "npm:node:zlib",
-            "npm:node:stream"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/utils/NormalizeZlibDeflateTransformStream.ts",
-          "hash": "11503337903839777238",
-          "deps": [
-            "npm:node:stream"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/utils/PatchedHttpsProxyAgent.ts",
-          "hash": "12205024879014523600",
-          "deps": [
-            "npm:https-proxy-agent",
-            "npm:node:url",
-            "npm:node:http",
-            "npm:node:net"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/utils/ProxyFactory.ts",
-          "hash": "4019220132613649124",
-          "deps": [
-            "npm:node:https",
-            "npm:node:http"
-          ]
-        },
-        {
-          "file": "packages/repeater/src/utils/index.ts",
-          "hash": "9212344655760679601"
-        },
-        {
-          "file": "packages/repeater/tsconfig.json",
+          "file": "packages/reporter/tsconfig.json",
           "hash": "11481695713853314943"
         },
         {
-          "file": "packages/repeater/tsconfig.lib.json",
+          "file": "packages/reporter/tsconfig.lib.json",
           "hash": "2078470775619492653"
         },
         {
-          "file": "packages/repeater/tsconfig.spec.json",
+          "file": "packages/reporter/tsconfig.spec.json",
           "hash": "9571156425590174700"
         }
       ]

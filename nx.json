@@ -33,14 +33,16 @@
       "dependsOn": ["^build"],
       "cache": true
     },
-    "lint": {
-      "cache": true
-    },
     "test": {
       "cache": true
     },
-    "e2e": {
-      "cache": true
+    "@nx/eslint:lint": {
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/tools/eslint-rules/**/*"
+      ]
     }
   },
   "parallel": 1
