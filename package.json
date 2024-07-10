@@ -140,7 +140,7 @@
     "ts-mockito": "^2.6.1",
     "ts-node": "10.9.1",
     "typescript": "~5.3.2",
-    "@nx/linter": "17.3.2"
+    "@nx/eslint": "17.3.2"
   },
   "overrides": {
     "socket.io-msgpack-parser": {
