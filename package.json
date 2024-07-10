@@ -101,7 +101,6 @@
     "@commitlint/config-conventional": "^19.2.2",
     "@nrwl/eslint-plugin-nx": "17.3.2",
     "@nrwl/jest": "17.3.2",
-    "@nrwl/js": "17.3.2",
     "@nrwl/linter": "17.3.2",
     "@nrwl/node": "17.3.2",
     "@nx/devkit": "17.3.2",
