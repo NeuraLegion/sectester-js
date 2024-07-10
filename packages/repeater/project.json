@@ -30,8 +30,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/packages/repeater"],
       "options": {
-        "jestConfig": "packages/repeater/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "packages/repeater/jest.config.ts"
       }
     },
     "publish": {

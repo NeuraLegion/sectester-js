@@ -50,18 +50,9 @@
             },
             "configurations": {}
           },
-          "lint": {
-            "cache": true,
-            "executor": "@nx/eslint:lint",
-            "outputs": [
-              "{options.outputFile}"
-            ],
-            "options": {},
-            "configurations": {}
-          },
           "test": {
             "cache": true,
-            "executor": "@nrwl/jest:jest",
+            "executor": "@nx/jest:jest",
             "outputs": [
               "{workspaceRoot}/coverage/packages/repeater"
             ],
@@ -69,6 +60,20 @@
               "jestConfig": "packages/repeater/jest.config.ts",
               "passWithNoTests": true
             },
+            "configurations": {}
+          },
+          "lint": {
+            "cache": true,
+            "inputs": [
+              "default",
+              "{workspaceRoot}/.eslintrc.json",
+              "{workspaceRoot}/tools/eslint-rules/**/*"
+            ],
+            "executor": "@nx/eslint:lint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {},
             "configurations": {}
           }
         },
@@ -129,18 +134,9 @@
             },
             "configurations": {}
           },
-          "lint": {
-            "cache": true,
-            "executor": "@nx/eslint:lint",
-            "outputs": [
-              "{options.outputFile}"
-            ],
-            "options": {},
-            "configurations": {}
-          },
           "test": {
             "cache": true,
-            "executor": "@nrwl/jest:jest",
+            "executor": "@nx/jest:jest",
             "outputs": [
               "{workspaceRoot}/coverage/packages/reporter"
             ],
@@ -148,6 +144,20 @@
               "jestConfig": "packages/reporter/jest.config.ts",
               "passWithNoTests": true
             },
+            "configurations": {}
+          },
+          "lint": {
+            "cache": true,
+            "inputs": [
+              "default",
+              "{workspaceRoot}/.eslintrc.json",
+              "{workspaceRoot}/tools/eslint-rules/**/*"
+            ],
+            "executor": "@nx/eslint:lint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {},
             "configurations": {}
           }
         },
@@ -208,18 +218,9 @@
             },
             "configurations": {}
           },
-          "lint": {
-            "cache": true,
-            "executor": "@nx/eslint:lint",
-            "outputs": [
-              "{options.outputFile}"
-            ],
-            "options": {},
-            "configurations": {}
-          },
           "test": {
             "cache": true,
-            "executor": "@nrwl/jest:jest",
+            "executor": "@nx/jest:jest",
             "outputs": [
               "{workspaceRoot}/coverage/packages/runner"
             ],
@@ -227,6 +228,20 @@
               "jestConfig": "packages/runner/jest.config.ts",
               "passWithNoTests": true
             },
+            "configurations": {}
+          },
+          "lint": {
+            "cache": true,
+            "inputs": [
+              "default",
+              "{workspaceRoot}/.eslintrc.json",
+              "{workspaceRoot}/tools/eslint-rules/**/*"
+            ],
+            "executor": "@nx/eslint:lint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {},
             "configurations": {}
           }
         },
@@ -287,18 +302,9 @@
             },
             "configurations": {}
           },
-          "lint": {
-            "cache": true,
-            "executor": "@nx/eslint:lint",
-            "outputs": [
-              "{options.outputFile}"
-            ],
-            "options": {},
-            "configurations": {}
-          },
           "test": {
             "cache": true,
-            "executor": "@nrwl/jest:jest",
+            "executor": "@nx/jest:jest",
             "outputs": [
               "{workspaceRoot}/coverage/packages/core"
             ],
@@ -306,6 +312,20 @@
               "jestConfig": "packages/core/jest.config.ts",
               "passWithNoTests": true
             },
+            "configurations": {}
+          },
+          "lint": {
+            "cache": true,
+            "inputs": [
+              "default",
+              "{workspaceRoot}/.eslintrc.json",
+              "{workspaceRoot}/tools/eslint-rules/**/*"
+            ],
+            "executor": "@nx/eslint:lint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {},
             "configurations": {}
           }
         },
@@ -366,18 +386,9 @@
             },
             "configurations": {}
           },
-          "lint": {
-            "cache": true,
-            "executor": "@nx/eslint:lint",
-            "outputs": [
-              "{options.outputFile}"
-            ],
-            "options": {},
-            "configurations": {}
-          },
           "test": {
             "cache": true,
-            "executor": "@nrwl/jest:jest",
+            "executor": "@nx/jest:jest",
             "outputs": [
               "{workspaceRoot}/coverage/packages/scan"
             ],
@@ -385,6 +396,20 @@
               "jestConfig": "packages/scan/jest.config.ts",
               "passWithNoTests": true
             },
+            "configurations": {}
+          },
+          "lint": {
+            "cache": true,
+            "inputs": [
+              "default",
+              "{workspaceRoot}/.eslintrc.json",
+              "{workspaceRoot}/tools/eslint-rules/**/*"
+            ],
+            "executor": "@nx/eslint:lint",
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "options": {},
             "configurations": {}
           }
         },

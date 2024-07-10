@@ -30,8 +30,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/packages/reporter"],
       "options": {
-        "jestConfig": "packages/reporter/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "packages/reporter/jest.config.ts"
       }
     },
     "publish": {
