@@ -30,7 +30,7 @@
               "^build"
             ],
             "cache": true,
-            "executor": "@nrwl/js:tsc",
+            "executor": "@nx/js:tsc",
             "outputs": [
               "{options.outputPath}"
             ],
@@ -114,7 +114,7 @@
               "^build"
             ],
             "cache": true,
-            "executor": "@nrwl/js:tsc",
+            "executor": "@nx/js:tsc",
             "outputs": [
               "{options.outputPath}"
             ],
@@ -198,7 +198,7 @@
               "^build"
             ],
             "cache": true,
-            "executor": "@nrwl/js:tsc",
+            "executor": "@nx/js:tsc",
             "outputs": [
               "{options.outputPath}"
             ],
@@ -282,7 +282,7 @@
               "^build"
             ],
             "cache": true,
-            "executor": "@nrwl/js:tsc",
+            "executor": "@nx/js:tsc",
             "outputs": [
               "{options.outputPath}"
             ],
@@ -366,7 +366,7 @@
               "^build"
             ],
             "cache": true,
-            "executor": "@nrwl/js:tsc",
+            "executor": "@nx/js:tsc",
             "outputs": [
               "{options.outputPath}"
             ],
