@@ -104,7 +104,6 @@
     "@nrwl/js": "17.3.2",
     "@nrwl/linter": "17.3.2",
     "@nrwl/node": "17.3.2",
-    "@nrwl/workspace": "17.3.2",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/content-type": "^1.1.5",
@@ -132,7 +131,8 @@
     "ts-jest": "29.1.5",
     "ts-mockito": "^2.6.1",
     "typescript": "4.7.4",
-    "@nx/devkit": "17.3.2"
+    "@nx/devkit": "17.3.2",
+    "@nx/workspace": "17.3.2"
   },
   "overrides": {
     "socket.io-msgpack-parser": {
