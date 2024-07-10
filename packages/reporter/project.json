@@ -1,4 +1,5 @@
 {
+  "name": "reporter",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/reporter/src",
   "projectType": "library",
@@ -31,7 +32,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/reporter"],
+      "outputs": ["{workspaceRoot}/coverage/packages/reporter"],
       "options": {
         "jestConfig": "packages/reporter/jest.config.ts",
         "passWithNoTests": true

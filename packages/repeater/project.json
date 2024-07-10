@@ -1,4 +1,5 @@
 {
+  "name": "repeater",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/repeater/src",
   "projectType": "library",
@@ -31,7 +32,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/repeater"],
+      "outputs": ["{workspaceRoot}/coverage/packages/repeater"],
       "options": {
         "jestConfig": "packages/repeater/jest.config.ts",
         "passWithNoTests": true
