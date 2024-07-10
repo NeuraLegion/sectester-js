@@ -7,7 +7,7 @@
     "libsDir": "packages"
   },
   "generators": {
-    "@nrwl/node:library": {
+    "@nx/node:library": {
       "buildable": true,
       "publishable": true,
       "pascalCaseFiles": true,

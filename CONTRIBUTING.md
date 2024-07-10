@@ -249,7 +249,7 @@ $ npm run format -- --projects=${lib},${lib1}
 Issue the following command to generate a new package:
 
 ```bash
-$ nx generate @nrwl/node:lib ${lib} --importPath=@sectester/${lib}
+$ nx generate @nx/node:lib ${lib} --importPath=@sectester/${lib}
 ```
 
 > ⚡ It is important to have a clean git working directory before invoking a generator so that you can easily revert changes and re-invoke the generator with different inputs.
