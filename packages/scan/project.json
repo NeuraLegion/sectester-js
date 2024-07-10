@@ -27,7 +27,7 @@
       "outputs": ["{options.outputFile}"]
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
+      "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/packages/scan"],
       "options": {
         "jestConfig": "packages/scan/jest.config.ts",
