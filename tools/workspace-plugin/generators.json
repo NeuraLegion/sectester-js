@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "publish": {
+      "implementation": "./src/generators/publish",
+      "schema": "./src/generators/publish/schema.json",
+      "description": "Generator publish"
+    }
+  }
+}

@@ -24,14 +24,11 @@
     "uuid": "^10.0.0",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
-    "@nrwl/cli": "14.5.6",
-    "@nrwl/devkit": "17.3.2",
     "@nrwl/eslint-plugin-nx": "17.3.2",
     "@nrwl/jest": "17.3.2",
     "@nrwl/js": "17.3.2",
     "@nrwl/linter": "17.3.2",
     "@nrwl/node": "17.3.2",
-    "@nrwl/workspace": "17.3.2",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/content-type": "^1.1.5",
@@ -58,7 +55,9 @@
     "socket.io": "^4.7.5",
     "ts-jest": "29.1.5",
     "ts-mockito": "^2.6.1",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "@nx/devkit": "17.3.2",
+    "@nx/workspace": "17.3.2"
   },
   "pathMappings": {
     "@sectester/bus": [
@@ -112,7 +111,7 @@
         },
         {
           "file": "packages/runner/project.json",
-          "hash": "2554518639690126262"
+          "hash": "9562403526438305948"
         },
         {
           "file": "packages/runner/src/index.ts",
@@ -191,148 +190,312 @@
           "hash": "9571156425590174700"
         }
       ],
-      "reporter": [
+      "core": [
         {
-          "file": "packages/reporter/.babelrc",
+          "file": "packages/core/.babelrc",
           "hash": "2685020516260856122"
         },
         {
-          "file": "packages/reporter/.eslintrc.js",
-          "hash": "2970184768840360306"
+          "file": "packages/core/.eslintrc.js",
+          "hash": "16710493430939058875"
         },
         {
-          "file": "packages/reporter/README.md",
-          "hash": "1219278829502750834"
+          "file": "packages/core/README.md",
+          "hash": "6303876575007359752"
         },
         {
-          "file": "packages/reporter/jest.config.ts",
-          "hash": "12931308141467227141"
+          "file": "packages/core/jest.config.ts",
+          "hash": "10054268583644226092"
         },
         {
-          "file": "packages/reporter/package.json",
-          "hash": "14134299190132222133",
+          "file": "packages/core/package.json",
+          "hash": "17297603324434579778"
+        },
+        {
+          "file": "packages/core/project.json",
+          "hash": "8980171129982201016"
+        },
+        {
+          "file": "packages/core/src/commands/Command.spec.ts",
+          "hash": "4634462718645539783",
           "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/project.json",
-          "hash": "9014999894823236517"
-        },
-        {
-          "file": "packages/reporter/reporter-sample.png",
-          "hash": "6456662436610818223"
-        },
-        {
-          "file": "packages/reporter/src/__fixtures__/issues.ts",
-          "hash": "14542382177153751250",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/formatters/PlainTextFormatter.spec.ts",
-          "hash": "9548588233789257371",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/formatters/PlainTextFormatter.ts",
-          "hash": "14180312566312375781",
-          "deps": [
-            "scan",
-            "npm:util"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/formatters/index.ts",
-          "hash": "3019043333776219608"
-        },
-        {
-          "file": "packages/reporter/src/index.ts",
-          "hash": "12538030585068375865"
-        },
-        {
-          "file": "packages/reporter/src/lib/Formatter.ts",
-          "hash": "13337541064046409174",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/lib/Reporter.ts",
-          "hash": "15640326724999853114",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/lib/index.ts",
-          "hash": "16529091058963636272"
-        },
-        {
-          "file": "packages/reporter/src/models/IssuesGroup.ts",
-          "hash": "17883052952879419091",
-          "deps": [
-            "scan"
-          ]
-        },
-        {
-          "file": "packages/reporter/src/models/index.ts",
-          "hash": "777167401903752271"
-        },
-        {
-          "file": "packages/reporter/src/std/StdReporter.spec.ts",
-          "hash": "12734196120701286753",
-          "deps": [
-            "npm:reflect-metadata",
-            "scan",
             "npm:ts-mockito"
           ]
         },
         {
-          "file": "packages/reporter/src/std/StdReporter.ts",
-          "hash": "13970739725346525402",
+          "file": "packages/core/src/commands/Command.ts",
+          "hash": "5753641091827714781"
+        },
+        {
+          "file": "packages/core/src/commands/CommandDispatcher.ts",
+          "hash": "5299218713559007500"
+        },
+        {
+          "file": "packages/core/src/commands/HttpRequest.spec.ts",
+          "hash": "1765888689648175376",
           "deps": [
-            "scan",
-            "npm:tty-table",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "packages/core/src/commands/HttpRequest.ts",
+          "hash": "11929215696493166502",
+          "deps": [
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "packages/core/src/commands/Message.spec.ts",
+          "hash": "4914558155948947063"
+        },
+        {
+          "file": "packages/core/src/commands/Message.ts",
+          "hash": "12148481470645128397",
+          "deps": [
+            "npm:uuid"
+          ]
+        },
+        {
+          "file": "packages/core/src/commands/RetryStartegy.ts",
+          "hash": "14363511075201172498"
+        },
+        {
+          "file": "packages/core/src/commands/index.ts",
+          "hash": "14503252132775798533"
+        },
+        {
+          "file": "packages/core/src/configuration/Configuration.spec.ts",
+          "hash": "858640396664327731",
+          "deps": [
+            "npm:reflect-metadata",
+            "npm:ts-mockito",
+            "npm:path"
+          ]
+        },
+        {
+          "file": "packages/core/src/configuration/Configuration.ts",
+          "hash": "16053503934512409547",
+          "deps": [
+            "npm:tsyringe"
+          ]
+        },
+        {
+          "file": "packages/core/src/configuration/index.ts",
+          "hash": "3233509375518171152"
+        },
+        {
+          "file": "packages/core/src/credentials-provider/Credentials.spec.ts",
+          "hash": "14094278721071446368"
+        },
+        {
+          "file": "packages/core/src/credentials-provider/Credentials.ts",
+          "hash": "5950649517671880673"
+        },
+        {
+          "file": "packages/core/src/credentials-provider/CredentialsProvider.ts",
+          "hash": "768820618123549011"
+        },
+        {
+          "file": "packages/core/src/credentials-provider/EnvCredentialProvider.spec.ts",
+          "hash": "11631711879870247167",
+          "deps": [
+            "npm:ts-mockito"
+          ]
+        },
+        {
+          "file": "packages/core/src/credentials-provider/EnvCredentialProvider.ts",
+          "hash": "10688841131546685249"
+        },
+        {
+          "file": "packages/core/src/credentials-provider/index.ts",
+          "hash": "7226658926326027902"
+        },
+        {
+          "file": "packages/core/src/dispatchers/ExponentialBackoffRetryStrategy.spec.ts",
+          "hash": "6110507409875853909",
+          "deps": [
+            "npm:reflect-metadata",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "packages/core/src/dispatchers/ExponentialBackoffRetryStrategy.ts",
+          "hash": "4259496442898934025",
+          "deps": [
+            "npm:tsyringe",
+            "npm:get"
+          ]
+        },
+        {
+          "file": "packages/core/src/dispatchers/HttpCommandDispatcher.spec.ts",
+          "hash": "3151574969812911524",
+          "deps": [
+            "npm:reflect-metadata",
+            "npm:ts-mockito",
+            "npm:nock"
+          ]
+        },
+        {
+          "file": "packages/core/src/dispatchers/HttpCommandDispatcher.ts",
+          "hash": "18292307834398038752",
+          "deps": [
+            "npm:tsyringe",
+            "npm:axios",
+            "npm:axios-rate-limit",
+            "npm:form-data",
+            "npm:stream",
+            "npm:util",
+            "npm:http",
+            "npm:https"
+          ]
+        },
+        {
+          "file": "packages/core/src/dispatchers/HttpCommandDispatcherConfig.ts",
+          "hash": "2318455962794892703"
+        },
+        {
+          "file": "packages/core/src/dispatchers/index.ts",
+          "hash": "9107822326497340430"
+        },
+        {
+          "file": "packages/core/src/exceptions/HttpCommandError.spec.ts",
+          "hash": "5072673431029626107",
+          "deps": [
+            "npm:axios",
+            "npm:stream"
+          ]
+        },
+        {
+          "file": "packages/core/src/exceptions/HttpCommandError.ts",
+          "hash": "6291977437282851750",
+          "deps": [
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "packages/core/src/exceptions/SecTesterError.ts",
+          "hash": "9226541976510109681"
+        },
+        {
+          "file": "packages/core/src/exceptions/index.ts",
+          "hash": "12789144010953677829"
+        },
+        {
+          "file": "packages/core/src/index.ts",
+          "hash": "12647437518602550918",
+          "deps": [
+            "npm:reflect-metadata"
+          ]
+        },
+        {
+          "file": "packages/core/src/logger/Logger.spec.ts",
+          "hash": "8308057590914200613",
+          "deps": [
+            "npm:reflect-metadata"
+          ]
+        },
+        {
+          "file": "packages/core/src/logger/Logger.ts",
+          "hash": "684316455490085145",
+          "deps": [
             "npm:chalk"
           ]
         },
         {
-          "file": "packages/reporter/src/std/index.ts",
-          "hash": "9948109880811267889"
+          "file": "packages/core/src/logger/index.ts",
+          "hash": "16381355367523089453"
         },
         {
-          "file": "packages/reporter/src/utils/index.ts",
-          "hash": "14273265444564827000"
-        },
-        {
-          "file": "packages/reporter/src/utils/issues-grouper.spec.ts",
-          "hash": "12674928616391076174",
+          "file": "packages/core/src/register.ts",
+          "hash": "13738096470008320656",
           "deps": [
-            "npm:reflect-metadata",
-            "scan"
+            "npm:tsyringe"
           ]
         },
         {
-          "file": "packages/reporter/src/utils/issues-grouper.ts",
-          "hash": "3308828784767120711",
+          "file": "packages/core/src/utils/check-boundaries.spec.ts",
+          "hash": "1421287047460853242"
+        },
+        {
+          "file": "packages/core/src/utils/check-boundaries.ts",
+          "hash": "14813880529371597832"
+        },
+        {
+          "file": "packages/core/src/utils/contains.spec.ts",
+          "hash": "1155796361579295798"
+        },
+        {
+          "file": "packages/core/src/utils/contains.ts",
+          "hash": "16976342013475493205"
+        },
+        {
+          "file": "packages/core/src/utils/delay.spec.ts",
+          "hash": "18310075403243823174"
+        },
+        {
+          "file": "packages/core/src/utils/delay.ts",
+          "hash": "5103959932444322693",
           "deps": [
-            "scan"
+            "npm:util"
           ]
         },
         {
-          "file": "packages/reporter/tsconfig.json",
-          "hash": "11481695713853314943"
+          "file": "packages/core/src/utils/first.spec.ts",
+          "hash": "6446756233808391732",
+          "deps": [
+            "npm:util"
+          ]
         },
         {
-          "file": "packages/reporter/tsconfig.lib.json",
+          "file": "packages/core/src/utils/first.ts",
+          "hash": "8037664653193004600"
+        },
+        {
+          "file": "packages/core/src/utils/get-type-name.spec.ts",
+          "hash": "3717764578144011729"
+        },
+        {
+          "file": "packages/core/src/utils/get-type-name.ts",
+          "hash": "1034223295868339788"
+        },
+        {
+          "file": "packages/core/src/utils/index.ts",
+          "hash": "11482832204267087841"
+        },
+        {
+          "file": "packages/core/src/utils/truncate.spec.ts",
+          "hash": "17636162464562117706"
+        },
+        {
+          "file": "packages/core/src/utils/truncate.ts",
+          "hash": "15271498706961597970"
+        },
+        {
+          "file": "packages/core/src/utils/types.spec.ts",
+          "hash": "8094307222405288825",
+          "deps": [
+            "npm:form-data",
+            "npm:stream"
+          ]
+        },
+        {
+          "file": "packages/core/src/utils/types.ts",
+          "hash": "2722527602934293155",
+          "deps": [
+            "npm:form-data",
+            "npm:stream"
+          ]
+        },
+        {
+          "file": "packages/core/tsconfig.json",
+          "hash": "12834038490315927699"
+        },
+        {
+          "file": "packages/core/tsconfig.lib.json",
           "hash": "2078470775619492653"
         },
         {
-          "file": "packages/reporter/tsconfig.spec.json",
+          "file": "packages/core/tsconfig.spec.json",
           "hash": "9571156425590174700"
         }
       ],
@@ -362,7 +525,7 @@
         },
         {
           "file": "packages/repeater/project.json",
-          "hash": "7387173356943146779"
+          "hash": "1171201514927176270"
         },
         {
           "file": "packages/repeater/src/api/DefaultRepeatersManager.spec.ts",
@@ -692,7 +855,7 @@
         },
         {
           "file": "packages/scan/project.json",
-          "hash": "1673912298178479356"
+          "hash": "3913688688727338050"
         },
         {
           "file": "packages/scan/src/DefaultScans.spec.ts",
@@ -1048,312 +1211,148 @@
           "hash": "9571156425590174700"
         }
       ],
-      "core": [
+      "reporter": [
         {
-          "file": "packages/core/.babelrc",
+          "file": "packages/reporter/.babelrc",
           "hash": "2685020516260856122"
         },
         {
-          "file": "packages/core/.eslintrc.js",
-          "hash": "16710493430939058875"
+          "file": "packages/reporter/.eslintrc.js",
+          "hash": "2970184768840360306"
         },
         {
-          "file": "packages/core/README.md",
-          "hash": "6303876575007359752"
+          "file": "packages/reporter/README.md",
+          "hash": "1219278829502750834"
         },
         {
-          "file": "packages/core/jest.config.ts",
-          "hash": "10054268583644226092"
+          "file": "packages/reporter/jest.config.ts",
+          "hash": "12931308141467227141"
         },
         {
-          "file": "packages/core/package.json",
-          "hash": "17297603324434579778"
-        },
-        {
-          "file": "packages/core/project.json",
-          "hash": "7016915462933061398"
-        },
-        {
-          "file": "packages/core/src/commands/Command.spec.ts",
-          "hash": "4634462718645539783",
+          "file": "packages/reporter/package.json",
+          "hash": "14134299190132222133",
           "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/project.json",
+          "hash": "14118323745147664827"
+        },
+        {
+          "file": "packages/reporter/reporter-sample.png",
+          "hash": "6456662436610818223"
+        },
+        {
+          "file": "packages/reporter/src/__fixtures__/issues.ts",
+          "hash": "14542382177153751250",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/formatters/PlainTextFormatter.spec.ts",
+          "hash": "9548588233789257371",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/formatters/PlainTextFormatter.ts",
+          "hash": "14180312566312375781",
+          "deps": [
+            "scan",
+            "npm:util"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/formatters/index.ts",
+          "hash": "3019043333776219608"
+        },
+        {
+          "file": "packages/reporter/src/index.ts",
+          "hash": "12538030585068375865"
+        },
+        {
+          "file": "packages/reporter/src/lib/Formatter.ts",
+          "hash": "13337541064046409174",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/lib/Reporter.ts",
+          "hash": "15640326724999853114",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/lib/index.ts",
+          "hash": "16529091058963636272"
+        },
+        {
+          "file": "packages/reporter/src/models/IssuesGroup.ts",
+          "hash": "17883052952879419091",
+          "deps": [
+            "scan"
+          ]
+        },
+        {
+          "file": "packages/reporter/src/models/index.ts",
+          "hash": "777167401903752271"
+        },
+        {
+          "file": "packages/reporter/src/std/StdReporter.spec.ts",
+          "hash": "12734196120701286753",
+          "deps": [
+            "npm:reflect-metadata",
+            "scan",
             "npm:ts-mockito"
           ]
         },
         {
-          "file": "packages/core/src/commands/Command.ts",
-          "hash": "5753641091827714781"
-        },
-        {
-          "file": "packages/core/src/commands/CommandDispatcher.ts",
-          "hash": "5299218713559007500"
-        },
-        {
-          "file": "packages/core/src/commands/HttpRequest.spec.ts",
-          "hash": "1765888689648175376",
+          "file": "packages/reporter/src/std/StdReporter.ts",
+          "hash": "13970739725346525402",
           "deps": [
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "packages/core/src/commands/HttpRequest.ts",
-          "hash": "11929215696493166502",
-          "deps": [
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "packages/core/src/commands/Message.spec.ts",
-          "hash": "4914558155948947063"
-        },
-        {
-          "file": "packages/core/src/commands/Message.ts",
-          "hash": "12148481470645128397",
-          "deps": [
-            "npm:uuid"
-          ]
-        },
-        {
-          "file": "packages/core/src/commands/RetryStartegy.ts",
-          "hash": "14363511075201172498"
-        },
-        {
-          "file": "packages/core/src/commands/index.ts",
-          "hash": "14503252132775798533"
-        },
-        {
-          "file": "packages/core/src/configuration/Configuration.spec.ts",
-          "hash": "858640396664327731",
-          "deps": [
-            "npm:reflect-metadata",
-            "npm:ts-mockito",
-            "npm:path"
-          ]
-        },
-        {
-          "file": "packages/core/src/configuration/Configuration.ts",
-          "hash": "16053503934512409547",
-          "deps": [
-            "npm:tsyringe"
-          ]
-        },
-        {
-          "file": "packages/core/src/configuration/index.ts",
-          "hash": "3233509375518171152"
-        },
-        {
-          "file": "packages/core/src/credentials-provider/Credentials.spec.ts",
-          "hash": "14094278721071446368"
-        },
-        {
-          "file": "packages/core/src/credentials-provider/Credentials.ts",
-          "hash": "5950649517671880673"
-        },
-        {
-          "file": "packages/core/src/credentials-provider/CredentialsProvider.ts",
-          "hash": "768820618123549011"
-        },
-        {
-          "file": "packages/core/src/credentials-provider/EnvCredentialProvider.spec.ts",
-          "hash": "11631711879870247167",
-          "deps": [
-            "npm:ts-mockito"
-          ]
-        },
-        {
-          "file": "packages/core/src/credentials-provider/EnvCredentialProvider.ts",
-          "hash": "10688841131546685249"
-        },
-        {
-          "file": "packages/core/src/credentials-provider/index.ts",
-          "hash": "7226658926326027902"
-        },
-        {
-          "file": "packages/core/src/dispatchers/ExponentialBackoffRetryStrategy.spec.ts",
-          "hash": "6110507409875853909",
-          "deps": [
-            "npm:reflect-metadata",
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "packages/core/src/dispatchers/ExponentialBackoffRetryStrategy.ts",
-          "hash": "4259496442898934025",
-          "deps": [
-            "npm:tsyringe",
-            "npm:get"
-          ]
-        },
-        {
-          "file": "packages/core/src/dispatchers/HttpCommandDispatcher.spec.ts",
-          "hash": "3151574969812911524",
-          "deps": [
-            "npm:reflect-metadata",
-            "npm:ts-mockito",
-            "npm:nock"
-          ]
-        },
-        {
-          "file": "packages/core/src/dispatchers/HttpCommandDispatcher.ts",
-          "hash": "18292307834398038752",
-          "deps": [
-            "npm:tsyringe",
-            "npm:axios",
-            "npm:axios-rate-limit",
-            "npm:form-data",
-            "npm:stream",
-            "npm:util",
-            "npm:http",
-            "npm:https"
-          ]
-        },
-        {
-          "file": "packages/core/src/dispatchers/HttpCommandDispatcherConfig.ts",
-          "hash": "2318455962794892703"
-        },
-        {
-          "file": "packages/core/src/dispatchers/index.ts",
-          "hash": "9107822326497340430"
-        },
-        {
-          "file": "packages/core/src/exceptions/HttpCommandError.spec.ts",
-          "hash": "5072673431029626107",
-          "deps": [
-            "npm:axios",
-            "npm:stream"
-          ]
-        },
-        {
-          "file": "packages/core/src/exceptions/HttpCommandError.ts",
-          "hash": "6291977437282851750",
-          "deps": [
-            "npm:axios"
-          ]
-        },
-        {
-          "file": "packages/core/src/exceptions/SecTesterError.ts",
-          "hash": "9226541976510109681"
-        },
-        {
-          "file": "packages/core/src/exceptions/index.ts",
-          "hash": "12789144010953677829"
-        },
-        {
-          "file": "packages/core/src/index.ts",
-          "hash": "12647437518602550918",
-          "deps": [
-            "npm:reflect-metadata"
-          ]
-        },
-        {
-          "file": "packages/core/src/logger/Logger.spec.ts",
-          "hash": "8308057590914200613",
-          "deps": [
-            "npm:reflect-metadata"
-          ]
-        },
-        {
-          "file": "packages/core/src/logger/Logger.ts",
-          "hash": "684316455490085145",
-          "deps": [
+            "scan",
+            "npm:tty-table",
             "npm:chalk"
           ]
         },
         {
-          "file": "packages/core/src/logger/index.ts",
-          "hash": "16381355367523089453"
+          "file": "packages/reporter/src/std/index.ts",
+          "hash": "9948109880811267889"
         },
         {
-          "file": "packages/core/src/register.ts",
-          "hash": "13738096470008320656",
+          "file": "packages/reporter/src/utils/index.ts",
+          "hash": "14273265444564827000"
+        },
+        {
+          "file": "packages/reporter/src/utils/issues-grouper.spec.ts",
+          "hash": "12674928616391076174",
           "deps": [
-            "npm:tsyringe"
+            "npm:reflect-metadata",
+            "scan"
           ]
         },
         {
-          "file": "packages/core/src/utils/check-boundaries.spec.ts",
-          "hash": "1421287047460853242"
-        },
-        {
-          "file": "packages/core/src/utils/check-boundaries.ts",
-          "hash": "14813880529371597832"
-        },
-        {
-          "file": "packages/core/src/utils/contains.spec.ts",
-          "hash": "1155796361579295798"
-        },
-        {
-          "file": "packages/core/src/utils/contains.ts",
-          "hash": "16976342013475493205"
-        },
-        {
-          "file": "packages/core/src/utils/delay.spec.ts",
-          "hash": "18310075403243823174"
-        },
-        {
-          "file": "packages/core/src/utils/delay.ts",
-          "hash": "5103959932444322693",
+          "file": "packages/reporter/src/utils/issues-grouper.ts",
+          "hash": "3308828784767120711",
           "deps": [
-            "npm:util"
+            "scan"
           ]
         },
         {
-          "file": "packages/core/src/utils/first.spec.ts",
-          "hash": "6446756233808391732",
-          "deps": [
-            "npm:util"
-          ]
+          "file": "packages/reporter/tsconfig.json",
+          "hash": "11481695713853314943"
         },
         {
-          "file": "packages/core/src/utils/first.ts",
-          "hash": "8037664653193004600"
-        },
-        {
-          "file": "packages/core/src/utils/get-type-name.spec.ts",
-          "hash": "3717764578144011729"
-        },
-        {
-          "file": "packages/core/src/utils/get-type-name.ts",
-          "hash": "1034223295868339788"
-        },
-        {
-          "file": "packages/core/src/utils/index.ts",
-          "hash": "11482832204267087841"
-        },
-        {
-          "file": "packages/core/src/utils/truncate.spec.ts",
-          "hash": "17636162464562117706"
-        },
-        {
-          "file": "packages/core/src/utils/truncate.ts",
-          "hash": "15271498706961597970"
-        },
-        {
-          "file": "packages/core/src/utils/types.spec.ts",
-          "hash": "8094307222405288825",
-          "deps": [
-            "npm:form-data",
-            "npm:stream"
-          ]
-        },
-        {
-          "file": "packages/core/src/utils/types.ts",
-          "hash": "2722527602934293155",
-          "deps": [
-            "npm:form-data",
-            "npm:stream"
-          ]
-        },
-        {
-          "file": "packages/core/tsconfig.json",
-          "hash": "12834038490315927699"
-        },
-        {
-          "file": "packages/core/tsconfig.lib.json",
+          "file": "packages/reporter/tsconfig.lib.json",
           "hash": "2078470775619492653"
         },
         {
-          "file": "packages/core/tsconfig.spec.json",
+          "file": "packages/reporter/tsconfig.spec.json",
           "hash": "9571156425590174700"
         }
       ]
@@ -1397,7 +1396,7 @@
       },
       {
         "file": ".gitignore",
-        "hash": "17846943580322058654"
+        "hash": "5106149635553550454"
       },
       {
         "file": ".husky/.gitignore",
@@ -1421,7 +1420,7 @@
       },
       {
         "file": ".prettierignore",
-        "hash": "18038955568771059562"
+        "hash": "14666656122464627581"
       },
       {
         "file": ".prettierrc",
@@ -1457,19 +1456,19 @@
       },
       {
         "file": "migrations.json",
-        "hash": "8472120980100695001"
+        "hash": "5422786737376987713"
       },
       {
         "file": "nx.json",
-        "hash": "970836091368654465"
+        "hash": "668780800287424769"
       },
       {
         "file": "package-lock.json",
-        "hash": "16087137363671141945"
+        "hash": "4510929656774293632"
       },
       {
         "file": "package.json",
-        "hash": "913278570227333385"
+        "hash": "5815112125955601964"
       },
       {
         "file": "packages/.gitkeep",
@@ -1485,11 +1484,11 @@
       },
       {
         "file": "tools/executors/publish/compat.ts",
-        "hash": "5224240789807170769"
+        "hash": "10656264948618945427"
       },
       {
         "file": "tools/executors/publish/publish.impl.ts",
-        "hash": "2516415371076448832"
+        "hash": "16541796603508872039"
       },
       {
         "file": "tools/executors/publish/schema.json",
@@ -1505,7 +1504,7 @@
       },
       {
         "file": "tools/generators/publish/index.ts",
-        "hash": "17813368059664534576"
+        "hash": "3829987862415870628"
       },
       {
         "file": "tools/generators/publish/schema.json",

@@ -5,6 +5,11 @@
   "extends": ["prettier", "eslint:recommended"],
   "overrides": [
     {
+      "files": "*.json",
+      "parser": "jsonc-eslint-parser",
+      "rules": {}
+    },
+    {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "rules": {
         "@nrwl/nx/enforce-module-boundaries": [
@@ -38,7 +43,9 @@
           "typescript": {}
         }
       },
-      "parserOptions": { "project": "./tsconfig.*?.json" },
+      "parserOptions": {
+        "project": "./tsconfig.*?.json"
+      },
       "rules": {
         "@typescript-eslint/explicit-member-accessibility": [
           "error",
@@ -99,10 +106,16 @@
             "selector": "function",
             "format": ["PascalCase", "camelCase"]
           },
-          { "selector": "variable", "format": ["camelCase", "UPPER_CASE", "PascalCase"], "leadingUnderscore": "forbid" },
-          { "selector": "objectLiteralProperty",
+          {
+            "selector": "variable",
+            "format": ["camelCase", "UPPER_CASE", "PascalCase"],
+            "leadingUnderscore": "forbid"
+          },
+          {
+            "selector": "objectLiteralProperty",
             "format": [],
-            "modifiers": ["requiresQuotes"] },
+            "modifiers": ["requiresQuotes"]
+          },
           {
             "selector": "method",
             "format": ["camelCase", "PascalCase"],
@@ -113,7 +126,6 @@
             "format": ["camelCase", "UPPER_CASE", "snake_case"],
             "leadingUnderscore": "allow"
           },
-          // https://github.com/typescript-eslint/typescript-eslint/issues/1510#issuecomment-580593245
           {
             "selector": "parameter",
             "format": ["camelCase"],
