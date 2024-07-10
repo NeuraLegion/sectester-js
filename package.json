@@ -99,7 +99,6 @@
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
-    "@nrwl/devkit": "17.3.2",
     "@nrwl/eslint-plugin-nx": "17.3.2",
     "@nrwl/jest": "17.3.2",
     "@nrwl/js": "17.3.2",
@@ -132,7 +131,8 @@
     "socket.io": "^4.7.5",
     "ts-jest": "29.1.5",
     "ts-mockito": "^2.6.1",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "@nx/devkit": "17.3.2"
   },
   "overrides": {
     "socket.io-msgpack-parser": {

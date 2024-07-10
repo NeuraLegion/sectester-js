@@ -4,7 +4,7 @@ import {
   readProjectConfiguration,
   updateProjectConfiguration,
   parseTargetString
-} from '@nrwl/devkit';
+} from '@nx/devkit';
 
 export interface PublishOptions {
   project: string;

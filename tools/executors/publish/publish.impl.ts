@@ -1,4 +1,4 @@
-import { detectPackageManager, ExecutorContext, logger } from '@nrwl/devkit';
+import { detectPackageManager, ExecutorContext, logger } from '@nx/devkit';
 import { join } from 'path';
 import { promisify } from 'util';
 import { exec } from 'child_process';
