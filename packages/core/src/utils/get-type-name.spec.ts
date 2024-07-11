@@ -20,7 +20,7 @@ describe('getTypeName', () => {
     { input: null, expected: undefined }
   ])('should return a type name of $input', ({ input, expected }) => {
     // act
-    const result = getTypeName(input);
+    const result = input ? getTypeName(input) : getTypeName(input);
 
     // assert
     expect(result).toEqual(expected);
