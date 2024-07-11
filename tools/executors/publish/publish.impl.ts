@@ -34,7 +34,7 @@ export default async (
 
   const packageManager = detectPackageManager();
 
-  if (packageManager === 'pnpm') {
+  if (packageManager === 'pnpm' || packageManager === 'bun') {
     return failureOutput(
       `${packageManager} package manager doesn't no supported`
     );
