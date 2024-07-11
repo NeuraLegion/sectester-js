@@ -1,4 +1,5 @@
 import { UploadHarOptions } from '../Scans';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import FormData from 'form-data';
 import { HttpRequest } from '@sectester/core';
 
