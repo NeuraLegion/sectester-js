@@ -1,9 +1,0 @@
-{
-  "generators": {
-    "publish": {
-      "implementation": "../../dist/out-tsc/tools/generators/publish",
-      "schema": "publish/schema.json",
-      "description": "This generator is adding `npm publish` options for a workspace."
-    }
-  }
-}

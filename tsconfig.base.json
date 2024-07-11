@@ -34,8 +34,7 @@
       "@sectester/repeater": ["packages/repeater/src/index.ts"],
       "@sectester/reporter": ["packages/reporter/src/index.ts"],
       "@sectester/runner": ["packages/runner/src/index.ts"],
-      "@sectester/scan": ["packages/scan/src/index.ts"],
-      "workspace-plugin": ["tools/workspace-plugin/src/index.ts"]
+      "@sectester/scan": ["packages/scan/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
