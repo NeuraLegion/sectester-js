@@ -249,13 +249,18 @@
         "prefer-spread": "error",
         "no-new-func": "error",
         "no-new-wrappers": "error",
-        "radix": "error"
+        "radix": "error",
+        "@typescript-eslint/no-extra-semi": "error",
+        "no-extra-semi": "off"
       }
     },
     {
       "files": ["*.js", "*.jsx"],
       "extends": ["plugin:@nx/javascript"],
-      "rules": {}
+      "rules": {
+        "@typescript-eslint/no-extra-semi": "error",
+        "no-extra-semi": "off"
+      }
     },
     {
       "env": {
@@ -285,9 +290,12 @@
       "files": ["*.json"],
       "parser": "jsonc-eslint-parser",
       "rules": {
-        "@nx/dependency-checks": ["error", {
-          "ignoredDependencies": ["nock", "ts-mockito"]
-        }]
+        "@nx/dependency-checks": [
+          "error",
+          {
+            "ignoredDependencies": ["nock", "ts-mockito"]
+          }
+        ]
       }
     }
   ]
