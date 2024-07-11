@@ -9,3 +9,4 @@
 *.lock
 
 /.nx/cache
+/.nx/workspace-data
