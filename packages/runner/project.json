@@ -1,10 +1,11 @@
 {
+  "name": "runner",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/runner/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/runner",
@@ -18,23 +19,24 @@
             "input": "",
             "output": ""
           }
-        ],
-        "buildableProjectDepsInPackageJsonType": "dependencies"
+        ]
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/runner/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/runner/**/*.{ts,tsx,js,jsx}",
+          "packages/runner/package.json"
+        ]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/runner"],
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/runner"],
       "options": {
-        "jestConfig": "packages/runner/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "packages/runner/jest.config.ts"
       }
     },
     "publish": {

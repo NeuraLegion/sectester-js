@@ -1,10 +1,11 @@
 {
+  "name": "reporter",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/reporter/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/reporter",
@@ -18,23 +19,24 @@
             "input": "",
             "output": ""
           }
-        ],
-        "buildableProjectDepsInPackageJsonType": "dependencies"
+        ]
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/reporter/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/reporter/**/*.{ts,tsx,js,jsx}",
+          "packages/reporter/package.json"
+        ]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/reporter"],
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/reporter"],
       "options": {
-        "jestConfig": "packages/reporter/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "packages/reporter/jest.config.ts"
       }
     },
     "publish": {

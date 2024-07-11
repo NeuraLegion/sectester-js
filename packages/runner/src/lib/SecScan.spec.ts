@@ -57,7 +57,7 @@ describe('SecScan', () => {
     it('should create instance', () => {
       expect(
         () => new SecScan({ tests }, scanFactory, issueFormatter)
-      ).not.toThrowError();
+      ).not.toThrow();
     });
   });
 

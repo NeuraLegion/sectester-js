@@ -71,7 +71,7 @@ describe('Repeater', () => {
       const act = () => sut.start();
 
       // assert
-      await expect(act).rejects.toThrowError('foo');
+      await expect(act).rejects.toThrow('foo');
     });
 
     it('should throw when underlying deploy throws', async () => {
@@ -84,7 +84,7 @@ describe('Repeater', () => {
       const act = () => sut.start();
 
       // assert
-      await expect(act).rejects.toThrowError('foo');
+      await expect(act).rejects.toThrow('foo');
     });
 
     it('should have RunningStatus.STARTING just after start() call', () => {

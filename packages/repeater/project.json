@@ -1,10 +1,11 @@
 {
+  "name": "repeater",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/repeater/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/repeater",
@@ -18,23 +19,24 @@
             "input": "",
             "output": ""
           }
-        ],
-        "buildableProjectDepsInPackageJsonType": "dependencies"
+        ]
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/repeater/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/repeater/**/*.{ts,tsx,js,jsx}",
+          "packages/repeater/package.json"
+        ]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/repeater"],
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/repeater"],
       "options": {
-        "jestConfig": "packages/repeater/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "packages/repeater/jest.config.ts"
       }
     },
     "publish": {

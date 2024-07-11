@@ -1,4 +1,5 @@
 import { Target } from './Target';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import FormData from 'form-data';
 
 describe('Target', () => {

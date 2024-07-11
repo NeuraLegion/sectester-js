@@ -344,8 +344,8 @@ export class HttpRequestRunner implements RequestRunner {
     );
 
     if (!req.headersSent && headersSymbol && options.headers) {
-      const headers = (req[headersSymbol] =
-        req[headersSymbol] ?? Object.create(null));
+      const headers = ((req as any)[headersSymbol] =
+        (req as any)[headersSymbol] ?? Object.create(null));
 
       Object.entries(options.headers).forEach(
         ([key, value]: [string, string | string[]]) => {

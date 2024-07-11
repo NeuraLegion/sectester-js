@@ -1,10 +1,11 @@
 {
+  "name": "scan",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/scan/src",
   "projectType": "library",
   "targets": {
     "build": {
-      "executor": "@nrwl/js:tsc",
+      "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/scan",
@@ -18,23 +19,24 @@
             "input": "",
             "output": ""
           }
-        ],
-        "buildableProjectDepsInPackageJsonType": "dependencies"
+        ]
       }
     },
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/scan/**/*.ts"]
+        "lintFilePatterns": [
+          "packages/scan/**/*.{ts,tsx,js,jsx}",
+          "packages/scan/package.json"
+        ]
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/packages/scan"],
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/scan"],
       "options": {
-        "jestConfig": "packages/scan/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "packages/scan/jest.config.ts"
       }
     },
     "publish": {

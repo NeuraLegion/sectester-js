@@ -32,6 +32,13 @@
     "qa",
     "brightsec"
   ],
+  "dependencies": {
+    "tsyringe": "^4.8.0",
+    "tslib": "~2.6.3"
+  },
+  "devDependencies": {
+    "ts-mockito": "^2.6.1"
+  },
   "peerDependencies": {
     "@sectester/core": ">=0.16.0 <1.0.0",
     "@sectester/repeater": ">=0.16.0 <1.0.0",

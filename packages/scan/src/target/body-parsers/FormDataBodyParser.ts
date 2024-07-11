@@ -42,7 +42,7 @@ export class FormDataBodyParser implements BodyParser {
       text = body.getBuffer().toString();
     }
 
-    const [, boundary]: RegExpMatchArray =
+    const [, boundary]: string[] =
       contentType.match(this.MIME_TYPE_REGEXP) ?? [];
 
     const params = boundary
@@ -67,7 +67,7 @@ export class FormDataBodyParser implements BodyParser {
     );
 
     return fields.reduce((result: Param[], field: string): Param[] => {
-      const [match, name, fileName, contentType, value]: RegExpMatchArray =
+      const [match, name, fileName, contentType, value]: string[] =
         field.match(this.FORM_DATA_KEY_VALUE_REGEXP) || [];
 
       if (!match) {

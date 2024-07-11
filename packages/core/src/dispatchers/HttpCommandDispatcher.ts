@@ -5,6 +5,7 @@ import { Logger } from '../logger';
 import { inject, injectable } from 'tsyringe';
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import rateLimit from 'axios-rate-limit';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import FormData from 'form-data';
 import { finished, Readable } from 'stream';
 import { promisify } from 'util';

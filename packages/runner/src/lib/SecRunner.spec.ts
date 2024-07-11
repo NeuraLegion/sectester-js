@@ -144,7 +144,7 @@ describe('SecRunner', () => {
     it('should not throw an error on re-init after clearing', async () => {
       await secRunner.clear();
 
-      await expect(secRunner.init()).resolves.not.toThrowError();
+      await expect(secRunner.init()).resolves.not.toThrow();
     });
   });
 
@@ -166,14 +166,14 @@ describe('SecRunner', () => {
     });
 
     it('should do nothing if not initialized', async () => {
-      await expect(secRunner.clear()).resolves.not.toThrowError();
+      await expect(secRunner.clear()).resolves.not.toThrow();
     });
 
     it('should do nothing if called twice', async () => {
       await secRunner.init();
       await secRunner.clear();
 
-      await expect(secRunner.clear()).resolves.not.toThrowError();
+      await expect(secRunner.clear()).resolves.not.toThrow();
     });
   });
 

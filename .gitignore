@@ -42,3 +42,6 @@ Thumbs.db
 
 # Config Files
 .env
+
+.nx/cache
+.nx/workspace-data
