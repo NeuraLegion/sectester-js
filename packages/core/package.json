@@ -35,5 +35,19 @@
   "secTester": {
     "name": "sectester-js",
     "repeaterVersion": "10.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "axios-rate-limit": "^1.4.0",
+    "chalk": "^4.1.2",
+    "form-data": "^4.0.0",
+    "reflect-metadata": "^0.2.2",
+    "tslib": "~2.6.3",
+    "tsyringe": "^4.8.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "nock": "^13.5.4",
+    "ts-mockito": "^2.6.1"
   }
 }

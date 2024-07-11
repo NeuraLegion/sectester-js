@@ -24,7 +24,13 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/runner/**/*.{ts,tsx,js,jsx}",
+          "packages/runner/package.json"
+        ]
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",
