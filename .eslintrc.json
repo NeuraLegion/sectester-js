@@ -173,7 +173,7 @@
             "ignoreIIFE": true
           }
         ],
-        "@typescript-eslint/return-await": ["error", "in-try-catch"],
+        "@typescript-eslint/return-await": "error",
         "@typescript-eslint/require-await": "error",
         "require-await": "off",
         "no-return-await": "off",
@@ -290,12 +290,7 @@
       "files": ["*.json"],
       "parser": "jsonc-eslint-parser",
       "rules": {
-        "@nx/dependency-checks": [
-          "error",
-          {
-            "ignoredDependencies": ["nock", "ts-mockito"]
-          }
-        ]
+        "@nx/dependency-checks": "error"
       }
     }
   ]
