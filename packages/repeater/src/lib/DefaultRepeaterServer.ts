@@ -22,7 +22,7 @@ import io, { Socket } from 'socket.io-client';
 import parser from 'socket.io-msgpack-parser';
 import { EventEmitter, once } from 'events';
 import { hostname } from 'os';
-import Timer = NodeJS.Timer;
+import Timer = NodeJS.Timeout;
 
 export interface DefaultRepeaterServerOptions {
   readonly uri: string;
