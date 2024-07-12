@@ -12,7 +12,7 @@ import {
 
 export class SecScan {
   private _threshold = Severity.LOW;
-  private _timeout: number | undefined;
+  private _timeout = 600_000;
 
   constructor(
     private readonly settings: Omit<ScanSettingsOptions, 'target'>,
