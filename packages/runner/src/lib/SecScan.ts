@@ -1,5 +1,5 @@
+import { FunctionScanTarget } from './FunctionScanTarget';
 import { IssueFound } from './IssueFound';
-import { PayloadScanTarget } from './PayloadScanTarget';
 import { Formatter } from '@sectester/reporter';
 import {
   Issue,
@@ -11,6 +11,11 @@ import {
   TargetOptions
 } from '@sectester/scan';
 
+interface FunctionScanOptions<T> {
+  inputSample: T;
+  fn: (input: T) => Promise<unknown>;
+}
+
 export class SecScan {
   private _threshold = Severity.LOW;
   private _timeout = 600_000;
@@ -21,41 +26,32 @@ export class SecScan {
     private readonly formatter: Formatter
   ) {}
 
-  public async run(target: TargetOptions): Promise<void> {
-    const scan = await this.scanFactory.createScan(
-      {
-        ...this.settings,
-        target
-      },
-      {
-        timeout: this._timeout
-      }
-    );
-
-    try {
-      await scan.expect(this._threshold);
-
-      await this.assert(scan);
-    } finally {
-      await scan.stop();
-    }
-  }
-
-  public async runPayloadScan<T>(
-    sampleData: unknown,
-    fn: (input: T) => Promise<string>
+  public async run<T>(
+    options: TargetOptions | FunctionScanOptions<T>
   ): Promise<void> {
-    const target = new PayloadScanTarget();
-    const { url } = await target.start(fn);
+    let functionScanTarget: FunctionScanTarget | undefined;
+
+    let targetOptions: TargetOptions;
+    if (this.isFunctionScanOptions<T>(options)) {
+      functionScanTarget = new FunctionScanTarget();
+      const { url } = await functionScanTarget.start<T>(options.fn);
+
+      targetOptions = {
+        url,
+        method: 'POST',
+        body: options.inputSample,
+        ...(typeof options.inputSample === 'object'
+          ? { headers: { 'content-type': 'application/json' } }
+          : {})
+      };
+    } else {
+      targetOptions = options;
+    }
 
     const scan = await this.scanFactory.createScan(
       {
         ...this.settings,
-        target: {
-          url,
-          method: 'POST',
-          body: sampleData
-        }
+        target: targetOptions
       },
       {
         timeout: this._timeout
@@ -68,7 +64,7 @@ export class SecScan {
       await this.assert(scan);
     } finally {
       await scan.stop();
-      await target.stop();
+      await functionScanTarget?.stop();
     }
   }
 
@@ -100,5 +96,9 @@ export class SecScan {
         severityRanges.get(this._threshold)?.includes(x.severity)
       );
     }
+  }
+
+  private isFunctionScanOptions<T>(x: any): x is FunctionScanOptions<T> {
+    return !!x.fn;
   }
 }

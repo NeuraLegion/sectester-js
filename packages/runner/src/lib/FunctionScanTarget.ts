@@ -1,14 +1,14 @@
 import fastify from 'fastify';
 
-export class PayloadScanTarget {
+export class FunctionScanTarget {
   private readonly server = fastify();
 
   public async start<T>(
-    fn: (input: T) => Promise<string>
+    fn: (input: T) => Promise<unknown>
   ): Promise<{ url: string }> {
     this.server.post('/', async (request, reply) => {
       try {
-        await reply.send(await fn(request.body as T));
+        await reply.send((await fn(request.body as T)) ?? '');
       } catch (err) {
         await reply.status(500).send(err);
       }

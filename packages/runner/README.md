@@ -84,7 +84,8 @@ Below you will find a list of parameters that can be used to configure a `Scan`:
 
 #### Endpoint scan
 
-To scan an existing endpoint in your application, invoke the run method with a `TargetOptions` argument. For details, see [here](https://github.com/NeuraLegion/sectester-js/tree/master/packages/scan#defining-a-target-for-attack).
+To scan an existing endpoint in your application, invoke the run method with a `TargetOptions` argument.
+For `TargetOptions` details, please refer to this [link](https://github.com/NeuraLegion/sectester-js/tree/master/packages/scan#defining-a-target-for-attack).
 
 Example:
 
@@ -104,17 +105,18 @@ This automatically creates an auxiliary target with a POST endpoint under the ho
 Example:
 
 ```ts
-let miscService; // instantiate related service here
 const inputSample = {
   from: '2022-11-30',
   to: '2024-06-21'
 };
-const fn = async ({ from, to }) =>
-  await miscService.calculateWeekdays(from, to);
+// assuming `calculateWeekdays` is your function under test
+const fn = ({ from, to }) => calculateWeekdays(from, to);
 
 const scan = runner.createScan({ tests: [TestType.DATE_MANIPULATION] });
 await scan.run({ inputSample, fn });
 ```
+
+#### Scan execution details
 
 The `run` method returns promise that is resolved if scan finishes without any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error).
 
