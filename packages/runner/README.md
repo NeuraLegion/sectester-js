@@ -112,6 +112,7 @@ scan.timeout(30000);
 ```
 
 In that case after 30 seconds, if the scan isn't finishing or finding any vulnerability, it will throw an error.
+The default timeout value for `SecScan` is 10 minutes.
 
 ### Usage sample
 
