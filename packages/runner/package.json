@@ -33,6 +33,7 @@
     "brightsec"
   ],
   "dependencies": {
+    "fastify": "~4.15.0",
     "tslib": "~2.6.3"
   },
   "peerDependencies": {
@@ -40,8 +41,5 @@
     "@sectester/repeater": ">=0.16.0 <1.0.0",
     "@sectester/reporter": ">=0.16.0 <1.0.0",
     "@sectester/scan": ">=0.16.0 <1.0.0"
-  },
-  "dependencies": {
-    "fastify": "~4.15.0"
   }
 }
