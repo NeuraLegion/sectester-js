@@ -82,7 +82,12 @@ Below you will find a list of parameters that can be used to configure a `Scan`:
 | `targetTimeout`        | Measure timeout responses from the target application globally, and stop the scan if the target is unresponsive for longer than the specified time. By default, 5min.                         |
 | `name`                 | The scan name. The method and hostname by default, e.g. `GET example.com`.                                                                                                                    |
 
-Finally, run a scan against your application:
+#### Endpoint scan
+
+To scan an existing endpoint in your application, invoke the run method with a `TargetOptions` argument.
+For `TargetOptions` details, please refer to this [link](https://github.com/NeuraLegion/sectester-js/tree/master/packages/scan#defining-a-target-for-attack).
+
+Example:
 
 ```ts
 await scan.run({
@@ -92,7 +97,28 @@ await scan.run({
 });
 ```
 
-The `run` method takes a single argument (for details, see [here](https://github.com/NeuraLegion/sectester-js/tree/master/packages/scan#defining-a-target-for-attack)), and returns promise that is resolved if scan finishes without any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error).
+#### Function scan
+
+To focus on the security aspects of a particular function in your application, you can perform a function-specific scan.
+This automatically creates an auxiliary target with a POST endpoint under the hood.
+
+Example:
+
+```ts
+const inputSample = {
+  from: '2022-11-30',
+  to: '2024-06-21'
+};
+// assuming `calculateWeekdays` is your function under test
+const fn = ({ from, to }) => calculateWeekdays(from, to);
+
+const scan = runner.createScan({ tests: [TestType.DATE_MANIPULATION] });
+await scan.run({ inputSample, fn });
+```
+
+#### Scan execution details
+
+The `run` method returns promise that is resolved if scan finishes without any vulnerability found, and is rejected otherwise (on founding issue that meets threshold, on timeout, on scanning error).
 
 If any vulnerabilities are found, they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sectester-js/tree/master/packages/reporter).
 
