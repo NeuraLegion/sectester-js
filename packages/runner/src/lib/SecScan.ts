@@ -11,7 +11,7 @@ import {
   TargetOptions
 } from '@sectester/scan';
 
-interface FunctionScanOptions<T> {
+export interface FunctionScanOptions<T> {
   inputSample: T;
   fn: (input: T) => Promise<unknown>;
 }
