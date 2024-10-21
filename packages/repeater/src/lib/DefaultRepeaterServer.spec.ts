@@ -45,7 +45,7 @@ class MockSocketServer {
   }
 
   public close() {
-    this.io.close();
+    void this.io.close();
   }
 
   public emit(event: string, data: any) {

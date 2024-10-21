@@ -41,7 +41,6 @@
     "https-proxy-agent": "^7.0.5",
     "iconv-lite": "^0.6.3",
     "reflect-metadata": "^0.2.2",
-    "socket.io": "^4.8.0",
     "socket.io-client": "^4.8.0",
     "socket.io-msgpack-parser": "^3.0.2",
     "socks-proxy-agent": "^8.0.4",
@@ -51,5 +50,8 @@
   },
   "peerDependencies": {
     "@sectester/core": ">=0.16.0 <1.0.0"
+  },
+  "devDependencies": {
+    "socket.io": "^4.8.0"
   }
 }
