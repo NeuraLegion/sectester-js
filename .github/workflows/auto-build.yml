@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -31,7 +31,7 @@ jobs:
         target: ['lint', 'test', 'build', 'format']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -39,7 +39,7 @@ jobs:
         uses: ./.github/workflows/composite/npm
 
       - name: Cache Nx
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules/.cache/nx
           key: ${{ env.NX_CACHE }}-${{ hashFiles('**/package-lock.json') }}-${{ matrix.target }}-${{ matrix.index }}-${{ github.sha }}
