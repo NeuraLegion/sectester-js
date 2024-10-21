@@ -33,7 +33,7 @@
     "brightsec"
   ],
   "dependencies": {
-    "fastify": "~4.15.0",
+    "fastify": "^4.28.1",
     "tslib": "~2.6.3"
   },
   "peerDependencies": {
