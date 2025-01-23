@@ -7,7 +7,13 @@ import {
   RepeatersManager
 } from '@sectester/repeater';
 import { ScanFactory } from '@sectester/scan';
-import { Formatter, PlainTextFormatter } from '@sectester/reporter';
+import {
+  Formatter,
+  GitHubCheckRunReporter,
+  PlainTextFormatter,
+  Reporter,
+  StdReporter
+} from '@sectester/reporter';
 
 export class SecRunner {
   public static readonly SHUTDOWN_SIGNALS: readonly string[] = [
@@ -75,7 +81,8 @@ export class SecRunner {
         repeaterId: this.repeater.repeaterId
       },
       this.configuration.container.resolve<ScanFactory>(ScanFactory),
-      this.configuration.container.resolve<Formatter>(Formatter)
+      this.configuration.container.resolve<Formatter>(Formatter),
+      this.configuration.container.resolve<Reporter>(Reporter)
     );
   }
 
@@ -85,6 +92,18 @@ export class SecRunner {
     configuration.container.register(Formatter, {
       useClass: PlainTextFormatter
     });
+
+    if (process.env.GITHUB_ACTIONS === 'true') {
+      if (process.env.PR_COMMIT_SHA) {
+        configuration.container.register(Reporter, {
+          useClass: GitHubCheckRunReporter
+        });
+      }
+    } else {
+      configuration.container.register(Reporter, {
+        useClass: StdReporter
+      });
+    }
   }
 
   private setupShutdown(): void {

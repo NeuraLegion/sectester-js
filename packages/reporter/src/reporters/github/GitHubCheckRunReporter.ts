@@ -1,0 +1,67 @@
+import { Reporter } from '../../lib';
+import { GITHUB_CLIENT, GITHUB_CONFIG } from './api';
+import type { GitHubClient } from './api';
+import { SingleItemPayloadBuilder, MultiItemsPayloadBuilder } from './builders';
+import type { CheckRunPayloadBuilder } from './builders';
+import type { GitHubConfig } from './types';
+import { inject, injectable } from 'tsyringe';
+import type { Issue, Scan } from '@sectester/scan';
+import path from 'node:path';
+
+// TODO add `GitHubCheckRunReporter` description to README
+@injectable()
+export class GitHubCheckRunReporter implements Reporter {
+  constructor(
+    @inject(GITHUB_CONFIG) private readonly config: GitHubConfig,
+    @inject(GITHUB_CLIENT) private readonly githubClient: GitHubClient
+  ) {
+    if (!this.config.token) {
+      throw new Error('GitHub token is not set');
+    }
+
+    if (!this.config.repository) {
+      throw new Error('GitHub repository is not set');
+    }
+
+    if (!this.config.commitSha) {
+      throw new Error('GitHub commitSha is not set');
+    }
+  }
+
+  public async report(scan: Scan): Promise<void> {
+    const issues = await scan.issues();
+    if (issues.length === 0) return;
+
+    const checkRunPayload = this.createCheckRunPayloadBuilder(issues).build();
+    await this.githubClient.createCheckRun(checkRunPayload);
+  }
+
+  private createCheckRunPayloadBuilder(
+    issues: Issue[]
+  ): CheckRunPayloadBuilder {
+    return issues.length === 1
+      ? new SingleItemPayloadBuilder(
+          issues[0],
+          this.config.commitSha,
+          this.getTestFilePath()
+        )
+      : new MultiItemsPayloadBuilder(
+          issues,
+          this.config.commitSha,
+          this.getTestFilePath()
+        );
+  }
+
+  // TODO subject to improvement
+  private getTestFilePath(): string {
+    const state = (global as any).expect?.getState();
+    if (!state) {
+      return 'unknown';
+    }
+
+    const testPath = state.testPath;
+    const rootDir = state.snapshotState._rootDir;
+
+    return path.join(path.basename(rootDir), path.relative(rootDir, testPath));
+  }
+}
