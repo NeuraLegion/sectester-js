@@ -40,5 +40,8 @@
   },
   "peerDependencies": {
     "@sectester/scan": ">=0.16.0 <1.0.0"
+  },
+  "devDependencies": {
+    "@octokit/types": "^13.5.0"
   }
 }

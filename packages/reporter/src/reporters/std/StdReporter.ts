@@ -1,5 +1,5 @@
-import { Reporter } from '../lib';
-import { IssuesGrouper } from '../utils';
+import { Reporter } from '../../lib';
+import { IssuesGrouper } from '../../utils';
 import { Issue, Scan, Severity } from '@sectester/scan';
 import table, { Header } from 'tty-table';
 import chalk from 'chalk';

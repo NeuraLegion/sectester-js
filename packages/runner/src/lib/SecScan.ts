@@ -1,6 +1,6 @@
 import { FunctionScanTarget } from './FunctionScanTarget';
 import { IssueFound } from './IssueFound';
-import { Formatter } from '@sectester/reporter';
+import { Formatter, Reporter } from '@sectester/reporter';
 import {
   Issue,
   Scan,
@@ -23,7 +23,8 @@ export class SecScan {
   constructor(
     private readonly settings: Omit<ScanSettingsOptions, 'target'>,
     private readonly scanFactory: ScanFactory,
-    private readonly formatter: Formatter
+    private readonly formatter: Formatter,
+    private readonly reporter?: Reporter
   ) {}
 
   public async run<T>(
@@ -65,6 +66,7 @@ export class SecScan {
     } finally {
       await scan.stop();
       await functionScanTarget?.stop();
+      await this.reporter?.report(scan);
     }
   }
 
