@@ -45,7 +45,7 @@ import { TestType } from '@sectester/scan';
 
 const scan = await scanFactory.createScan({
   target,
-  tests: [TestType.HEADER_SECURITY]
+  tests: [TestType.INSECURE_OUTPUT_HANDLING]
 });
 ```
 
