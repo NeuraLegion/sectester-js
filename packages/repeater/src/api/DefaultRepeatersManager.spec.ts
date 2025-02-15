@@ -1,52 +1,48 @@
 import 'reflect-metadata';
-import {
-  CreateRepeaterRequest,
-  DeleteRepeaterRequest,
-  GetRepeaterRequest
-} from './commands';
 import { DefaultRepeatersManager } from './DefaultRepeatersManager';
 import { RepeatersManager } from './RepeatersManager';
-import { CommandDispatcher } from '@sectester/core';
-import {
-  anyOfClass,
-  instance,
-  mock,
-  objectContaining,
-  reset,
-  verify,
-  when
-} from 'ts-mockito';
+import { ApiError, ApiClient } from '@sectester/core';
+import { instance, mock, reset, when, deepEqual } from 'ts-mockito';
 
 describe('DefaultRepeatersManager', () => {
-  const mockedCommandDispatcher = mock<CommandDispatcher>();
-  let manager!: RepeatersManager;
+  const mockedApiClient = mock<ApiClient>();
+  let manager: RepeatersManager;
 
   beforeEach(() => {
-    manager = new DefaultRepeatersManager(instance(mockedCommandDispatcher));
+    manager = new DefaultRepeatersManager(instance(mockedApiClient));
   });
 
-  afterEach(() => reset(mockedCommandDispatcher));
+  afterEach(() => reset(mockedApiClient));
 
   describe('createRepeater', () => {
     it('should create repeater', async () => {
+      const response = new Response(JSON.stringify({ id: '142' }));
       when(
-        mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
-      ).thenResolve({ id: '142' });
+        mockedApiClient.request(
+          '/api/v1/repeaters',
+          deepEqual<RequestInit>({
+            method: 'POST',
+            body: JSON.stringify({ name: 'foo' })
+          })
+        )
+      ).thenResolve(response);
 
       const result = await manager.createRepeater({ name: 'foo' });
 
-      verify(
-        mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
-      ).once();
       expect(result).toMatchObject({ repeaterId: '142' });
     });
 
     it('should create repeater under a specific project', async () => {
+      const response = new Response(JSON.stringify({ id: '142' }));
       when(
-        mockedCommandDispatcher.execute(
-          objectContaining({ payload: { name: 'foo', projectIds: ['321'] } })
+        mockedApiClient.request(
+          '/api/v1/repeaters',
+          deepEqual<RequestInit>({
+            method: 'POST',
+            body: JSON.stringify({ name: 'foo', projectIds: ['321'] })
+          })
         )
-      ).thenResolve({ id: '142' });
+      ).thenResolve(response);
 
       const result = await manager.createRepeater({
         name: 'foo',
@@ -57,9 +53,18 @@ describe('DefaultRepeatersManager', () => {
     });
 
     it('should throw an error if cannot find created repeater', async () => {
+      const err = new ApiError(
+        new Response('Repeater not found', { status: 404 })
+      );
       when(
-        mockedCommandDispatcher.execute(anyOfClass(CreateRepeaterRequest))
-      ).thenResolve();
+        mockedApiClient.request(
+          '/api/v1/repeaters',
+          deepEqual<RequestInit>({
+            method: 'POST',
+            body: JSON.stringify({ name: 'foo' })
+          })
+        )
+      ).thenReject(err);
 
       const res = manager.createRepeater({ name: 'foo' });
 
@@ -70,22 +75,21 @@ describe('DefaultRepeatersManager', () => {
   describe('getRepeater', () => {
     it('should return repeater', async () => {
       const repeaterId = '142';
+      const response = new Response(JSON.stringify({ id: repeaterId }));
       when(
-        mockedCommandDispatcher.execute(anyOfClass(GetRepeaterRequest))
-      ).thenResolve({ id: repeaterId });
+        mockedApiClient.request(`/api/v1/repeaters/${repeaterId}`)
+      ).thenResolve(response);
 
       const result = await manager.getRepeater(repeaterId);
 
-      verify(
-        mockedCommandDispatcher.execute(anyOfClass(GetRepeaterRequest))
-      ).once();
       expect(result).toMatchObject({ repeaterId });
     });
 
     it('should throw an error if cannot find repeater', async () => {
-      when(
-        mockedCommandDispatcher.execute(anyOfClass(GetRepeaterRequest))
-      ).thenResolve();
+      const err = new ApiError(
+        new Response('Repeater not found', { status: 404 })
+      );
+      when(mockedApiClient.request('/api/v1/repeaters/123')).thenReject(err);
 
       const act = manager.getRepeater('123');
 
@@ -95,15 +99,19 @@ describe('DefaultRepeatersManager', () => {
 
   describe('deleteRepeater', () => {
     it('should remove repeater', async () => {
+      const response = new Response(null, { status: 204 });
       when(
-        mockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
-      ).thenResolve();
+        mockedApiClient.request(
+          '/api/v1/repeaters/fooId',
+          deepEqual<RequestInit>({
+            method: 'DELETE'
+          })
+        )
+      ).thenResolve(response);
 
-      await manager.deleteRepeater('fooId');
+      const act = manager.deleteRepeater('fooId');
 
-      verify(
-        mockedCommandDispatcher.execute(anyOfClass(DeleteRepeaterRequest))
-      ).once();
+      await expect(act).resolves.not.toThrow();
     });
   });
 });
