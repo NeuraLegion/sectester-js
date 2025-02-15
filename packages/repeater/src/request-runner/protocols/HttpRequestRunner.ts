@@ -193,8 +193,8 @@ export class HttpRequestRunner implements RequestRunner {
 
   private getRequestAgent(options: Request) {
     return options.secureEndpoint
-      ? this.httpsProxyAgent ?? this.httpsAgent
-      : this.httpProxyAgent ?? this.httpAgent;
+      ? (this.httpsProxyAgent ?? this.httpsAgent)
+      : (this.httpProxyAgent ?? this.httpAgent);
   }
 
   private async truncateResponse(
@@ -218,8 +218,8 @@ export class HttpRequestRunner implements RequestRunner {
       typeof maxContentSize === 'number'
         ? maxContentSize * 1024
         : this.options.maxContentLength
-        ? Math.abs(this.options.maxContentLength) * 1024
-        : undefined;
+          ? Math.abs(this.options.maxContentLength) * 1024
+          : undefined;
 
     const body = await this.parseBody(res, {
       decompress,
@@ -249,7 +249,7 @@ export class HttpRequestRunner implements RequestRunner {
     let encoding: string | undefined = charset;
 
     if (!encoding || !iconv.encodingExists(encoding)) {
-      encoding = 'utf-8';
+      encoding = 'utf8';
     }
 
     return { type, encoding };
