@@ -128,78 +128,40 @@ const config = new Configuration({
 });
 ```
 
-### Messages
+### ApiClient
 
-Message is used for syncing state between SDK, application and/or external services.
-This functionality is done by sending messages outside using a concrete implementation of `Dispatcher`.
-
-Depending on the type of derived class from the `Message`, it might be addressed to only one consumer or have typically multiple consumers as well.
-When a message is sent to multiple consumers, the appropriate event handler in each consumer handles the message.
-
-The `Message` is a data-holding class, but it implements a [Visitor pattern](https://en.wikipedia.org/wiki/Visitor_pattern#:~:text=In%20object%2Doriented%20programming%20and,structures%20without%20modifying%20the%20structures.)
-to allow clients to perform operations on it using a visitor class (see `Dispatcher`) without modifying the source.
-
-For instance, you can dispatch a message in a way that is more approach you or convenient from the client's perspective.
+The `ApiClient` interface and its implementation `FetchApiClient` provide a robust way to handle HTTP requests with built-in retry logic, rate limiting, and error handling.
 
 ```ts
-import { CommandDispatcher, Command } from '@sectester/core';
-import { container } from 'tsyringe';
+import { FetchApiClient } from '@sectester/core';
 
-const dispatcher = container.resolve(CommandDispatcher);
+const client = new FetchApiClient({
+  baseUrl: 'https://app.neuralegion.com',
+  apiKey: 'your-api-key',
+  timeout: 5000 // optional, defaults to 5000ms
+});
 
-interface Payload {
-  status: 'connected' | 'disconnected';
-}
-
-class Ping extends Command<Payload, undefined> {
-  constructor(payload: Payload) {
-    super(payload);
-  }
-}
-
-// using a visitor pattern
-await new Ping({ status: 'connected' }).execute(dispatcher);
-
-// or directly
-await dispatcher.execute(new Ping({ status: 'disconnected' }));
+// Make a request
+const response = await client.request('/api/v1/scans');
 ```
 
-Each message have a correlation ID to ensure atomicity. The regular UUID is used, but you might also want to consider other options.
+The `FetchApiClient` includes the following features:
 
-### Request-response
+- Automatic retry for idempotent requests (GET, HEAD, PUT, DELETE, OPTIONS, TRACE)
+- Rate limiting handling with automatic retry based on 'Retry-After' header
+- Configurable timeout
+- API key authentication
+- Automatic handling of redirects (status 409)
+- JSON content type by default
 
-The request-response message (aka `Command`) style is useful when you need to exchange messages between various external services.
-Using `Command` you can easily ensure that the service has actually received the message and sent a response back.
+The client can be configured using the following options:
 
-To create an instance of `Command` use the abstract class as follows:
-
-```ts
-import { Command } from '@sectester/core';
-
-interface RequestOptions {
-  url: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  headers?: Record<string, string>;
-  body?: string;
-}
-
-class Request<R = unknown> extends Command<RequestOptions, R> {
-  constructor(options: RequestOptions) {
-    super(options);
-  }
-}
-```
-
-To adjust its behavior you can use next options:
-
-| Option         | Description                                                                                  |
-| :------------- | -------------------------------------------------------------------------------------------- |
-| `payload`      | Message that we want to transmit to the remote service.                                      |
-| `expectReply`  | Indicates whether to wait for a reply. By default `true`.                                    |
-| `ttl`          | Period of time that command should be handled before being discarded. By default `10000` ms. |
-| `type`         | The name of a command. By default, it is the name of specific class.                         |
-| `corelationId` | Used to ensure atomicity. By default, random UUID.                                           |
-| `createdAt`    | The exact date and time the command was created.                                             |
+| Option       | Type   | Default   | Description                             |
+| ------------ | ------ | --------- | --------------------------------------- |
+| baseUrl      | string | -         | Base URL for all API requests           |
+| apiKey       | string | -         | API key for authentication              |
+| apiKeyPrefix | string | 'Api-Key' | Prefix used in the Authorization header |
+| timeout      | number | 5000      | Request timeout in milliseconds         |
 
 ## License
 
