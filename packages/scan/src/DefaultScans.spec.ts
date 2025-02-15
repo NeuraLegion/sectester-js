@@ -1,29 +1,12 @@
 import 'reflect-metadata';
-import {
-  CreateScan,
-  DeleteScan,
-  GetScan,
-  ListIssues,
-  StopScan,
-  UploadHar
-} from './commands';
 import { DefaultScans } from './DefaultScans';
 import { HttpMethod, Module, ScanStatus, Severity, TestType } from './models';
-import {
-  anyOfClass,
-  instance,
-  mock,
-  objectContaining,
-  reset,
-  spy,
-  verify,
-  when
-} from 'ts-mockito';
+import { deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
 import { Har } from '@har-sdk/core';
-import { CommandDispatcher, Configuration } from '@sectester/core';
+import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
 
-describe('HttpScans', () => {
+describe('DefaultScans', () => {
   const id = 'roMq1UVuhPKkndLERNKnA8';
   const har: Har = {
     log: {
@@ -65,30 +48,49 @@ describe('HttpScans', () => {
   };
 
   const mockedCi = spy<typeof ci>(ci);
-  const mockedCommandDispatcher = mock<CommandDispatcher>();
+  const mockedApiClient = mock<ApiClient>();
   const mockedConfiguration = mock<Configuration>();
   let scans!: DefaultScans;
 
   beforeEach(() => {
     scans = new DefaultScans(
       instance(mockedConfiguration),
-      instance(mockedCommandDispatcher)
+      instance(mockedApiClient)
     );
   });
 
   afterEach(() =>
-    reset<Configuration | CommandDispatcher | typeof ci>(
-      mockedCommandDispatcher,
+    reset<typeof ci | ApiClient | Configuration>(
+      mockedApiClient,
       mockedCi,
       mockedConfiguration
     )
   );
 
-  describe('create', () => {
+  describe('createScan', () => {
     it('should create a new scan', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).thenResolve(
-        { id }
-      );
+      const response = new Response(JSON.stringify({ id }));
+      when(mockedConfiguration.name).thenReturn('test');
+      when(mockedConfiguration.version).thenReturn('1.0');
+      when(mockedCi.name).thenReturn('github');
+      when(
+        mockedApiClient.request(
+          '/api/v1/scans',
+          deepEqual({
+            method: 'POST',
+            body: JSON.stringify({
+              name: 'test',
+              tests: [TestType.CROSS_SITE_SCRIPTING],
+              module: Module.DAST,
+              info: {
+                source: 'utlib',
+                provider: 'github',
+                client: { name: 'test', version: '1.0' }
+              }
+            })
+          })
+        )
+      ).thenResolve(response);
 
       const result = await scans.createScan({
         name: 'test',
@@ -96,54 +98,7 @@ describe('HttpScans', () => {
         module: Module.DAST
       });
 
-      verify(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).once();
-      expect(result).toMatchObject({ id });
-    });
-
-    it('should pass a creation info in a payload', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).thenResolve(
-        { id }
-      );
-      when(mockedConfiguration.name).thenReturn('library');
-      when(mockedConfiguration.version).thenReturn('v1.1.1');
-      when(mockedCi.name).thenReturn('some CI');
-
-      await scans.createScan({
-        name: 'test',
-        tests: [TestType.CROSS_SITE_SCRIPTING],
-        module: Module.DAST
-      });
-
-      verify(
-        mockedCommandDispatcher.execute(
-          objectContaining({
-            payload: {
-              info: {
-                source: 'utlib',
-                provider: 'some CI',
-                client: {
-                  name: 'library',
-                  version: 'v1.1.1'
-                }
-              }
-            }
-          })
-        )
-      ).once();
-    });
-
-    it('should raise an error if result is not defined', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(CreateScan))).thenResolve(
-        undefined
-      );
-
-      const result = scans.createScan({
-        name: 'test',
-        tests: [TestType.CROSS_SITE_SCRIPTING],
-        module: Module.DAST
-      });
-
-      await expect(result).rejects.toThrow('Something went wrong');
+      expect(result).toEqual({ id });
     });
   });
 
@@ -153,10 +108,10 @@ describe('HttpScans', () => {
         {
           id: 'pDzxcEXQC8df1fcz1QwPf9',
           order: 1,
+          severity: Severity.MEDIUM,
           details:
             'Cross-site request forgery is a type of malicious website exploit.',
           name: 'Database connection crashed',
-          severity: Severity.MEDIUM,
           protocol: 'http',
           remedy:
             'The best way to protect against those kind of issues is making sure the Database resources are sufficient',
@@ -172,52 +127,52 @@ describe('HttpScans', () => {
           }
         }
       ];
-      const api = 'https://localhost';
-      const expected = issues.map(x => ({
-        ...x,
-        link: `${api}/scans/${id}/issues/${x.id}`
-      }));
+      const response = new Response(JSON.stringify(issues));
       when(mockedConfiguration.api).thenReturn('https://localhost');
-      when(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).thenResolve(
-        issues
+      when(mockedApiClient.request(`/api/v1/scans/${id}/issues`)).thenResolve(
+        response
       );
 
       const result = await scans.listIssues(id);
 
-      verify(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).once();
-      expect(result).toEqual(expected);
-    });
-
-    it('should raise an error if result is not defined', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(ListIssues))).thenResolve(
-        undefined
+      expect(result).toEqual(
+        issues.map(x => ({
+          ...x,
+          link: `https://localhost/scans/${id}/issues/${x.id}`
+        }))
       );
-
-      const result = scans.listIssues(id);
-
-      await expect(result).rejects.toThrow('Something went wrong');
     });
   });
 
   describe('stopScan', () => {
     it('should stop a scan', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(StopScan))).thenResolve();
+      const response = new Response();
+      when(
+        mockedApiClient.request(
+          `/api/v1/scans/${id}/stop`,
+          deepEqual({ method: 'POST' })
+        )
+      ).thenResolve(response);
 
-      await scans.stopScan(id);
+      const act = scans.stopScan(id);
 
-      verify(mockedCommandDispatcher.execute(anyOfClass(StopScan))).once();
+      await expect(act).resolves.not.toThrow();
     });
   });
 
   describe('deleteScan', () => {
     it('should delete a scan', async () => {
+      const response = new Response();
       when(
-        mockedCommandDispatcher.execute(anyOfClass(DeleteScan))
-      ).thenResolve();
+        mockedApiClient.request(
+          `/api/v1/scans/${id}`,
+          deepEqual({ method: 'DELETE' })
+        )
+      ).thenResolve(response);
 
-      await scans.deleteScan(id);
+      const act = scans.deleteScan(id);
 
-      verify(mockedCommandDispatcher.execute(anyOfClass(DeleteScan))).once();
+      await expect(act).resolves.not.toThrow();
     });
   });
 
@@ -226,50 +181,41 @@ describe('HttpScans', () => {
       const expected = {
         status: ScanStatus.DONE
       };
-      when(mockedCommandDispatcher.execute(anyOfClass(GetScan))).thenResolve(
-        expected
+      const response = new Response(JSON.stringify(expected));
+      when(mockedApiClient.request(`/api/v1/scans/${id}`)).thenResolve(
+        response
       );
 
       const result = await scans.getScan(id);
 
-      verify(mockedCommandDispatcher.execute(anyOfClass(GetScan))).once();
       expect(result).toMatchObject(expected);
-    });
-
-    it('should raise an error if result is not defined', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(GetScan))).thenResolve(
-        undefined
-      );
-
-      const result = scans.getScan(id);
-
-      await expect(result).rejects.toThrow('Something went wrong');
     });
   });
 
   describe('uploadHar', () => {
     it('should upload HAR file', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).thenResolve({
-        id
-      });
+      const response = new Response(JSON.stringify({ id }));
+      when(
+        mockedApiClient.request(
+          '/api/v1/scans/har',
+          deepEqual({
+            method: 'POST',
+            body: JSON.stringify({
+              har,
+              filename: 'test.json',
+              discard: true
+            })
+          })
+        )
+      ).thenResolve(response);
 
-      await scans.uploadHar({
+      const res = await scans.uploadHar({
         har,
         filename: 'test.json',
         discard: true
       });
 
-      verify(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).once();
-    });
-
-    it('should raise an error if result is not defined', async () => {
-      when(mockedCommandDispatcher.execute(anyOfClass(UploadHar))).thenResolve(
-        undefined
-      );
-
-      const result = scans.getScan(id);
-
-      await expect(result).rejects.toThrow('Something went wrong');
+      expect(res).toEqual({ id });
     });
   });
 });
