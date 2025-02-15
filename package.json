@@ -88,8 +88,7 @@
     "socks-proxy-agent": "^8.0.4",
     "tslib": "~2.6.3",
     "tsyringe": "^4.8.0",
-    "tty-table": "^4.2.3",
-    "uuid": "^10.0.0"
+    "tty-table": "^4.2.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
@@ -110,7 +109,6 @@
     "@types/request-promise": "^4.1.51",
     "@types/semver": "^7.5.8",
     "@types/supertest": "^6.0.2",
-    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
     "eslint": "^8.57.1",

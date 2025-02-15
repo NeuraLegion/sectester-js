@@ -39,8 +39,7 @@
     "ci-info": "^4.0.0",
     "form-data": "^4.0.0",
     "tslib": "~2.6.3",
-    "tsyringe": "^4.8.0",
-    "uuid": "^10.0.0"
+    "tsyringe": "^4.8.0"
   },
   "peerDependencies": {
     "@sectester/core": ">=0.16.0 <1.0.0"
