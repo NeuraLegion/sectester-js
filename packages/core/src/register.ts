@@ -1,10 +1,5 @@
-import { CommandDispatcher, RetryStrategy } from './commands';
+import { ApiClient, FetchApiClient } from './api';
 import { Configuration } from './configuration';
-import {
-  ExponentialBackoffRetryStrategy,
-  HttpCommandDispatcher,
-  HttpCommandDispatcherConfig
-} from './dispatchers';
 import { Logger } from './logger';
 import {
   container,
@@ -12,36 +7,28 @@ import {
   instancePerContainerCachingFactory
 } from 'tsyringe';
 
-container.register(RetryStrategy, {
-  useFactory() {
-    return new ExponentialBackoffRetryStrategy({ maxDepth: 5 });
-  }
-});
-
 container.register(Logger, {
-  useFactory: instancePerContainerCachingFactory((child: DependencyContainer) =>
-    child.isRegistered(Configuration, true)
-      ? new Logger(child.resolve(Configuration).logLevel)
-      : new Logger()
+  useFactory: instancePerContainerCachingFactory(
+    (child: DependencyContainer) =>
+      child.isRegistered(Configuration, true)
+        ? new Logger(child.resolve(Configuration).logLevel)
+        : new Logger()
   )
 });
 
-container.register(CommandDispatcher, { useClass: HttpCommandDispatcher });
-
-container.register(HttpCommandDispatcherConfig, {
+container.register(ApiClient, {
   useFactory(childContainer: DependencyContainer) {
     const configuration = childContainer.resolve(Configuration);
 
     if (!configuration.credentials) {
       throw new Error(
-        'Please provide credentials to establish a connection with the dispatcher.'
+        'Please provide credentials to establish a connection with the API.'
       );
     }
 
-    return {
-      timeout: 10000,
+    return new FetchApiClient({
       baseUrl: configuration.api,
-      token: configuration.credentials.token
-    };
+      apiKey: configuration.credentials.token
+    });
   }
 });
