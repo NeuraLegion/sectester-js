@@ -10,11 +10,12 @@ import {
 } from './RepeaterServer';
 import { Protocol } from '../models/Protocol';
 import { RepeaterCommands } from './RepeaterCommands';
-import { delay, Logger } from '@sectester/core';
+import { Logger } from '@sectester/core';
 import { anything, instance, mock, reset, verify, when } from 'ts-mockito';
 import { Server } from 'socket.io';
 import msgpack from 'socket.io-msgpack-parser';
 import { createServer, Server as HttpServer } from 'http';
+import { setTimeout } from 'node:timers/promises';
 
 class MockSocketServer {
   private readonly httpServer: HttpServer;
@@ -187,7 +188,7 @@ describe('DefaultRepeaterServer', () => {
         mockSocketServer.emit(input.event, input.data);
 
         // assert
-        await delay(200);
+        await setTimeout(200);
         expect(handler).toHaveBeenCalledWith(...expected.data);
       }
     );

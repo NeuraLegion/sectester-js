@@ -10,7 +10,6 @@ export {
   NumBoundaries,
   checkBoundaries,
   contains,
-  delay,
   isBoolean,
   isDate,
   isFormData,
