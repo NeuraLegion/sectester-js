@@ -1,7 +1,16 @@
 import 'reflect-metadata';
 import { DefaultScans } from './DefaultScans';
 import { HttpMethod, Module, ScanStatus, Severity, TestType } from './models';
-import { deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
+import {
+  anyOfClass,
+  capture,
+  deepEqual,
+  instance,
+  mock,
+  reset,
+  spy,
+  when
+} from 'ts-mockito';
 import { Har } from '@har-sdk/core';
 import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
@@ -197,14 +206,10 @@ describe('DefaultScans', () => {
       const response = new Response(JSON.stringify({ id }));
       when(
         mockedApiClient.request(
-          '/api/v1/scans/har',
+          '/api/v1/files?discard=true',
           deepEqual({
             method: 'POST',
-            body: JSON.stringify({
-              har,
-              filename: 'test.json',
-              discard: true
-            })
+            body: anyOfClass(FormData)
           })
         )
       ).thenResolve(response);
@@ -216,6 +221,17 @@ describe('DefaultScans', () => {
       });
 
       expect(res).toEqual({ id });
+      const [, options]: [string, RequestInit | undefined] = capture<
+        string,
+        RequestInit | undefined
+      >(mockedApiClient.request).last();
+
+      expect(options?.body).toBeInstanceOf(FormData);
+      const blob = (options?.body as FormData)?.get('file');
+      expect(blob).toBeInstanceOf(Blob);
+      await expect((blob as Blob)?.text()).resolves.toEqual(
+        JSON.stringify(har)
+      );
     });
   });
 });
