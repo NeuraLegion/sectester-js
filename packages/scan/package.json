@@ -1,6 +1,6 @@
 {
   "name": "@sectester/scan",
-  "version": "0.35.2",
+  "version": "0.35.3",
   "description": "The package defines a simple public API to manage scans and their expectations.",
   "repository": {
     "type": "git",
