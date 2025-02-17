@@ -15,6 +15,8 @@ if (process.env.GITHUB_EVENT_PATH) {
     ({ head_sha: commitSha } = eventData.check_run?.check_suite ?? {});
   } else if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
     commitSha = eventData.pull_request.head.sha;
+  } else if (process.env.GITHUB_EVENT_NAME === 'push') {
+    commitSha = eventData.after;
   } else {
     throw new Error(
       'No pull-request and commit data available for the request.'
