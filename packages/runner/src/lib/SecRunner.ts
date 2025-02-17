@@ -94,11 +94,9 @@ export class SecRunner {
     });
 
     if (process.env.GITHUB_ACTIONS === 'true') {
-      if (process.env.PR_COMMIT_SHA) {
-        configuration.container.register(Reporter, {
-          useClass: GitHubCheckRunReporter
-        });
-      }
+      configuration.container.register(Reporter, {
+        useClass: GitHubCheckRunReporter
+      });
     } else {
       configuration.container.register(Reporter, {
         useClass: StdReporter
