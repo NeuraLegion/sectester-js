@@ -58,7 +58,7 @@ describe('ScanSettings', () => {
         // arrange
         const settings: ScanSettingsOptions = {
           target: { url: 'https://example.com' },
-          tests: [TestType.XPATHI],
+          tests: [TestType.XPATH_INJECTION],
           ...input
         };
 
@@ -71,7 +71,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
-        tests: [TestType.XPATHI],
+        tests: [TestType.XPATH_INJECTION],
         attackParamLocations: [
           AttackParamLocation.QUERY,
           AttackParamLocation.QUERY
@@ -91,7 +91,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
-        tests: [TestType.XPATHI, TestType.XPATHI]
+        tests: [TestType.XPATH_INJECTION, TestType.XPATH_INJECTION]
       };
 
       // act
@@ -99,7 +99,7 @@ describe('ScanSettings', () => {
 
       // assert
       expect(result).toMatchObject({
-        tests: [TestType.XPATHI]
+        tests: [TestType.XPATH_INJECTION]
       });
     });
 
@@ -107,7 +107,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         name: 'my scan',
-        tests: [TestType.XSS],
+        tests: [TestType.CROSS_SITE_SCRIPTING],
         target: { url: 'https://example.com' }
       };
 
@@ -123,7 +123,7 @@ describe('ScanSettings', () => {
     it('should create a settings with default name', () => {
       // arrange
       const settings: ScanSettingsOptions = {
-        tests: [TestType.XSS],
+        tests: [TestType.CROSS_SITE_SCRIPTING],
         target: { url: 'https://example.com' }
       };
 
@@ -140,7 +140,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         name: randomBytes(201).toString('hex'),
-        tests: [TestType.XSS],
+        tests: [TestType.CROSS_SITE_SCRIPTING],
         target: { url: 'https://example.com' }
       };
 
@@ -153,7 +153,7 @@ describe('ScanSettings', () => {
     it('should truncate a default name if hostname is greater than 200 characters', () => {
       // arrange
       const settings: ScanSettingsOptions = {
-        tests: [TestType.XSS],
+        tests: [TestType.CROSS_SITE_SCRIPTING],
         target: {
           url: `https://subdomain-${randomBytes(200).toString(
             'hex'
