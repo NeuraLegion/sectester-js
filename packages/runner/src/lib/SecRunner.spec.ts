@@ -178,7 +178,7 @@ describe('SecRunner', () => {
   });
 
   describe('createScan', () => {
-    const options = { tests: [TestType.XSS] };
+    const options = { tests: [TestType.CROSS_SITE_SCRIPTING] };
 
     it('should create scan', async () => {
       await secRunner.init();

@@ -24,7 +24,7 @@ import { Configuration } from '@sectester/core';
 import { Formatter } from '@sectester/reporter';
 
 describe('SecScan', () => {
-  const tests = [TestType.XSS];
+  const tests = [TestType.CROSS_SITE_SCRIPTING];
 
   const mockedContainer = mock<DependencyContainer>();
   const mockedConfiguration = mock<Configuration>();

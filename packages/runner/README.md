@@ -66,7 +66,7 @@ await runner.clear();
 To start scanning your application, first you have to create a `SecScan` instance, as shown below:
 
 ```ts
-const scan = runner.createScan({ tests: [TestType.XSS] });
+const scan = runner.createScan({ tests: [TestType.CROSS_SITE_SCRIPTING] });
 ```
 
 Below you will find a list of parameters that can be used to configure a `Scan`:
@@ -156,7 +156,7 @@ describe('/api', () => {
     await runner.init();
 
     scan = runner
-      .createScan({ tests: [TestType.XSS] })
+      .createScan({ tests: [TestType.CROSS_SITE_SCRIPTING] })
       .threshold(Severity.MEDIUM) // i. e. ignore LOW severity issues
       .timeout(300000); // i. e. fail if last longer than 5 minutes
   });
