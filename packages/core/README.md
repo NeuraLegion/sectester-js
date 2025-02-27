@@ -156,12 +156,14 @@ The `FetchApiClient` includes the following features:
 
 The client can be configured using the following options:
 
-| Option       | Type   | Default   | Description                             |
-| ------------ | ------ | --------- | --------------------------------------- |
-| baseUrl      | string | -         | Base URL for all API requests           |
-| apiKey       | string | -         | API key for authentication              |
-| apiKeyPrefix | string | 'Api-Key' | Prefix used in the Authorization header |
-| timeout      | number | 5000      | Request timeout in milliseconds         |
+| Option       | Type                                         | Default                                                      | Description                             |
+| ------------ | -------------------------------------------- | ------------------------------------------------------------ | --------------------------------------- |
+| baseUrl      | string                                       | -                                                            | Base URL for all API requests           |
+| apiKey       | string                                       | -                                                            | API key for authentication              |
+| apiKeyPrefix | string                                       | 'Api-Key'                                                    | Prefix used in the Authorization header |
+| timeout      | number                                       | 5000                                                         | Request timeout in milliseconds         |
+| userAgent    | string                                       | sectester-js/<version>                                       | User agent string                       |
+| retry        | [RetryOptions](./src/api/RetryHandler.ts#L5) | See [FetchApiClient.ts](./src/api/FetchApiClient.ts#L32-L35) | Retry options for the client            |
 
 ## License
 
