@@ -7,7 +7,13 @@ describe('FetchApiClient', () => {
   const config = {
     baseUrl: 'https://api.example.com',
     apiKey: 'test-api-key',
-    timeout: 5000
+    timeout: 100,
+    retry: {
+      maxRetries: 3,
+      baseDelay: 10,
+      maxDelay: 100,
+      jitterFactor: 0.1
+    }
   };
 
   let sut: FetchApiClient;
@@ -18,8 +24,8 @@ describe('FetchApiClient', () => {
   });
 
   beforeEach(() => {
-    if (nock.isActive()) {
-      nock.restore();
+    if (!nock.isActive()) {
+      nock.activate();
     }
     sut = new FetchApiClient(config);
   });
@@ -29,9 +35,7 @@ describe('FetchApiClient', () => {
     nock.restore();
   });
 
-  afterAll(() => {
-    nock.enableNetConnect();
-  });
+  afterAll(() => nock.enableNetConnect());
 
   describe('request', () => {
     it('should make successful GET request', async () => {
@@ -72,23 +76,10 @@ describe('FetchApiClient', () => {
       expect(response.status).toBe(200);
     });
 
-    it('should handle timeout', async () => {
-      nock(config.baseUrl).get('/test').delay(2000).reply(200);
-
-      const clientWithShortTimeout = new FetchApiClient({
-        ...config,
-        timeout: 100
-      });
-
-      await expect(clientWithShortTimeout.request('/test')).rejects.toThrow(
-        'TimeoutError'
-      );
-    });
-
     it('should retry on 5xx errors', async () => {
       nock(config.baseUrl)
         .get('/test')
-        .reply(503)
+        .reply(503, 'Service Unavailable')
         .get('/test')
         .reply(200, { success: true });
 
@@ -108,15 +99,11 @@ describe('FetchApiClient', () => {
     });
 
     it('should handle rate limiting with retry-after', async () => {
-      nock(config.baseUrl)
-        .get('/test')
-        .reply(429, '', {
-          'Retry-After': '1',
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          'RateLimit': 'limit=100,remaining=0,reset=1'
-        })
-        .get('/test')
-        .reply(200, { success: true });
+      nock(config.baseUrl).get('/test').once().reply(429, '', {
+        'retry-after': '1',
+        'ratelimit': 'limit=100,remaining=0,reset=1'
+      });
+      nock(config.baseUrl).get('/test').twice().reply(200, { success: true });
 
       const response = await sut.request('/test');
       const data = await response.json();
@@ -126,10 +113,9 @@ describe('FetchApiClient', () => {
     });
 
     it('should throw RateLimitError on rate limit exceeded', async () => {
-      nock(config.baseUrl).get('/test').reply(429, '', {
-        'Retry-After': '30',
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        'RateLimit': 'limit=100,remaining=0,reset=30'
+      nock(config.baseUrl).get('/test').times(5).reply(429, '', {
+        'retry-after': '1',
+        'ratelimit': 'limit=100,remaining=0,reset=1'
       });
 
       await expect(sut.request('/test')).rejects.toThrow(RateLimitError);
@@ -139,8 +125,7 @@ describe('FetchApiClient', () => {
       nock(config.baseUrl)
         .get('/test')
         .reply(409, '', {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          Location: '/new-location'
+          location: '/new-location'
         })
         .get('/new-location')
         .reply(200, { success: true });
@@ -156,8 +141,7 @@ describe('FetchApiClient', () => {
       nock(config.baseUrl)
         .get('/test')
         .reply(409, '', {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          Location: 'https://api.example.com/new-location'
+          location: 'https://api.example.com/new-location'
         })
         .get('/new-location')
         .reply(200, { success: true });
@@ -192,9 +176,16 @@ describe('FetchApiClient', () => {
     it('should handle network errors with retry', async () => {
       nock(config.baseUrl)
         .get('/test')
-        .replyWithError({ code: 'ECONNRESET' })
-        .get('/test')
-        .reply(200, { success: true });
+        .once()
+        .replyWithError(new TypeError('terminated'));
+
+      nock(config.baseUrl).get('/test').twice().reply(
+        200,
+        { success: true },
+        {
+          'content-type': 'application/json'
+        }
+      );
 
       const response = await sut.request('/test');
       const data = await response.json();

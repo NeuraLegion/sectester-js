@@ -2,7 +2,7 @@ import { ApiError } from '../exceptions/ApiError';
 import { RateLimitError } from '../exceptions/RateLimitError';
 import { ApiClient } from './ApiClient';
 import { RateLimiter } from './RateLimiter';
-import { RetryHandler } from './RetryHandler';
+import { RetryConfig, RetryHandler } from './RetryHandler';
 import { MIMEType } from 'node:util';
 import { randomUUID } from 'node:crypto';
 
@@ -12,6 +12,7 @@ export interface ApiConfig {
   apiKeyPrefix?: string;
   timeout?: number;
   userAgent?: string;
+  retry?: Partial<RetryConfig>;
 }
 
 export class FetchApiClient implements ApiClient {
@@ -23,17 +24,20 @@ export class FetchApiClient implements ApiClient {
     'OPTIONS',
     'TRACE'
   ]);
-  private readonly retryHandler = new RetryHandler({
-    maxRetries: 3,
-    baseDelay: 1000,
-    maxDelay: 30000,
-    jitterFactor: 0.3
-  });
+  private readonly retryHandler: RetryHandler;
   private readonly rateLimiter = new RateLimiter();
 
-  constructor(private readonly config: ApiConfig) {}
+  constructor(private readonly config: ApiConfig) {
+    this.retryHandler = new RetryHandler({
+      maxRetries: 3,
+      baseDelay: 1000,
+      maxDelay: 30_000,
+      jitterFactor: 0.3,
+      ...config.retry
+    });
+  }
 
-  public async request(path: string, options?: RequestInit): Promise<Response> {
+  public request(path: string, options?: RequestInit): Promise<Response> {
     const url = new URL(path, this.config.baseUrl);
     const requestOptions = {
       redirect: 'follow',
@@ -49,7 +53,10 @@ export class FetchApiClient implements ApiClient {
 
     return this.retryHandler.executeWithRetry(
       () => this.makeRequest(url, requestOptions),
-      idempotent
+      {
+        idempotent,
+        signal: requestOptions.signal
+      }
     );
   }
 
@@ -57,11 +64,11 @@ export class FetchApiClient implements ApiClient {
     url: string | URL,
     options?: RequestInit
   ): Promise<Response> {
-    const signal = AbortSignal.timeout(this.config.timeout ?? 5000);
-
+    const signal =
+      options?.signal ?? AbortSignal.timeout(this.config.timeout ?? 10_000);
     const response = await fetch(url, {
       ...options,
-      signal: options?.signal ?? signal
+      signal
     });
 
     return this.handleResponse(response);
@@ -82,10 +89,11 @@ export class FetchApiClient implements ApiClient {
       }
 
       const rateLimitInfo = this.rateLimiter.extractRateLimitInfo(response);
-      const mimeType = new MIMEType(response.headers.get('content-type') ?? '');
+      const contentType = response.headers.get('content-type');
+      const mimeType = contentType ? new MIMEType(contentType) : undefined;
 
       const responseBody =
-        mimeType.type === 'text' ? await response.clone().text() : undefined;
+        mimeType?.type === 'text' ? await response.clone().text() : undefined;
 
       if (response.status === 429) {
         const retryAfter = parseInt(

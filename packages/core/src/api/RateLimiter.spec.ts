@@ -10,9 +10,8 @@ describe('RateLimiter', () => {
   describe('extractRateLimitInfo', () => {
     it('should extract rate limit info from response headers', () => {
       const headers = new Headers({
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        'RateLimit': 'limit=100,remaining=99,reset=1234567890',
-        'RateLimit-Policy': '100;window=60;type=sliding_window'
+        'ratelimit': 'limit=100,remaining=99,reset=1234567890',
+        'ratelimit-policy': '100;window=60;type=sliding_window'
       });
       const response = new Response(null, { headers });
 

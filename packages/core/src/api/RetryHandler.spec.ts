@@ -96,9 +96,9 @@ describe('RetryHandler', () => {
       );
       const operation = jest.fn().mockRejectedValue(apiError);
 
-      await expect(sut.executeWithRetry(operation, false)).rejects.toThrow(
-        ApiError
-      );
+      await expect(
+        sut.executeWithRetry(operation, { idempotent: false })
+      ).rejects.toThrow(ApiError);
       expect(operation).toHaveBeenCalledTimes(1);
     });
 
@@ -129,6 +129,34 @@ describe('RetryHandler', () => {
       const operation = jest.fn().mockRejectedValue(apiError);
 
       await expect(sut.executeWithRetry(operation)).rejects.toThrow(ApiError);
+      expect(operation).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw AbortError when signal is aborted before operation', async () => {
+      const operation = jest.fn().mockResolvedValue('success');
+      const controller = new AbortController();
+      controller.abort();
+
+      await expect(
+        sut.executeWithRetry(operation, { signal: controller.signal })
+      ).rejects.toThrow(
+        new DOMException('This operation was aborted', 'AbortError')
+      );
+      expect(operation).not.toHaveBeenCalled();
+    });
+
+    it('should throw original error when signal is aborted during operation', async () => {
+      const error = new Error('Operation error');
+      const operation = jest.fn().mockImplementation(() => {
+        controller.abort();
+
+        return Promise.reject(error);
+      });
+      const controller = new AbortController();
+
+      await expect(
+        sut.executeWithRetry(operation, { signal: controller.signal })
+      ).rejects.toThrow('Operation error');
       expect(operation).toHaveBeenCalledTimes(1);
     });
   });
