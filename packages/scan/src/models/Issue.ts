@@ -18,15 +18,6 @@ export interface Response {
   protocol?: Protocol;
 }
 
-export type Frame = 'outgoing' | 'incoming';
-
-export interface WebsocketFrame {
-  type: Frame;
-  status?: number;
-  data?: string;
-  timestamp?: number;
-}
-
 export interface Screenshot {
   url: string;
   title: string;
@@ -40,9 +31,9 @@ export interface Comment {
 
 export interface Issue {
   id: string;
-  order: number;
   details: string;
   name: string;
+  certainty: boolean;
   severity: Severity;
   protocol: Protocol;
   remedy: string;
@@ -56,7 +47,4 @@ export interface Issue {
   screenshots?: Screenshot[];
   cvss?: string;
   cwe?: string;
-  frames?: WebsocketFrame[];
-  originalFrames?: WebsocketFrame[];
-  response?: Response;
 }
