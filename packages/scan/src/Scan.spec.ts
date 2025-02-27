@@ -72,7 +72,7 @@ describe('Scan', () => {
     it('should return a list of issues', async () => {
       const issue: Issue = {
         id: 'pDzxcEXQC8df1fcz1QwPf9',
-        order: 1,
+        certainty: true,
         details:
           'Cross-site request forgery is a type of malicious website exploit.',
         name: 'Database connection crashed',
