@@ -32,16 +32,16 @@ describe('RetryHandler', () => {
     });
 
     it('should retry on network error', async () => {
-      const networkError = new TypeError('NetworkError');
       const operation = jest
         .fn()
-        .mockRejectedValueOnce(networkError)
+        .mockRejectedValueOnce(new TypeError('fetch failed'))
+        .mockRejectedValueOnce(new TypeError('terminated'))
         .mockResolvedValueOnce('success');
 
       const result = await sut.executeWithRetry(operation);
 
       expect(result).toBe('success');
-      expect(operation).toHaveBeenCalledTimes(2);
+      expect(operation).toHaveBeenCalledTimes(3);
     });
 
     it('should retry on timeout error', async () => {
@@ -59,7 +59,7 @@ describe('RetryHandler', () => {
 
     it('should retry on rate limit error and respect retry-after', async () => {
       const rateLimitError = new RateLimitError(
-        new Response('', { headers: { 'Retry-After': '1' } }),
+        new Response('', { headers: { 'retry-after': '1' } }),
         1
       );
       const operation = jest

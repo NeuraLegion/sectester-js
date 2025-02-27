@@ -39,7 +39,7 @@ export class RetryHandler {
   ): Promise<void> {
     if (
       attempt >= this.config.maxRetries ||
-      !this.shouldRetry(error, idempotent)
+      (!this.isRetryableError(error) && idempotent)
     ) {
       throw error;
     }
@@ -53,14 +53,6 @@ export class RetryHandler {
     }
   }
 
-  private shouldRetry(error: unknown, idempotent: boolean): boolean {
-    if (!idempotent) {
-      return false;
-    }
-
-    return this.isRetryableError(error);
-  }
-
   private isRetryableError(error: unknown): boolean {
     return (
       error instanceof RateLimitError ||
@@ -72,7 +64,11 @@ export class RetryHandler {
   }
 
   private isNetworkError(error: unknown): boolean {
-    return error instanceof TypeError && error.message.includes('NetworkError');
+    return (
+      error instanceof TypeError &&
+      (error.message.includes('fetch failed') ||
+        error.message.includes('terminated'))
+    );
   }
 
   private isTimeoutError(error: unknown): boolean {
