@@ -13,8 +13,8 @@ export interface RateLimitInfo {
 
 export class RateLimiter {
   public extractRateLimitInfo(response: Response): RateLimitInfo {
-    const rateLimitHeader = response.headers.get('RateLimit');
-    const policyHeader = response.headers.get('RateLimit-Policy');
+    const rateLimitHeader = response.headers.get('ratelimit');
+    const policyHeader = response.headers.get('ratelimit-policy');
 
     const rateLimit = this.parseRateLimitHeader(rateLimitHeader);
     const policy = this.parsePolicyHeader(policyHeader);

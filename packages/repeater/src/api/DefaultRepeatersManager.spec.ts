@@ -22,6 +22,9 @@ describe('DefaultRepeatersManager', () => {
           '/api/v1/repeaters',
           deepEqual<RequestInit>({
             method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
             body: JSON.stringify({ name: 'foo' })
           })
         )
@@ -39,6 +42,9 @@ describe('DefaultRepeatersManager', () => {
           '/api/v1/repeaters',
           deepEqual<RequestInit>({
             method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
             body: JSON.stringify({ name: 'foo', projectIds: ['321'] })
           })
         )
@@ -61,14 +67,17 @@ describe('DefaultRepeatersManager', () => {
           '/api/v1/repeaters',
           deepEqual<RequestInit>({
             method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
             body: JSON.stringify({ name: 'foo' })
           })
         )
       ).thenReject(err);
 
-      const res = manager.createRepeater({ name: 'foo' });
+      const act = manager.createRepeater({ name: 'foo' });
 
-      await expect(res).rejects.toThrow('Cannot create a new repeater');
+      await expect(act).rejects.toThrow(err);
     });
   });
 
@@ -93,7 +102,7 @@ describe('DefaultRepeatersManager', () => {
 
       const act = manager.getRepeater('123');
 
-      await expect(act).rejects.toThrow('Cannot find repeater');
+      await expect(act).rejects.toThrow(err);
     });
   });
 

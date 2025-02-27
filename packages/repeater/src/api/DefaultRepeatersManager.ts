@@ -12,24 +12,16 @@ export class DefaultRepeatersManager implements RepeatersManager {
   public async getRepeater(
     repeaterId: string
   ): Promise<{ repeaterId: string }> {
-    try {
-      const response = await this.client.request(
-        `/api/v1/repeaters/${repeaterId}`
-      );
-      const repeater = (await response.json()) as {
-        id: string;
-        name: string;
-        projectIds: string[];
-      };
+    const response = await this.client.request(
+      `/api/v1/repeaters/${repeaterId}`
+    );
+    const repeater = (await response.json()) as {
+      id: string;
+      name: string;
+      projectIds: string[];
+    };
 
-      return { repeaterId: repeater.id };
-    } catch (error) {
-      if (error instanceof ApiError && error.response.status === 404) {
-        throw new Error('Cannot find repeater');
-      }
-
-      throw error;
-    }
+    return { repeaterId: repeater.id };
   }
 
   public async createRepeater({
@@ -40,27 +32,23 @@ export class DefaultRepeatersManager implements RepeatersManager {
     description?: string;
     projectId?: string;
   }): Promise<{ repeaterId: string }> {
-    try {
-      const response = await this.client.request('/api/v1/repeaters', {
-        method: 'POST',
-        body: JSON.stringify({
-          ...options,
-          ...(projectId ? { projectIds: [projectId] } : {})
-        } satisfies {
-          name: string;
-          description?: string;
-          projectIds?: string[];
-        })
-      });
-      const repeater = (await response.json()) as { id: string };
+    const response = await this.client.request('/api/v1/repeaters', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...options,
+        ...(projectId ? { projectIds: [projectId] } : {})
+      } satisfies {
+        name: string;
+        description?: string;
+        projectIds?: string[];
+      })
+    });
+    const repeater = (await response.json()) as { id: string };
 
-      return { repeaterId: repeater.id };
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw new Error('Cannot create a new repeater');
-      }
-      throw error;
-    }
+    return { repeaterId: repeater.id };
   }
 
   public async deleteRepeater(repeaterId: string): Promise<void> {

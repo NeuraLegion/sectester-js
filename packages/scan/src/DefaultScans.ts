@@ -1,7 +1,7 @@
 import { Scans, UploadHarOptions } from './Scans';
 import { Issue, ScanConfig, ScanState } from './models';
 import { inject, injectable } from 'tsyringe';
-import { ApiClient, Configuration } from '@sectester/core';
+import { ApiClient, ApiError, Configuration } from '@sectester/core';
 import ci from 'ci-info';
 import { File } from 'node:buffer';
 
@@ -16,6 +16,9 @@ export class DefaultScans implements Scans {
   public async createScan(config: ScanConfig): Promise<{ id: string }> {
     const response = await this.client.request('/api/v1/scans', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
       body: JSON.stringify({
         ...config,
         info: {
@@ -47,15 +50,29 @@ export class DefaultScans implements Scans {
   }
 
   public async stopScan(id: string): Promise<void> {
-    await this.client.request(`/api/v1/scans/${id}/stop`, {
-      method: 'POST'
-    });
+    try {
+      await this.client.request(`/api/v1/scans/${id}/stop`);
+    } catch (error) {
+      if (error instanceof ApiError && error.response.status === 404) {
+        return;
+      }
+
+      throw error;
+    }
   }
 
   public async deleteScan(id: string): Promise<void> {
-    await this.client.request(`/api/v1/scans/${id}`, {
-      method: 'DELETE'
-    });
+    try {
+      await this.client.request(`/api/v1/scans/${id}`, {
+        method: 'DELETE'
+      });
+    } catch (error) {
+      if (error instanceof ApiError && error.response.status === 404) {
+        return;
+      }
+
+      throw error;
+    }
   }
 
   public async getScan(id: string): Promise<ScanState> {

@@ -3,12 +3,15 @@ import { RateLimitError } from '../exceptions/RateLimitError';
 import { ApiClient } from './ApiClient';
 import { RateLimiter } from './RateLimiter';
 import { RetryHandler } from './RetryHandler';
+import { MIMEType } from 'node:util';
+import { randomUUID } from 'node:crypto';
 
 export interface ApiConfig {
   baseUrl: string;
   apiKey: string;
   apiKeyPrefix?: string;
   timeout?: number;
+  userAgent?: string;
 }
 
 export class FetchApiClient implements ApiClient {
@@ -30,40 +33,45 @@ export class FetchApiClient implements ApiClient {
 
   constructor(private readonly config: ApiConfig) {}
 
-  public async request(
-    path: string,
-    options: RequestInit = {}
-  ): Promise<Response> {
+  public async request(path: string, options?: RequestInit): Promise<Response> {
+    const url = new URL(path, this.config.baseUrl);
+    const requestOptions = {
+      redirect: 'follow',
+      keepalive: true,
+      ...options,
+      headers: this.createHeaders(options?.headers),
+      method: (options?.method ?? 'GET').toUpperCase()
+    } satisfies RequestInit;
+
     const idempotent = FetchApiClient.IDEMPOTENT_METHODS.has(
-      options.method?.toUpperCase() ?? 'GET'
+      requestOptions.method
     );
 
     return this.retryHandler.executeWithRetry(
-      () => this.makeRequest(path, options),
+      () => this.makeRequest(url, requestOptions),
       idempotent
     );
   }
 
   private async makeRequest(
-    path: string,
-    options: RequestInit
+    url: string | URL,
+    options?: RequestInit
   ): Promise<Response> {
-    const url = new URL(path, this.config.baseUrl);
     const signal = AbortSignal.timeout(this.config.timeout ?? 5000);
 
-    const response = await fetch(url.toString(), {
+    const response = await fetch(url, {
       ...options,
-      headers: this.getHeaders(),
-      signal: options.signal ?? signal
+      signal: options?.signal ?? signal
     });
 
     return this.handleResponse(response);
   }
 
+  // eslint-disable-next-line complexity
   private async handleResponse(response: Response): Promise<Response> {
     if (!response.ok) {
-      if (response.status === 409 && response.headers.has('Location')) {
-        const locationPath = response.headers.get('Location');
+      if (response.status === 409 && response.headers.has('location')) {
+        const locationPath = response.headers.get('location');
         // eslint-disable-next-line max-depth
         if (locationPath) {
           // Handle both absolute and relative URLs
@@ -74,29 +82,37 @@ export class FetchApiClient implements ApiClient {
       }
 
       const rateLimitInfo = this.rateLimiter.extractRateLimitInfo(response);
+      const mimeType = new MIMEType(response.headers.get('content-type') ?? '');
 
-      if (response.status === 429 && response.headers.has('Retry-After')) {
+      const responseBody =
+        mimeType.type === 'text' ? await response.clone().text() : undefined;
+
+      if (response.status === 429) {
         const retryAfter = parseInt(
-          response.headers.get('Retry-After') ?? rateLimitInfo.reset.toString(),
+          response.headers.get('retry-after') ?? rateLimitInfo.reset.toString(),
           10
         );
-        throw new RateLimitError(response, retryAfter);
+        throw new RateLimitError(response, retryAfter, responseBody);
       }
 
-      throw new ApiError(response);
+      throw new ApiError(response, responseBody);
     }
 
     return response;
   }
 
-  private getHeaders(): Headers {
+  private createHeaders(
+    headersInit: import('undici-types').HeadersInit = {}
+  ): Headers {
     const headers = new Headers({
-      'Content-Type': 'application/json'
+      ...headersInit,
+      'idempotency-key': randomUUID(),
+      ...(this.config.userAgent ? { 'user-agent': this.config.userAgent } : {})
     });
 
     if (this.config.apiKey) {
       const prefix = this.config.apiKeyPrefix ?? 'Api-Key';
-      headers.set('Authorization', `${prefix} ${this.config.apiKey}`);
+      headers.set('authorization', `${prefix} ${this.config.apiKey}`);
     }
 
     return headers;

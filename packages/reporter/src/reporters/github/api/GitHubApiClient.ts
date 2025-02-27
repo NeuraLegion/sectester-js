@@ -11,11 +11,9 @@ export class GitHubApiClient implements GitHubClient {
     const requestOptions = {
       method: 'POST',
       headers: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        'Authorization': `Bearer ${this.config.token}`,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
+        'authorization': `Bearer ${this.config.token}`,
+        'accept': 'application/vnd.github.v3+json',
+        'content-type': 'application/json'
       },
       body: JSON.stringify(payload)
     };

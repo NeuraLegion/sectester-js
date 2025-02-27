@@ -87,6 +87,9 @@ describe('DefaultScans', () => {
           '/api/v1/scans',
           deepEqual({
             method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
             body: JSON.stringify({
               name: 'test',
               tests: [TestType.CROSS_SITE_SCRIPTING],
