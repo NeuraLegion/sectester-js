@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Scans } from './Scans';
 import { DefaultScans } from './DefaultScans';
 import { ScanFactory } from './ScanFactory';
