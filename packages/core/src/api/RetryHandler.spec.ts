@@ -75,6 +75,26 @@ describe('RetryHandler', () => {
       expect(operation).toHaveBeenCalledTimes(2);
     });
 
+    it('should retry on RateLimitError even if non-idempotent', async () => {
+      const rateLimitError = new RateLimitError(
+        new Response('', { headers: { 'retry-after': '1' } }),
+        1
+      );
+      const operation = jest
+        .fn()
+        .mockRejectedValueOnce(rateLimitError)
+        .mockResolvedValueOnce('success');
+
+      const resultPromise = sut.executeWithRetry(operation, {
+        idempotent: false
+      });
+      await jest.runOnlyPendingTimersAsync();
+      const result = await resultPromise;
+
+      expect(result).toBe('success');
+      expect(operation).toHaveBeenCalledTimes(2);
+    });
+
     it('should retry on retriable API errors', async () => {
       const apiError = new ApiError(
         new Response('Service Unavailable', { status: 503 })

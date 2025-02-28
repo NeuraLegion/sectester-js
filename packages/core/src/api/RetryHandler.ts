@@ -58,10 +58,7 @@ export class RetryHandler {
       throw error;
     }
 
-    const isEligibleForRetry =
-      (this.isRetryableError(error) && idempotent) ||
-      this.isNetworkError(error);
-    if (!isEligibleForRetry) {
+    if (!this.isEligibleForRetry(error, idempotent)) {
       throw error;
     }
 
@@ -73,6 +70,14 @@ export class RetryHandler {
     await setTimeout(delay, undefined, { signal });
   }
 
+  private isEligibleForRetry(error: unknown, idempotent: boolean) {
+    return (
+      (this.isRetryableError(error) && idempotent) ||
+      this.isNetworkError(error) ||
+      error instanceof RateLimitError
+    );
+  }
+
   private isRetryableError(error: unknown): boolean {
     // Don't retry if the operation was deliberately aborted
     if (error instanceof DOMException && error.name === 'AbortError') {
@@ -80,7 +85,6 @@ export class RetryHandler {
     }
 
     return (
-      error instanceof RateLimitError ||
       (error instanceof ApiError &&
         RetryHandler.RETRIABLE_STATUS_CODES.has(error.response.status)) ||
       this.isTimeoutError(error)
