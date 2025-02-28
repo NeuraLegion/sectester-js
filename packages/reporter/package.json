@@ -38,7 +38,8 @@
     "tslib": "~2.6.3",
     "tsyringe": "^4.8.0",
     "tty-table": "^4.2.3",
-    "@octokit/types": "^13.5.0"
+    "@octokit/types": "^13.5.0",
+    "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {
     "@sectester/scan": ">=0.16.0 <1.0.0"

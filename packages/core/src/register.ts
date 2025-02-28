@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { ApiClient, FetchApiClient } from './api';
 import { Configuration } from './configuration';
 import { Logger } from './logger';

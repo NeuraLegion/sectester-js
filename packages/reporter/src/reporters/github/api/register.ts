@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { GITHUB_CLIENT } from './GitHubClient';
 import { GITHUB_CONFIG } from './GitHubConfig';
 import { GitHubApiClient } from './GitHubApiClient';
