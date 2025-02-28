@@ -1,13 +1,14 @@
 import 'reflect-metadata';
 import { DefaultScans } from './DefaultScans';
-import { HttpMethod, Module, ScanStatus, Severity, TestType } from './models';
+import { HttpMethod, ScanStatus, Severity, TestType } from './models';
 import { deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
 import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
 import { randomUUID } from 'crypto';
 
 describe('DefaultScans', () => {
-  const id = 'roMq1UVuhPKkndLERNKnA8';
+  const id = randomUUID();
+  const entryPointId = randomUUID();
 
   const mockedCi = spy<typeof ci>(ci);
   const mockedApiClient = mock<ApiClient>();
@@ -45,8 +46,8 @@ describe('DefaultScans', () => {
             },
             body: JSON.stringify({
               name: 'test',
+              entryPointIds: [entryPointId],
               tests: [TestType.CROSS_SITE_SCRIPTING],
-              module: Module.DAST,
               info: {
                 source: 'utlib',
                 provider: 'github',
@@ -59,7 +60,7 @@ describe('DefaultScans', () => {
 
       const result = await scans.createScan({
         name: 'test',
-        entryPointIds: [randomUUID()],
+        entryPointIds: [entryPointId],
         tests: [TestType.CROSS_SITE_SCRIPTING]
       });
 

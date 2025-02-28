@@ -1,12 +1,5 @@
 import { Issue, ScanConfig, ScanState } from './models';
 import { Target } from './target';
-import { Har } from '@har-sdk/core';
-
-export interface UploadHarOptions {
-  har: Har;
-  filename: string;
-  discard?: boolean;
-}
 
 export interface Scans {
   createScan(config: ScanConfig): Promise<{ id: string }>;

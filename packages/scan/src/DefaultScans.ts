@@ -87,7 +87,7 @@ export class DefaultScans implements Scans {
     repeaterId: string
   ): Promise<{ id: string }> {
     let response = await this.client.request(
-      `/api/v2/projects/${this.configuration.projectId}/entrypoints`,
+      `/api/v2/projects/${this.configuration.projectId}/entry-points`,
       {
         method: 'POST',
         body: JSON.stringify({

@@ -7,6 +7,7 @@ import { instance, mock, reset, spy, verify, when } from 'ts-mockito';
 import { Logger } from '@sectester/core';
 import timers from 'node:timers/promises';
 import { TimerOptions } from 'node:timers';
+import { randomUUID } from 'node:crypto';
 
 const useFakeTimers = () => {
   jest.useFakeTimers();
@@ -29,7 +30,7 @@ const useFakeTimers = () => {
 };
 
 describe('Scan', () => {
-  const id = 'roMq1UVuhPKkndLERNKnA8';
+  const id = randomUUID();
   const mockedScans = mock<Scans>();
   const mockedLogger = mock<Logger>();
 
@@ -71,7 +72,7 @@ describe('Scan', () => {
 
     it('should return a list of issues', async () => {
       const issue: Issue = {
-        id: 'pDzxcEXQC8df1fcz1QwPf9',
+        id: randomUUID(),
         certainty: true,
         details:
           'Cross-site request forgery is a type of malicious website exploit.',
