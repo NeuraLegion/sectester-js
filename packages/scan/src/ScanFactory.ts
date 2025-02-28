@@ -43,6 +43,10 @@ export class ScanFactory {
     skipStaticParams,
     attackParamLocations
   }: ScanSettings): Promise<ScanConfig> {
+    if (!this.configuration.projectId) {
+      throw new Error('Project ID is required.');
+    }
+
     const { id: entrypointId } = await this.discoveries.createEntrypoint(
       new Target(target),
       repeaterId

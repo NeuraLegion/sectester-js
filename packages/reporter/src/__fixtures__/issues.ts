@@ -1,4 +1,5 @@
 import { HttpMethod, Issue, Severity } from '@sectester/scan';
+import { randomUUID } from 'crypto';
 
 export const issueWithoutResourcesText = `Issue in Bright UI:   http://app.neuralegion.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9
 Name:                 Database connection crashed
@@ -8,7 +9,7 @@ The best way to protect against those kind of issues is making sure the Database
 Details:
 Cross-site request forgery is a type of malicious website exploit.`;
 export const issueWithoutResources = {
-  id: 'pDzxcEXQC8df1fcz1QwPf9',
+  id: randomUUID(),
   details: 'Cross-site request forgery is a type of malicious website exploit.',
   name: 'Database connection crashed',
   severity: Severity.MEDIUM,

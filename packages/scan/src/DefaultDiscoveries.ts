@@ -15,6 +15,10 @@ export class DefaultDiscoveries implements Discoveries {
     target: Target,
     repeaterId: string
   ): Promise<{ id: string }> {
+    if (!this.configuration.projectId) {
+      throw new Error('Project ID is required.');
+    }
+
     let response = await this.client.request(
       `/api/v2/projects/${this.configuration.projectId}/entry-points`,
       {

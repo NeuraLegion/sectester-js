@@ -9,6 +9,7 @@ import { randomUUID } from 'crypto';
 describe('DefaultScans', () => {
   const id = randomUUID();
   const entryPointId = randomUUID();
+  const projectId = randomUUID();
 
   const mockedCi = spy<typeof ci>(ci);
   const mockedApiClient = mock<ApiClient>();
@@ -16,6 +17,7 @@ describe('DefaultScans', () => {
   let scans!: DefaultScans;
 
   beforeEach(() => {
+    when(mockedConfiguration.projectId).thenReturn(projectId);
     scans = new DefaultScans(
       instance(mockedConfiguration),
       instance(mockedApiClient)
@@ -59,6 +61,7 @@ describe('DefaultScans', () => {
       ).thenResolve(response);
 
       const result = await scans.createScan({
+        projectId,
         name: 'test',
         entryPointIds: [entryPointId],
         tests: [TestType.CROSS_SITE_SCRIPTING]
@@ -72,7 +75,7 @@ describe('DefaultScans', () => {
     it('should return a list of issues', async () => {
       const issues = [
         {
-          id: 'pDzxcEXQC8df1fcz1QwPf9',
+          id: randomUUID(),
           order: 1,
           severity: Severity.MEDIUM,
           details:

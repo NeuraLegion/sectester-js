@@ -11,7 +11,7 @@ import { container } from 'tsyringe';
 
 export interface ConfigurationOptions {
   hostname: string;
-  projectId: string;
+  projectId?: string;
   logLevel?: LogLevel;
   credentials?: Credentials | CredentialsOptions;
   credentialProviders?: CredentialProvider[];
@@ -39,7 +39,7 @@ export class Configuration {
     return this._credentials;
   }
 
-  private _projectId!: string;
+  private _projectId?: string;
 
   get projectId() {
     return this._projectId;
@@ -89,10 +89,6 @@ export class Configuration {
     }
 
     this.resolveUrls(hostname);
-
-    if (!projectId) {
-      throw new Error(`Please provide 'projectId' option.`);
-    }
 
     this._projectId = projectId;
 

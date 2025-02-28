@@ -3,14 +3,14 @@ import { AttackParamLocation } from './AttackParamLocation';
 
 export interface ScanConfig {
   name: string;
+  projectId: string;
+  entryPointIds: string[];
   tests?: TestType[];
   poolSize?: number;
   attackParamLocations?: AttackParamLocation[];
-  entryPointIds: string[];
   repeaters?: string[];
   smart?: boolean;
   skipStaticParams?: boolean;
-  projectId?: string;
   slowEpTimeout?: number;
   targetTimeout?: number;
 }
