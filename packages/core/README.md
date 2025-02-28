@@ -44,6 +44,7 @@ Configuration can be customized using the following options:
 ```ts
 export interface ConfigurationOptions {
   hostname: string;
+  projectId: string;
   credentials?: Credentials;
   logLevel?: LogLevel;
   credentialProviders?: CredentialProvider[];
@@ -90,6 +91,9 @@ const config = new Configuration({
 
 > [!TIP]
 > The project ID can be found in the URL of the project page. For example, in the URL `https://app.brightsec.com/projects/1234`, the project ID is `1234`. We recommend using the dedicated project ID for each application.
+
+> [!WARNING]
+> If you omit the `projectId` parameter, we will use the default project ID. This is not recommended ecpesially if you have multiple projects.
 
 #### logLevel
 
