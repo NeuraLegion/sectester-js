@@ -20,12 +20,6 @@ container.register(ApiClient, {
   useFactory(childContainer: DependencyContainer) {
     const configuration = childContainer.resolve(Configuration);
 
-    if (!configuration.credentials) {
-      throw new Error(
-        'Please provide credentials to establish a connection with the API.'
-      );
-    }
-
     return new FetchApiClient({
       baseUrl: configuration.baseURL,
       apiKey: configuration.credentials.token,

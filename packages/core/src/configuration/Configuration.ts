@@ -23,6 +23,7 @@ export class Configuration {
   private readonly HOSTNAME_NORMALIZATION_REGEXP = /^(?!(?:\w+:)?\/\/)|^\/\//;
 
   private _fetchProjectIdPromise?: Promise<void>;
+  private _loadCredentialsPromise?: Promise<void>;
 
   private _credentialProviders?: CredentialProvider[];
 
@@ -39,12 +40,24 @@ export class Configuration {
   private _credentials?: Credentials;
 
   get credentials() {
+    if (!this._credentials) {
+      throw new Error(
+        'Please provide credentials or try to load them using `loadCredentials()`.'
+      );
+    }
+
     return this._credentials;
   }
 
   private _projectId?: string;
 
   get projectId() {
+    if (!this._projectId) {
+      throw new Error(
+        'Please provide a project ID or call `fetchProjectId()` to use the default project.'
+      );
+    }
+
     return this._projectId;
   }
 
@@ -101,7 +114,7 @@ export class Configuration {
   }
 
   public async fetchProjectId(): Promise<void> {
-    if (this.projectId) {
+    if (this._projectId) {
       return;
     }
 
@@ -123,18 +136,31 @@ export class Configuration {
   }
 
   public async loadCredentials(): Promise<void> {
-    if (!this.credentials) {
-      const chain = (this.credentialProviders ?? []).map(provider =>
-        provider.get()
-      );
-      const credentials = await first(chain, val => !!val);
-
-      if (!credentials) {
-        throw new Error('Could not load credentials from any providers');
-      }
-
-      this._credentials = new Credentials(credentials);
+    if (this._credentials) {
+      return;
     }
+
+    if (!this._loadCredentialsPromise) {
+      this._loadCredentialsPromise = (async () => {
+        try {
+          const chain = (this.credentialProviders ?? []).map(provider =>
+            provider.get()
+          );
+          const credentials = await first(chain, val => !!val);
+
+          if (!credentials) {
+            throw new Error('Could not load credentials from any providers');
+          }
+
+          this._credentials = new Credentials(credentials);
+        } catch (error) {
+          this._loadCredentialsPromise = undefined;
+          throw error;
+        }
+      })();
+    }
+
+    await this._loadCredentialsPromise;
   }
 
   private resolveUrls(hostname: string): void {
