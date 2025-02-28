@@ -15,11 +15,6 @@ export interface ScanSettingsOptions {
   smart?: boolean;
   // Pool size
   poolSize?: number;
-  // Threshold for slow entry points in milliseconds
-  slowEpTimeout?: number;
-  // Measure timeout responses from the target application globally,
-  // and stop the scan if the target is unresponsive for longer than the specified time
-  targetTimeout?: number;
   // Allows to skip testing static parameters.
   skipStaticParams?: boolean;
   // Defines which part of the request to attack
@@ -78,33 +73,6 @@ export class ScanSettings implements ScanSettingsOptions {
 
   private set target(value: Target | TargetOptions) {
     this._target = new Target(value);
-  }
-
-  private _targetTimeout?: number;
-
-  get targetTimeout() {
-    return this._targetTimeout;
-  }
-
-  private set targetTimeout(value) {
-    if (!checkBoundaries(value, { max: 120, min: 0, exclusiveMin: true })) {
-      throw new Error('Invalid target connection timeout.');
-    }
-    this._targetTimeout = value;
-  }
-
-  private _slowEpTimeout?: number;
-
-  get slowEpTimeout() {
-    return this._slowEpTimeout;
-  }
-
-  private set slowEpTimeout(value) {
-    if (!checkBoundaries(value, { min: 100 })) {
-      throw new Error('Invalid slow entry point timeout.');
-    }
-
-    this._slowEpTimeout = value;
   }
 
   private _poolSize!: number;
@@ -168,8 +136,6 @@ export class ScanSettings implements ScanSettingsOptions {
     repeaterId,
     smart = true,
     poolSize = 10,
-    targetTimeout = 5,
-    slowEpTimeout = 1000,
     skipStaticParams = true,
     attackParamLocations = [
       AttackParamLocation.BODY,
@@ -180,13 +146,11 @@ export class ScanSettings implements ScanSettingsOptions {
     this.attackParamLocations = attackParamLocations;
     this.target = target;
     const { method, parsedURL } = this.target;
-    this.name = name || truncate(`${method} ${parsedURL.hostname}`, 200);
+    this.name = name || truncate(`${method} ${parsedURL.pathname}`, 200);
     this.poolSize = poolSize;
     this.repeaterId = repeaterId;
     this.skipStaticParams = skipStaticParams;
-    this.slowEpTimeout = slowEpTimeout;
     this.smart = smart;
-    this.targetTimeout = targetTimeout;
     this.tests = tests;
   }
 }
