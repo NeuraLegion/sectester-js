@@ -47,6 +47,7 @@ describe('DefaultScans', () => {
               'content-type': 'application/json'
             },
             body: JSON.stringify({
+              projectId,
               name: 'test',
               entryPointIds: [entryPointId],
               tests: [TestType.CROSS_SITE_SCRIPTING],
