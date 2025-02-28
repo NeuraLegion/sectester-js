@@ -1,9 +1,9 @@
-import { Scans, UploadHarOptions } from './Scans';
+import { Scans } from './Scans';
 import { Issue, ScanConfig, ScanState } from './models';
+import { Target } from './target';
 import { inject, injectable } from 'tsyringe';
 import { ApiClient, ApiError, Configuration } from '@sectester/core';
 import ci from 'ci-info';
-import { File } from 'node:buffer';
 
 @injectable()
 export class DefaultScans implements Scans {
@@ -82,26 +82,36 @@ export class DefaultScans implements Scans {
     return result;
   }
 
-  public async uploadHar(options: UploadHarOptions): Promise<{ id: string }> {
-    const file = new File([JSON.stringify(options.har)], options.filename, {
-      type: 'application/json'
-    });
-    const payload = new FormData();
-    payload.append('file', file, options.filename);
-
-    const query = new URLSearchParams();
-    query.set('discard', (options.discard ?? false).toString());
-
-    const response = await this.client.request(
-      `/api/v1/files?${query.toString()}`,
+  public async createEntrypoint(
+    target: Target,
+    repeaterId: string
+  ): Promise<{ id: string }> {
+    let response = await this.client.request(
+      `/api/v2/projects/${this.configuration.projectId}/entrypoints`,
       {
         method: 'POST',
-        body: payload
+        body: JSON.stringify({
+          repeaterId,
+          request: {
+            method: target.method,
+            url: target.url,
+            headers: target.headers,
+            body: target.postData?.text
+          }
+        }),
+        headers: {
+          'content-type': 'application/json'
+        }
       }
     );
 
-    const result = (await response.json()) as { id: string };
+    if (response.status === 409 && response.headers.has('location')) {
+      const location = response.headers.get('location') as string;
+      response = await this.client.request(location);
+    }
 
-    return result;
+    const data = (await response.json()) as { id: string };
+
+    return data;
   }
 }

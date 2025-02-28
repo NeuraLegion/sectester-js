@@ -1,60 +1,13 @@
 import 'reflect-metadata';
 import { DefaultScans } from './DefaultScans';
 import { HttpMethod, Module, ScanStatus, Severity, TestType } from './models';
-import {
-  anyOfClass,
-  capture,
-  deepEqual,
-  instance,
-  mock,
-  reset,
-  spy,
-  when
-} from 'ts-mockito';
-import { Har } from '@har-sdk/core';
+import { deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
 import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
+import { randomUUID } from 'crypto';
 
 describe('DefaultScans', () => {
   const id = 'roMq1UVuhPKkndLERNKnA8';
-  const har: Har = {
-    log: {
-      version: '1.2',
-      creator: { name: 'test', version: '1.0' },
-      entries: [
-        {
-          startedDateTime: '2022-04-18T09:09:35.585Z',
-          time: -1,
-          request: {
-            method: 'GET',
-            url: 'https://example.com/',
-            httpVersion: 'HTTP/0.9',
-            headers: [],
-            queryString: [],
-            cookies: [],
-            headersSize: -1,
-            bodySize: -1
-          },
-          response: {
-            status: 200,
-            statusText: 'OK',
-            httpVersion: 'HTTP/0.9',
-            headers: [],
-            cookies: [],
-            content: {
-              size: -1,
-              mimeType: 'text/plain'
-            },
-            redirectURL: '',
-            headersSize: -1,
-            bodySize: -1
-          },
-          cache: {},
-          timings: { send: 0, receive: 0, wait: 0 }
-        }
-      ]
-    }
-  };
 
   const mockedCi = spy<typeof ci>(ci);
   const mockedApiClient = mock<ApiClient>();
@@ -106,8 +59,8 @@ describe('DefaultScans', () => {
 
       const result = await scans.createScan({
         name: 'test',
-        tests: [TestType.CROSS_SITE_SCRIPTING],
-        module: Module.DAST
+        entryPointIds: [randomUUID()],
+        tests: [TestType.CROSS_SITE_SCRIPTING]
       });
 
       expect(result).toEqual({ id });
@@ -201,40 +154,6 @@ describe('DefaultScans', () => {
       const result = await scans.getScan(id);
 
       expect(result).toMatchObject(expected);
-    });
-  });
-
-  describe('uploadHar', () => {
-    it('should upload HAR file', async () => {
-      const response = new Response(JSON.stringify({ id }));
-      when(
-        mockedApiClient.request(
-          '/api/v1/files?discard=true',
-          deepEqual({
-            method: 'POST',
-            body: anyOfClass(FormData)
-          })
-        )
-      ).thenResolve(response);
-
-      const res = await scans.uploadHar({
-        har,
-        filename: 'test.json',
-        discard: true
-      });
-
-      expect(res).toEqual({ id });
-      const [, options]: [string, RequestInit | undefined] = capture<
-        string,
-        RequestInit | undefined
-      >(mockedApiClient.request).last();
-
-      expect(options?.body).toBeInstanceOf(FormData);
-      const blob = (options?.body as FormData)?.get('file');
-      expect(blob).toBeInstanceOf(Blob);
-      await expect((blob as Blob)?.text()).resolves.toEqual(
-        JSON.stringify(har)
-      );
     });
   });
 });

@@ -1,4 +1,5 @@
 import { Issue, ScanConfig, ScanState } from './models';
+import { Target } from './target';
 import { Har } from '@har-sdk/core';
 
 export interface UploadHarOptions {
@@ -18,7 +19,10 @@ export interface Scans {
 
   getScan(id: string): Promise<ScanState>;
 
-  uploadHar(options: UploadHarOptions): Promise<{ id: string }>;
+  createEntrypoint(
+    target: Target,
+    repeaterId?: string
+  ): Promise<{ id: string }>;
 }
 
 export const Scans: unique symbol = Symbol('Scans');

@@ -1,12 +1,10 @@
 import { Scans } from './Scans';
 import { Scan } from './Scan';
-import { Discovery, Module, ScanConfig } from './models';
+import { ScanConfig } from './models';
 import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
-import { Target, TargetOptions } from './target';
-import { Configuration, Logger, truncate } from '@sectester/core';
-import { Entry, Har } from '@har-sdk/core';
+import { Target } from './target';
+import { Configuration, Logger } from '@sectester/core';
 import { DependencyContainer } from 'tsyringe';
-import { randomUUID } from 'node:crypto';
 
 export class ScanFactory {
   private readonly scans: Scans;
@@ -44,83 +42,22 @@ export class ScanFactory {
     skipStaticParams,
     attackParamLocations
   }: ScanSettings): Promise<ScanConfig> {
-    const fileId = await this.createAndUploadHar(target);
+    const { id: entrypointId } = await this.scans.createEntrypoint(
+      new Target(target),
+      repeaterId
+    );
 
     return {
       name,
-      fileId,
       smart,
       poolSize,
       skipStaticParams,
       slowEpTimeout,
       targetTimeout,
-      module: Module.DAST,
-      discoveryTypes: [Discovery.ARCHIVE],
+      entryPointIds: [entrypointId],
       attackParamLocations: [...attackParamLocations],
       tests: [...tests],
       repeaters: repeaterId ? [repeaterId] : undefined
-    };
-  }
-
-  private async createAndUploadHar(
-    target: Target | TargetOptions
-  ): Promise<string> {
-    const har = this.createHar(target);
-    const filename = this.generateFilename(target.url);
-    const { id } = await this.scans.uploadHar({
-      har,
-      filename,
-      discard: true
-    });
-
-    return id;
-  }
-
-  private generateFilename(url: string): string {
-    const { hostname } = new URL(url);
-    const slug = truncate(hostname, 200);
-
-    return `${slug}-${randomUUID()}.har`;
-  }
-
-  private createHarEntry(target: Target | TargetOptions): Entry {
-    return {
-      startedDateTime: new Date().toISOString(),
-      request: new Target(target).toHarRequest(),
-      response: {
-        httpVersion: 'HTTP/1.1',
-        status: 200,
-        statusText: 'OK',
-        headersSize: -1,
-        bodySize: -1,
-        content: {
-          size: -1,
-          mimeType: 'text/plain'
-        },
-        redirectURL: '',
-        cookies: [],
-        headers: []
-      },
-      cache: {},
-      time: 0,
-      timings: {
-        send: 0,
-        receive: 0,
-        wait: 0
-      }
-    };
-  }
-
-  private createHar(target: Target | TargetOptions): Har {
-    return {
-      log: {
-        version: '1.2',
-        creator: {
-          name: this.configuration.name,
-          version: this.configuration.version
-        },
-        entries: [this.createHarEntry(target)]
-      }
     };
   }
 }
