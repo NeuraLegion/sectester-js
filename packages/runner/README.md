@@ -35,7 +35,7 @@ const configuration = new Configuration({ hostname: 'app.neuralegion.com' });
 
 To set up a runner, create `SecRunner` instance passing a previously created configuration as follows:
 
-````ts
+```ts
 import { Configuration } from '@sectester/core';
 import { SecRunner } from '@sectester/runner';
 
@@ -51,12 +51,13 @@ const runner2 = new SecRunner({
   hostname: 'app.neuralegion.com',
   projectId: 'your project ID'
 });
+```
 
 After that, you have to initialize a `SecRunner` instance:
 
 ```ts
 await runner.init();
-````
+```
 
 The runner is now ready to perform your tests, but you have to create a scan.
 
