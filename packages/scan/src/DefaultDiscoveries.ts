@@ -15,6 +15,8 @@ export class DefaultDiscoveries implements Discoveries {
     target: Target,
     repeaterId: string
   ): Promise<{ id: string }> {
+    await this.configuration.fetchProjectId();
+
     if (!this.configuration.projectId) {
       throw new Error('Project ID is required.');
     }

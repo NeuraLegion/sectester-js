@@ -7,6 +7,7 @@ import {
 import { first } from '../utils';
 import { LogLevel } from '../logger';
 import { version, secTester } from '../../package.json';
+import { Projects } from '../Projects';
 import { container } from 'tsyringe';
 
 export interface ConfigurationOptions {
@@ -20,6 +21,8 @@ export interface ConfigurationOptions {
 export class Configuration {
   private readonly SCHEMA_REGEXP = /^.+:\/\//;
   private readonly HOSTNAME_NORMALIZATION_REGEXP = /^(?!(?:\w+:)?\/\/)|^\/\//;
+
+  private _fetchProjectIdPromise?: Promise<void>;
 
   private _credentialProviders?: CredentialProvider[];
 
@@ -95,6 +98,28 @@ export class Configuration {
     this._logLevel = logLevel;
 
     this._container.register(Configuration, { useValue: this });
+  }
+
+  public async fetchProjectId(): Promise<void> {
+    if (this.projectId) {
+      return;
+    }
+
+    if (!this._fetchProjectIdPromise) {
+      this._fetchProjectIdPromise = (async () => {
+        try {
+          const projects = this.container.resolve<Projects>(Projects);
+          const { id } = await projects.getDefaultProject();
+          this._projectId = id;
+        } catch (error) {
+          this._fetchProjectIdPromise = undefined;
+
+          throw error;
+        }
+      })();
+    }
+
+    await this._fetchProjectIdPromise;
   }
 
   public async loadCredentials(): Promise<void> {

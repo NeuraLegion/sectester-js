@@ -1,20 +1,37 @@
 import 'reflect-metadata';
 import { Configuration } from './Configuration';
 import { EnvCredentialProvider } from '../credentials-provider';
+import { Projects } from '../Projects';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
+import { container } from 'tsyringe';
 import { resolve } from 'path';
 import { randomUUID } from 'crypto';
 
 describe('Configuration', () => {
-  const mockedProvider = mock<EnvCredentialProvider>();
+  const projectId = randomUUID();
+  const hostname = 'example.com';
+  const mockedEnvCredentialProvider = mock<EnvCredentialProvider>();
+  const mockedProjects = mock<Projects>();
 
-  afterEach(() => reset(mockedProvider));
+  beforeEach(() => {
+    container.clearInstances();
+
+    container.register(Projects, { useValue: instance(mockedProjects) });
+  });
+
+  afterEach(() => {
+    container.clearInstances();
+    reset<EnvCredentialProvider | Projects>(
+      mockedEnvCredentialProvider,
+      mockedProjects
+    );
+  });
 
   describe('constructor', () => {
     it('should be a single instance', () => {
       const configuration = new Configuration({
-        hostname: 'example.com',
-        projectId: randomUUID()
+        hostname,
+        projectId
       });
       const configuration2 = configuration.container.resolve(Configuration);
       expect(configuration).toBe(configuration2);
@@ -24,17 +41,7 @@ describe('Configuration', () => {
       expect(
         () =>
           new Configuration({
-            hostname: '',
-            projectId: randomUUID()
-          })
-      ).toThrow());
-
-    it('should throw if projectId is not passed', () =>
-      expect(
-        () =>
-          new Configuration({
-            hostname: 'example.com',
-            projectId: ''
+            hostname: ''
           })
       ).toThrow());
 
@@ -42,16 +49,14 @@ describe('Configuration', () => {
       expect(
         () =>
           new Configuration({
-            hostname: 'example.com',
-            credentialProviders: [],
-            projectId: randomUUID()
+            hostname,
+            credentialProviders: []
           })
       ).toThrow());
 
     it('should return an expected name', () => {
       const configuration = new Configuration({
-        hostname: 'example.com',
-        projectId: randomUUID()
+        hostname
       });
       const pathToRootPackageJson = resolve(
         __dirname,
@@ -67,8 +72,7 @@ describe('Configuration', () => {
 
     it('should return an expected version', () => {
       const configuration = new Configuration({
-        hostname: 'example.com',
-        projectId: randomUUID()
+        hostname
       });
       const pathToPackageJson = resolve(__dirname, '../../package.json');
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -81,8 +85,7 @@ describe('Configuration', () => {
 
     it('should use options with default values', () => {
       const config = new Configuration({
-        hostname: 'example.com',
-        projectId: randomUUID()
+        hostname
       });
 
       expect(config).toMatchObject({
@@ -151,8 +154,7 @@ describe('Configuration', () => {
       }
     ])('should generate correct base URL for $input', ({ expected, input }) => {
       const configuration = new Configuration({
-        hostname: input,
-        projectId: randomUUID()
+        hostname: input
       });
 
       expect(configuration).toMatchObject(expected);
@@ -162,10 +164,37 @@ describe('Configuration', () => {
       expect(
         () =>
           new Configuration({
-            hostname: ':test',
-            projectId: randomUUID()
+            hostname: ':test'
           })
       ).toThrow("pass correct 'hostname' option");
+    });
+  });
+
+  describe('fetchProjectId', () => {
+    it('should do nothing if projectId is defined', async () => {
+      const configuration = new Configuration({
+        projectId,
+        hostname
+      });
+
+      await configuration.fetchProjectId();
+
+      expect(configuration).toMatchObject({ projectId });
+    });
+
+    it('should fetch projectId if not defined', async () => {
+      const configuration = new Configuration({
+        hostname
+      });
+
+      when(mockedProjects.getDefaultProject()).thenResolve({
+        id: projectId,
+        name: 'test'
+      });
+
+      await configuration.fetchProjectId();
+
+      expect(configuration).toMatchObject({ projectId });
     });
   });
 
@@ -192,13 +221,13 @@ describe('Configuration', () => {
       const configuration = new Configuration({
         hostname: 'app.neuralegion.com',
         projectId: randomUUID(),
-        credentialProviders: [instance(mockedProvider)]
+        credentialProviders: [instance(mockedEnvCredentialProvider)]
       });
-      when(mockedProvider.get()).thenResolve(credentials);
+      when(mockedEnvCredentialProvider.get()).thenResolve(credentials);
 
       await configuration.loadCredentials();
 
-      verify(mockedProvider.get()).once();
+      verify(mockedEnvCredentialProvider.get()).once();
       expect(configuration).toMatchObject({ credentials });
     });
 
@@ -206,9 +235,9 @@ describe('Configuration', () => {
       const configuration = new Configuration({
         hostname: 'app.neuralegion.com',
         projectId: randomUUID(),
-        credentialProviders: [instance(mockedProvider)]
+        credentialProviders: [instance(mockedEnvCredentialProvider)]
       });
-      when(mockedProvider.get()).thenResolve(undefined);
+      when(mockedEnvCredentialProvider.get()).thenResolve(undefined);
 
       const result = configuration.loadCredentials();
 

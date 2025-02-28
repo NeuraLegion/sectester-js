@@ -43,6 +43,8 @@ export class ScanFactory {
     skipStaticParams,
     attackParamLocations
   }: ScanSettings): Promise<ScanConfig> {
+    await this.configuration.fetchProjectId();
+
     if (!this.configuration.projectId) {
       throw new Error('Project ID is required.');
     }
