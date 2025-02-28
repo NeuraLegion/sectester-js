@@ -8,7 +8,8 @@ import {
   severityRanges
 } from './models';
 import { ScanAborted, ScanTimedOut } from './exceptions';
-import { delay, Logger } from '@sectester/core';
+import { Logger } from '@sectester/core';
+import { setTimeout } from 'node:timers/promises';
 
 export interface ScanOptions {
   id: string;
@@ -67,7 +68,7 @@ export class Scan {
 
   public async *status(): AsyncIterableIterator<ScanState> {
     while (this.active) {
-      await delay(this.pollingInterval);
+      await setTimeout(this.pollingInterval);
 
       yield this.refreshState();
     }
@@ -78,29 +79,21 @@ export class Scan {
   public async expect(
     expectation: Severity | ((scan: Scan) => unknown)
   ): Promise<void> {
-    let timeoutPassed = false;
-
-    const timer: NodeJS.Timeout | undefined = this.timeout
-      ? setTimeout(() => (timeoutPassed = true), this.timeout)
-      : undefined;
+    const signal = this.timeout ? AbortSignal.timeout(this.timeout) : undefined;
 
     const predicate = this.createPredicate(expectation);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     for await (const _ of this.status()) {
       const preventFurtherPolling =
-        (await predicate()) || this.done || timeoutPassed;
+        (await predicate()) || this.done || signal?.aborted;
 
       if (preventFurtherPolling) {
         break;
       }
     }
 
-    if (timer) {
-      clearTimeout(timer);
-    }
-
-    this.assert(timeoutPassed);
+    this.assert(signal?.aborted);
   }
 
   public async dispose(): Promise<void> {

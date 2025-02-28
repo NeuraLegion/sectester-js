@@ -8,7 +8,7 @@ import {
   RepeaterServerRequestEvent
 } from './RepeaterServer';
 import { RepeaterCommands } from './RepeaterCommands';
-import { delay, Logger } from '@sectester/core';
+import { Logger } from '@sectester/core';
 import {
   anything,
   instance,
@@ -18,6 +18,7 @@ import {
   verify,
   when
 } from 'ts-mockito';
+import { setTimeout } from 'node:timers/promises';
 
 describe('Repeater', () => {
   const RepeaterId = 'fooId';
@@ -174,7 +175,7 @@ describe('Repeater', () => {
       await sut.start();
 
       // assert
-      await delay(200);
+      await setTimeout(200);
       verify(repeaterCommands.sendRequest(objectContaining(request))).once();
     });
 
@@ -239,7 +240,7 @@ describe('Repeater', () => {
       await sut.start();
 
       // assert
-      await delay(200);
+      await setTimeout(200);
       verify(
         mockedLogger.error(
           '%s: %s. %s',
@@ -269,7 +270,7 @@ describe('Repeater', () => {
       await sut.start();
 
       // assert
-      await delay(200);
+      await setTimeout(200);
       verify(mockedLogger.error(error.message)).once();
       verify(mockedRepeaterServer.disconnect()).once();
     });

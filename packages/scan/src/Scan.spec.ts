@@ -5,31 +5,27 @@ import { Scans } from './Scans';
 import { ScanAborted, ScanTimedOut } from './exceptions';
 import { instance, mock, reset, spy, verify, when } from 'ts-mockito';
 import { Logger } from '@sectester/core';
-
-const findArg = <R>(
-  args: [unknown, unknown],
-  expected: 'function' | 'number'
-): R => (typeof args[0] === expected ? args[0] : args[1]) as R;
+import timers from 'node:timers/promises';
+import { TimerOptions } from 'node:timers';
 
 const useFakeTimers = () => {
   jest.useFakeTimers();
 
-  const mockedImplementation = jest
-    .spyOn(global, 'setTimeout')
+  const mockedPromisesImplementation = jest
+    .spyOn(timers, 'setTimeout')
     .getMockImplementation();
 
   jest
-    .spyOn(global, 'setTimeout')
-    .mockImplementation((...args: [unknown, unknown]) => {
-      // ADHOC: depending on implementation (promisify vs raw), the method signature will be different
-      const callback = findArg<(..._: unknown[]) => void>(args, 'function');
-      const ms = findArg<number>(args, 'number');
-      const timer = mockedImplementation?.(callback, ms);
+    .spyOn(timers, 'setTimeout')
+    .mockImplementation(
+      async (...args: [number | undefined, unknown, TimerOptions?]) => {
+        const promise = mockedPromisesImplementation?.(...args);
+        await jest.runAllTimersAsync();
+        await promise;
 
-      jest.runAllTimers();
-
-      return timer as NodeJS.Timeout;
-    });
+        return args[1];
+      }
+    );
 };
 
 describe('Scan', () => {
@@ -76,7 +72,7 @@ describe('Scan', () => {
     it('should return a list of issues', async () => {
       const issue: Issue = {
         id: 'pDzxcEXQC8df1fcz1QwPf9',
-        order: 1,
+        certainty: true,
         details:
           'Cross-site request forgery is a type of malicious website exploit.',
         name: 'Database connection crashed',
@@ -204,7 +200,7 @@ describe('Scan', () => {
 
       const result = scan.expect(Severity.HIGH);
 
-      expect(setTimeout).toHaveBeenCalled();
+      expect(timers.setTimeout).toHaveBeenCalled();
       await expect(result).rejects.toThrow(ScanTimedOut);
     });
 

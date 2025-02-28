@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { PlainTextFormatter } from './PlainTextFormatter';
 import {
   fullyDescribedIssue,

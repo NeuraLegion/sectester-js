@@ -4,8 +4,8 @@ import { RepeaterRequestRunnerOptions } from './RepeaterRequestRunnerOptions';
 import { RepeatersManager } from '../api';
 import { RepeaterOptions } from './RepeaterOptions';
 import { Configuration } from '@sectester/core';
-import { v4 as uuidv4 } from 'uuid';
 import { DependencyContainer, injectable, Lifecycle } from 'tsyringe';
+import { randomUUID } from 'node:crypto';
 
 /**
  *  A factory that is able to create a dedicated instance of the repeater with a bus and other dependencies.
@@ -110,7 +110,7 @@ export class RepeaterFactory {
     disableRandomNameGeneration: boolean = false
   ) {
     const normalizedPrefix = namePrefix?.trim();
-    const randomPostfix = disableRandomNameGeneration ? '' : `-${uuidv4()}`;
+    const randomPostfix = disableRandomNameGeneration ? '' : `-${randomUUID()}`;
     const name = `${normalizedPrefix}${randomPostfix}`;
 
     if (name.length > this.MAX_NAME_LENGTH) {

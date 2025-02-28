@@ -3,10 +3,10 @@ import { Scan } from './Scan';
 import { Discovery, Module, ScanConfig } from './models';
 import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
 import { Target, TargetOptions } from './target';
-import { v4 } from 'uuid';
 import { Configuration, Logger, truncate } from '@sectester/core';
 import { Entry, Har } from '@har-sdk/core';
 import { DependencyContainer } from 'tsyringe';
+import { randomUUID } from 'node:crypto';
 
 export class ScanFactory {
   private readonly scans: Scans;
@@ -80,7 +80,7 @@ export class ScanFactory {
     const { hostname } = new URL(url);
     const slug = truncate(hostname, 200);
 
-    return `${slug}-${v4()}.har`;
+    return `${slug}-${randomUUID()}.har`;
   }
 
   private createHarEntry(target: Target | TargetOptions): Entry {

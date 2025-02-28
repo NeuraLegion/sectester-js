@@ -1,12 +1,13 @@
+import 'reflect-metadata';
 import { MultiItemsPayloadBuilder } from './MultiItemsPayloadBuilder';
 import { HttpMethod, Issue, Severity } from '@sectester/scan';
 
 describe('MultiItemsPayloadBuilder', () => {
   const createIssue = (severity: Severity, name = 'Test Issue'): Issue => ({
-    id: 'test-id',
-    order: 1,
     name,
     severity,
+    id: 'test-id',
+    certainty: true,
     details: 'Test details',
     remedy: 'Fix it',
     protocol: 'http',

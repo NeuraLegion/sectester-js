@@ -1,4 +1,4 @@
-import { HttpMethod, Severity } from '@sectester/scan';
+import { HttpMethod, Issue, Severity } from '@sectester/scan';
 
 export const issueWithoutResourcesText = `Issue in Bright UI:   http://app.neuralegion.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9
 Name:                 Database connection crashed
@@ -9,7 +9,6 @@ Details:
 Cross-site request forgery is a type of malicious website exploit.`;
 export const issueWithoutResources = {
   id: 'pDzxcEXQC8df1fcz1QwPf9',
-  order: 1,
   details: 'Cross-site request forgery is a type of malicious website exploit.',
   name: 'Database connection crashed',
   severity: Severity.MEDIUM,
@@ -26,8 +25,9 @@ export const issueWithoutResources = {
     method: HttpMethod.GET,
     url: 'https://brokencrystals.com/'
   },
-  link: 'http://app.neuralegion.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9'
-};
+  link: 'http://app.neuralegion.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9',
+  certainty: true
+} satisfies Issue;
 
 export const fullyDescribedIssueText = `${issueWithoutResourcesText}
 Extra Details:
@@ -60,4 +60,4 @@ export const issueWithoutExtraInfo = {
   resources: [
     'https://www.owasp.org/index.php/OWASP_Secure_Headers_Project#hsts'
   ]
-};
+} satisfies Issue;

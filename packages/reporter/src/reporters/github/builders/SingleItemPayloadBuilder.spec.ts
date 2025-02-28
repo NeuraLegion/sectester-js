@@ -1,10 +1,11 @@
+import 'reflect-metadata';
 import { SingleItemPayloadBuilder } from './SingleItemPayloadBuilder';
 import { HttpMethod, Issue, Severity } from '@sectester/scan';
 
 describe('SingleItemPayloadBuilder', () => {
   const baseIssue: Issue = {
     id: 'test-id',
-    order: 1,
+    certainty: true,
     name: 'SQL Injection',
     severity: Severity.HIGH,
     details: 'Test vulnerability details',

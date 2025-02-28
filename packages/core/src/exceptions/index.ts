@@ -1,2 +1,3 @@
 export * from './SecTesterError';
-export * from './HttpCommandError';
+export * from './ApiError';
+export * from './RateLimitError';
