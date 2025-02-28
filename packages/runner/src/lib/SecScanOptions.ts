@@ -8,6 +8,4 @@ export type SecScanOptions = Pick<
   | 'poolSize'
   | 'skipStaticParams'
   | 'attackParamLocations'
-  | 'slowEpTimeout'
-  | 'targetTimeout'
 >;

@@ -54,14 +54,8 @@ container.register(DefaultRepeaterServerOptions, {
   useFactory: (childContainer: DependencyContainer) => {
     const configuration = childContainer.resolve<Configuration>(Configuration);
 
-    if (!configuration.credentials) {
-      throw new Error(
-        'Please provide credentials to establish a connection with the bridges.'
-      );
-    }
-
     return {
-      uri: `${configuration.api}/workstations`,
+      uri: `${configuration.baseURL}/workstations`,
       token: configuration.credentials.token,
       connectTimeout: 10000
     };

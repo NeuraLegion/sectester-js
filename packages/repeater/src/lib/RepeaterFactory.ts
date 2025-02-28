@@ -24,17 +24,14 @@ export class RepeaterFactory {
   }
 
   public async createRepeater({
-    projectId,
     description,
     disableRandomNameGeneration,
     namePrefix = 'sectester',
     ...options
   }: RepeaterOptions = {}): Promise<Repeater> {
-    await this.configuration.loadCredentials();
-
     const { repeaterId } = await this.repeatersManager.createRepeater({
       description,
-      projectId,
+      projectId: this.configuration.projectId,
       name: this.generateName(namePrefix, disableRandomNameGeneration)
     });
 

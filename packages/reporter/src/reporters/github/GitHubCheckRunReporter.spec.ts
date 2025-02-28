@@ -4,9 +4,10 @@ import { GitHubClient, GITHUB_CLIENT, GITHUB_CONFIG } from './api';
 import { HttpMethod, Issue, Scan, Severity } from '@sectester/scan';
 import { container } from 'tsyringe';
 import { anything, instance, mock, reset, verify, when } from 'ts-mockito';
+import { randomUUID } from 'node:crypto';
 
 const issue: Issue = {
-  id: 'pDzxcEXQC8df1fcz1QwPf9',
+  id: randomUUID(),
   certainty: true,
   details: 'Cross-site request forgery is a type of malicious website exploit.',
   name: 'Database connection crashed',

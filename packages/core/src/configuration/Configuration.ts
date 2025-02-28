@@ -7,10 +7,12 @@ import {
 import { first } from '../utils';
 import { LogLevel } from '../logger';
 import { version, secTester } from '../../package.json';
+import { Projects } from '../Projects';
 import { container } from 'tsyringe';
 
 export interface ConfigurationOptions {
   hostname: string;
+  projectId?: string;
   logLevel?: LogLevel;
   credentials?: Credentials | CredentialsOptions;
   credentialProviders?: CredentialProvider[];
@@ -19,6 +21,9 @@ export interface ConfigurationOptions {
 export class Configuration {
   private readonly SCHEMA_REGEXP = /^.+:\/\//;
   private readonly HOSTNAME_NORMALIZATION_REGEXP = /^(?!(?:\w+:)?\/\/)|^\/\//;
+
+  private _fetchProjectIdPromise?: Promise<void>;
+  private _loadCredentialsPromise?: Promise<void>;
 
   private _credentialProviders?: CredentialProvider[];
 
@@ -35,26 +40,37 @@ export class Configuration {
   private _credentials?: Credentials;
 
   get credentials() {
+    if (!this._credentials) {
+      throw new Error(
+        'Please provide credentials or try to load them using `loadCredentials()`.'
+      );
+    }
+
     return this._credentials;
   }
 
-  private _api!: string;
+  private _projectId?: string;
 
-  get api() {
-    return this._api;
+  get projectId() {
+    if (!this._projectId) {
+      throw new Error(
+        'Please provide a project ID or call `fetchProjectId()` to use the default project.'
+      );
+    }
+
+    return this._projectId;
+  }
+
+  private _baseURL!: string;
+
+  get baseURL() {
+    return this._baseURL;
   }
 
   private _logLevel?: LogLevel;
 
   get logLevel() {
     return this._logLevel;
-  }
-
-  /**
-   * @deprecated use {@link version} right after v1 has been released
-   */
-  get repeaterVersion(): string {
-    return secTester.repeaterVersion;
   }
 
   get version(): string {
@@ -68,6 +84,7 @@ export class Configuration {
   constructor({
     hostname,
     credentials,
+    projectId,
     logLevel = LogLevel.ERROR,
     credentialProviders = [new EnvCredentialProvider()]
   }: ConfigurationOptions) {
@@ -89,24 +106,61 @@ export class Configuration {
 
     this.resolveUrls(hostname);
 
+    this._projectId = projectId;
+
     this._logLevel = logLevel;
 
     this._container.register(Configuration, { useValue: this });
   }
 
-  public async loadCredentials(): Promise<void> {
-    if (!this.credentials) {
-      const chain = (this.credentialProviders ?? []).map(provider =>
-        provider.get()
-      );
-      const credentials = await first(chain, val => !!val);
-
-      if (!credentials) {
-        throw new Error('Could not load credentials from any providers');
-      }
-
-      this._credentials = new Credentials(credentials);
+  public async fetchProjectId(): Promise<void> {
+    if (this._projectId) {
+      return;
     }
+
+    if (!this._fetchProjectIdPromise) {
+      this._fetchProjectIdPromise = (async () => {
+        try {
+          const projects = this.container.resolve<Projects>(Projects);
+          const { id } = await projects.getDefaultProject();
+          this._projectId = id;
+        } catch (error) {
+          this._fetchProjectIdPromise = undefined;
+
+          throw error;
+        }
+      })();
+    }
+
+    await this._fetchProjectIdPromise;
+  }
+
+  public async loadCredentials(): Promise<void> {
+    if (this._credentials) {
+      return;
+    }
+
+    if (!this._loadCredentialsPromise) {
+      this._loadCredentialsPromise = (async () => {
+        try {
+          const chain = (this.credentialProviders ?? []).map(provider =>
+            provider.get()
+          );
+          const credentials = await first(chain, val => !!val);
+
+          if (!credentials) {
+            throw new Error('Could not load credentials from any providers');
+          }
+
+          this._credentials = new Credentials(credentials);
+        } catch (error) {
+          this._loadCredentialsPromise = undefined;
+          throw error;
+        }
+      })();
+    }
+
+    await this._loadCredentialsPromise;
   }
 
   private resolveUrls(hostname: string): void {
@@ -126,9 +180,9 @@ export class Configuration {
     }
 
     if (['localhost', '127.0.0.1'].includes(hostname)) {
-      this._api = `http://${hostname}:8000`;
+      this._baseURL = `http://${hostname}:8000`;
     } else {
-      this._api = `https://${hostname}`;
+      this._baseURL = `https://${hostname}`;
     }
   }
 }

@@ -23,7 +23,8 @@ First, you need to generate a new instance of `Configuration`.
 import { Configuration } from '@sectester/core';
 
 const config = new Configuration({
-  hostname: 'app.neuralegion.com',
+  hostname: 'app.brightsec.com',
+  projectId: 'your project ID',
   credentials: {
     token: 'your API key'
   }
@@ -43,6 +44,7 @@ Configuration can be customized using the following options:
 ```ts
 export interface ConfigurationOptions {
   hostname: string;
+  projectId: string;
   credentials?: Credentials;
   logLevel?: LogLevel;
   credentialProviders?: CredentialProvider[];
@@ -68,9 +70,30 @@ Set the application name (domain name), that is used to establish connection wit
 import { Configuration } from '@sectester/core';
 
 const config = new Configuration({
-  hostname: 'app.neuralegion.com'
+  hostname: 'app.brightsec.com'
 });
 ```
+
+#### projectId
+
+- type: `string`
+
+Set ID of the project you want to work with.
+
+```ts
+import { Configuration } from '@sectester/core';
+
+const config = new Configuration({
+  // ...
+  projectId: 'your project ID'
+});
+```
+
+> [!TIP]
+> The project ID can be found in the URL of the project page. For example, in the URL `https://app.brightsec.com/projects/1234`, the project ID is `1234`. We recommend using the dedicated project ID for each application.
+
+> [!WARNING]
+> If you omit the `projectId` parameter, we will use the default project ID. This is not recommended ecpesially if you have multiple projects.
 
 #### logLevel
 

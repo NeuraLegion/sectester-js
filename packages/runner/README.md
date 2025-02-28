@@ -39,12 +39,18 @@ To set up a runner, create `SecRunner` instance passing a previously created con
 import { Configuration } from '@sectester/core';
 import { SecRunner } from '@sectester/runner';
 
-const configuration = new Configuration({ hostname: 'app.neuralegion.com' });
+const configuration = new Configuration({
+  hostname: 'app.neuralegion.com',
+  projectId: 'your project ID'
+});
 const runner = new SecRunner(configuration);
 
 // or
 
-const runner2 = new SecRunner({ hostname: 'app.neuralegion.com' });
+const runner2 = new SecRunner({
+  hostname: 'app.neuralegion.com',
+  projectId: 'your project ID'
+});
 ```
 
 After that, you have to initialize a `SecRunner` instance:
@@ -71,16 +77,14 @@ const scan = runner.createScan({ tests: [TestType.CROSS_SITE_SCRIPTING] });
 
 Below you will find a list of parameters that can be used to configure a `Scan`:
 
-| Option                 | Description                                                                                                                                                                                   |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide)                                               |
-| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                |
-| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default. |
-| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                      |
-| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                     |
-| `slowEpTimeout`        | Skip entry-points that take longer to respond than specified ms value. By default, 1000ms.                                                                                                    |
-| `targetTimeout`        | Measure timeout responses from the target application globally, and stop the scan if the target is unresponsive for longer than the specified time. By default, 5min.                         |
-| `name`                 | The scan name. The method and hostname by default, e.g. `GET example.com`.                                                                                                                    |
+| Option                 | Description                                                                                                                                                                                                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide). To retrieve the list of available tests, send a request to the [API](https://app.brightsec.com/api/v1/scans/tests). |
+| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                                                                                       |
+| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default.                                                                        |
+| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                                                                                             |
+| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                                                                                            |
+| `name`                 | The scan name. The method and hostname by default, e.g. `GET example.com`.                                                                                                                                                                                           |
 
 #### Endpoint scan
 
@@ -151,7 +155,10 @@ describe('/api', () => {
   let scan!: SecScan;
 
   beforeEach(async () => {
-    runner = new SecRunner({ hostname: 'app.neuralegion.com' });
+    runner = new SecRunner({
+      hostname: 'app.neuralegion.com',
+      projectId: 'your project ID'
+    });
 
     await runner.init();
 

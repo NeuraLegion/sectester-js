@@ -33,24 +33,6 @@ describe('ScanSettings', () => {
           poolSize: 0
         },
         expected: 'Invalid pool size'
-      },
-      {
-        input: {
-          slowEpTimeout: 1
-        },
-        expected: 'Invalid slow entry point timeout'
-      },
-      {
-        input: {
-          targetTimeout: 0
-        },
-        expected: 'Invalid target connection timeout'
-      },
-      {
-        input: {
-          targetTimeout: 121
-        },
-        expected: 'Invalid target connection timeout'
       }
     ])(
       'should raise the error `$expected` when invalid config ($input) is supplied',
@@ -124,7 +106,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         tests: [TestType.CROSS_SITE_SCRIPTING],
-        target: { url: 'https://example.com' }
+        target: { url: 'https://example.com/users/1' }
       };
 
       // act
@@ -132,7 +114,7 @@ describe('ScanSettings', () => {
 
       // assert
       expect(result).toMatchObject({
-        name: 'GET example.com'
+        name: 'GET /users/1'
       });
     });
 
@@ -141,7 +123,7 @@ describe('ScanSettings', () => {
       const settings: ScanSettingsOptions = {
         name: randomBytes(201).toString('hex'),
         tests: [TestType.CROSS_SITE_SCRIPTING],
-        target: { url: 'https://example.com' }
+        target: { url: 'https://example.com/users/1' }
       };
 
       // act & assert

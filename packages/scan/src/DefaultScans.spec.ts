@@ -1,60 +1,15 @@
 import 'reflect-metadata';
 import { DefaultScans } from './DefaultScans';
-import { HttpMethod, Module, ScanStatus, Severity, TestType } from './models';
-import {
-  anyOfClass,
-  capture,
-  deepEqual,
-  instance,
-  mock,
-  reset,
-  spy,
-  when
-} from 'ts-mockito';
-import { Har } from '@har-sdk/core';
+import { HttpMethod, ScanStatus, Severity, TestType } from './models';
+import { deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
 import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
+import { randomUUID } from 'crypto';
 
 describe('DefaultScans', () => {
-  const id = 'roMq1UVuhPKkndLERNKnA8';
-  const har: Har = {
-    log: {
-      version: '1.2',
-      creator: { name: 'test', version: '1.0' },
-      entries: [
-        {
-          startedDateTime: '2022-04-18T09:09:35.585Z',
-          time: -1,
-          request: {
-            method: 'GET',
-            url: 'https://example.com/',
-            httpVersion: 'HTTP/0.9',
-            headers: [],
-            queryString: [],
-            cookies: [],
-            headersSize: -1,
-            bodySize: -1
-          },
-          response: {
-            status: 200,
-            statusText: 'OK',
-            httpVersion: 'HTTP/0.9',
-            headers: [],
-            cookies: [],
-            content: {
-              size: -1,
-              mimeType: 'text/plain'
-            },
-            redirectURL: '',
-            headersSize: -1,
-            bodySize: -1
-          },
-          cache: {},
-          timings: { send: 0, receive: 0, wait: 0 }
-        }
-      ]
-    }
-  };
+  const id = randomUUID();
+  const entryPointId = randomUUID();
+  const projectId = randomUUID();
 
   const mockedCi = spy<typeof ci>(ci);
   const mockedApiClient = mock<ApiClient>();
@@ -62,6 +17,7 @@ describe('DefaultScans', () => {
   let scans!: DefaultScans;
 
   beforeEach(() => {
+    when(mockedConfiguration.projectId).thenReturn(projectId);
     scans = new DefaultScans(
       instance(mockedConfiguration),
       instance(mockedApiClient)
@@ -91,9 +47,10 @@ describe('DefaultScans', () => {
               'content-type': 'application/json'
             },
             body: JSON.stringify({
+              projectId,
               name: 'test',
+              entryPointIds: [entryPointId],
               tests: [TestType.CROSS_SITE_SCRIPTING],
-              module: Module.DAST,
               info: {
                 source: 'utlib',
                 provider: 'github',
@@ -105,9 +62,10 @@ describe('DefaultScans', () => {
       ).thenResolve(response);
 
       const result = await scans.createScan({
+        projectId,
         name: 'test',
-        tests: [TestType.CROSS_SITE_SCRIPTING],
-        module: Module.DAST
+        entryPointIds: [entryPointId],
+        tests: [TestType.CROSS_SITE_SCRIPTING]
       });
 
       expect(result).toEqual({ id });
@@ -118,7 +76,7 @@ describe('DefaultScans', () => {
     it('should return a list of issues', async () => {
       const issues = [
         {
-          id: 'pDzxcEXQC8df1fcz1QwPf9',
+          id: randomUUID(),
           order: 1,
           severity: Severity.MEDIUM,
           details:
@@ -140,7 +98,7 @@ describe('DefaultScans', () => {
         }
       ];
       const response = new Response(JSON.stringify(issues));
-      when(mockedConfiguration.api).thenReturn('https://localhost');
+      when(mockedConfiguration.baseURL).thenReturn('https://localhost');
       when(mockedApiClient.request(`/api/v1/scans/${id}/issues`)).thenResolve(
         response
       );
@@ -201,40 +159,6 @@ describe('DefaultScans', () => {
       const result = await scans.getScan(id);
 
       expect(result).toMatchObject(expected);
-    });
-  });
-
-  describe('uploadHar', () => {
-    it('should upload HAR file', async () => {
-      const response = new Response(JSON.stringify({ id }));
-      when(
-        mockedApiClient.request(
-          '/api/v1/files?discard=true',
-          deepEqual({
-            method: 'POST',
-            body: anyOfClass(FormData)
-          })
-        )
-      ).thenResolve(response);
-
-      const res = await scans.uploadHar({
-        har,
-        filename: 'test.json',
-        discard: true
-      });
-
-      expect(res).toEqual({ id });
-      const [, options]: [string, RequestInit | undefined] = capture<
-        string,
-        RequestInit | undefined
-      >(mockedApiClient.request).last();
-
-      expect(options?.body).toBeInstanceOf(FormData);
-      const blob = (options?.body as FormData)?.get('file');
-      expect(blob).toBeInstanceOf(Blob);
-      await expect((blob as Blob)?.text()).resolves.toEqual(
-        JSON.stringify(har)
-      );
     });
   });
 });

@@ -1,73 +1,85 @@
 import 'reflect-metadata';
 import { Scans } from './Scans';
 import { ScanFactory } from './ScanFactory';
-import { Discovery, Module, TestType } from './models';
+import { TestType } from './models';
 import { ScanSettingsOptions } from './ScanSettings';
+import { Discoveries } from './Discoveries';
 import {
   anything,
-  deepEqual,
   instance,
-  match,
   mock,
   objectContaining,
   reset,
   verify,
   when
 } from 'ts-mockito';
-import { Configuration } from '@sectester/core';
+import { Configuration, Logger } from '@sectester/core';
 import { DependencyContainer } from 'tsyringe';
-import { randomBytes } from 'crypto';
+import { randomUUID } from 'crypto';
 
 describe('ScanFactory', () => {
-  const scanId = 'roMq1UVuhPKkndLERNKnA8';
-  const fileId = 'upmVm5iPkddvzY6RisT7Cr';
+  const scanId = randomUUID();
+  const entrypointId = randomUUID();
+  const projectId = randomUUID();
 
   const mockedScans = mock<Scans>();
   const mockedConfiguration = mock<Configuration>();
   const mockedContainer = mock<DependencyContainer>();
+  const mockedDiscoveries = mock<Discoveries>();
+  const mockedLogger = mock<Logger>();
   let scanFactory!: ScanFactory;
 
   beforeEach(() => {
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
-    when(mockedConfiguration.name).thenReturn('test');
-    when(mockedConfiguration.version).thenReturn('1.0');
+    when(mockedConfiguration.projectId).thenReturn(projectId);
     when(mockedContainer.createChildContainer()).thenReturn(
       instance(mockedContainer)
     );
     when(mockedContainer.resolve<Scans>(Scans)).thenReturn(
       instance(mockedScans)
     );
+    when(mockedContainer.resolve<Discoveries>(Discoveries)).thenReturn(
+      instance(mockedDiscoveries)
+    );
+    when(mockedContainer.resolve<Logger>(Logger)).thenReturn(
+      instance(mockedLogger)
+    );
 
     scanFactory = new ScanFactory(instance(mockedConfiguration));
   });
 
   afterEach(() =>
-    reset<Scans | Configuration | DependencyContainer>(
+    reset<Scans | Configuration | DependencyContainer | Discoveries | Logger>(
       mockedScans,
       mockedConfiguration,
-      mockedContainer
+      mockedContainer,
+      mockedDiscoveries,
+      mockedLogger
     )
   );
 
   describe('createScan', () => {
     it('should create a scan', async () => {
       const settings: ScanSettingsOptions = {
+        name: 'Test Scan',
         target: { url: 'https://example.com' },
         tests: [TestType.CROSS_SITE_SCRIPTING]
       };
-      when(mockedScans.uploadHar(anything())).thenResolve({ id: fileId });
+
+      when(
+        mockedDiscoveries.createEntrypoint(anything(), anything())
+      ).thenResolve({ id: entrypointId });
       when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
 
       const result = await scanFactory.createScan(settings);
 
-      verify(mockedScans.uploadHar(anything())).once();
+      verify(mockedDiscoveries.createEntrypoint(anything(), undefined)).once();
       verify(
         mockedScans.createScan(
           objectContaining({
-            fileId,
-            name: 'GET example.com',
-            module: Module.DAST,
-            discoveryTypes: [Discovery.ARCHIVE],
+            projectId,
+            name: 'Test Scan',
+            entryPointIds: [entrypointId],
             tests: [TestType.CROSS_SITE_SCRIPTING]
           })
         )
@@ -75,57 +87,48 @@ describe('ScanFactory', () => {
       expect(result).toMatchObject({ id: scanId });
     });
 
-    it('should generate and upload a HAR file', async () => {
+    it('should create entrypoint from target', async () => {
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
         tests: [TestType.CROSS_SITE_SCRIPTING]
       };
-      when(mockedScans.uploadHar(anything())).thenResolve({ id: fileId });
+
+      when(
+        mockedDiscoveries.createEntrypoint(anything(), anything())
+      ).thenResolve({ id: entrypointId });
       when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
 
       await scanFactory.createScan(settings);
 
       verify(
-        mockedScans.uploadHar(
-          deepEqual({
-            discard: true,
-            filename: match(/^example\.com-[a-z\d-]+\.har$/),
-            har: objectContaining({
-              log: {
-                version: '1.2',
-                creator: { name: 'test', version: '1.0' }
-              }
-            })
-          })
+        mockedDiscoveries.createEntrypoint(
+          objectContaining({ url: 'https://example.com/' }),
+          undefined
         )
       ).once();
     });
 
-    it('should truncate a HAR filename if it is too long', async () => {
+    it('should pass repeater ID when provided', async () => {
+      const repeaterId = randomUUID();
       const settings: ScanSettingsOptions = {
-        target: {
-          url: `https://subdomain-${randomBytes(200).toString(
-            'hex'
-          )}.example.com`
-        },
+        repeaterId,
+        target: { url: 'https://example.com' },
         tests: [TestType.CROSS_SITE_SCRIPTING]
       };
-      when(mockedScans.uploadHar(anything())).thenResolve({ id: fileId });
+
+      when(
+        mockedDiscoveries.createEntrypoint(anything(), anything())
+      ).thenResolve({ id: entrypointId });
       when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
 
       await scanFactory.createScan(settings);
 
+      verify(mockedDiscoveries.createEntrypoint(anything(), repeaterId)).once();
+
       verify(
-        mockedScans.uploadHar(
-          deepEqual({
-            discard: true,
-            filename: match(/^.{0,200}-[a-z\d-]+\.har$/),
-            har: objectContaining({
-              log: {
-                version: '1.2',
-                creator: { name: 'test', version: '1.0' }
-              }
-            })
+        mockedScans.createScan(
+          objectContaining({
+            repeaters: [repeaterId]
           })
         )
       ).once();

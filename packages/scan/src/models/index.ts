@@ -1,7 +1,5 @@
 export * from './AttackParamLocation';
-export * from './Discovery';
 export * from './Severity';
-export * from './Module';
 export * from './ScanStatus';
 export * from './TestType';
 export * from './Issue';
