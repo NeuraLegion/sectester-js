@@ -140,7 +140,7 @@ describe('DefaultScans', () => {
         }
       ];
       const response = new Response(JSON.stringify(issues));
-      when(mockedConfiguration.api).thenReturn('https://localhost');
+      when(mockedConfiguration.baseURL).thenReturn('https://localhost');
       when(mockedApiClient.request(`/api/v1/scans/${id}/issues`)).thenResolve(
         response
       );

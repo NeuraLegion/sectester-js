@@ -61,7 +61,7 @@ container.register(DefaultRepeaterServerOptions, {
     }
 
     return {
-      uri: `${configuration.api}/workstations`,
+      uri: `${configuration.baseURL}/workstations`,
       token: configuration.credentials.token,
       connectTimeout: 10000
     };

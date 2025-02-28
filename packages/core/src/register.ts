@@ -27,7 +27,7 @@ container.register(ApiClient, {
     }
 
     return new FetchApiClient({
-      baseUrl: configuration.api,
+      baseUrl: configuration.baseURL,
       apiKey: configuration.credentials.token,
       userAgent: `${configuration.name}/${configuration.version}`
     });

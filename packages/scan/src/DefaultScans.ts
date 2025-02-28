@@ -45,7 +45,7 @@ export class DefaultScans implements Scans {
     return issues.map(x => ({
       ...x,
       time: new Date(x.time),
-      link: `${this.configuration.api}/scans/${id}/issues/${x.id}`
+      link: `${this.configuration.baseURL}/scans/${id}/issues/${x.id}`
     }));
   }
 

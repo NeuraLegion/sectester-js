@@ -38,23 +38,16 @@ export class Configuration {
     return this._credentials;
   }
 
-  private _api!: string;
+  private _baseURL!: string;
 
-  get api() {
-    return this._api;
+  get baseURL() {
+    return this._baseURL;
   }
 
   private _logLevel?: LogLevel;
 
   get logLevel() {
     return this._logLevel;
-  }
-
-  /**
-   * @deprecated use {@link version} right after v1 has been released
-   */
-  get repeaterVersion(): string {
-    return secTester.repeaterVersion;
   }
 
   get version(): string {
@@ -126,9 +119,9 @@ export class Configuration {
     }
 
     if (['localhost', '127.0.0.1'].includes(hostname)) {
-      this._api = `http://${hostname}:8000`;
+      this._baseURL = `http://${hostname}:8000`;
     } else {
-      this._api = `https://${hostname}`;
+      this._baseURL = `https://${hostname}`;
     }
   }
 }

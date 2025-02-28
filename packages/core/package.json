@@ -33,8 +33,7 @@
     "brightsec"
   ],
   "secTester": {
-    "name": "sectester-js",
-    "repeaterVersion": "10.0.0"
+    "name": "sectester-js"
   },
   "dependencies": {
     "chalk": "^4.1.2",

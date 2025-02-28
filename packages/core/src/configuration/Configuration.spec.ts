@@ -64,21 +64,6 @@ describe('Configuration', () => {
       expect(result).toBe(version);
     });
 
-    it('should return an expected repeater version', () => {
-      const configuration = new Configuration({
-        hostname: 'example.com'
-      });
-      const pathToPackageJson = resolve(__dirname, '../../package.json');
-      const {
-        secTester: { repeaterVersion }
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-      } = require(pathToPackageJson);
-
-      const result = configuration.repeaterVersion;
-
-      expect(result).toBe(repeaterVersion);
-    });
-
     it('should use options with default values', () => {
       const config = new Configuration({
         hostname: 'example.com'
