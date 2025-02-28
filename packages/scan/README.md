@@ -22,7 +22,8 @@ import { Configuration } from '@sectester/core';
 import { ScanFactory } from '@sectester/scan';
 
 const config = new Configuration({
-  hostname: 'app.neuralegion.com'
+  hostname: 'app.neuralegion.com',
+  projectId: 'your project ID'
 });
 
 const scanFactory = new ScanFactory(config);
@@ -51,18 +52,16 @@ const scan = await scanFactory.createScan({
 
 Below you will find a list of parameters that can be used to configure a `Scan`:
 
-| Option                 | Description                                                                                                                                                                                        |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `target`               | The target that will be attacked. For details, see [here](#defining-a-target-for-attack).                                                                                                          |
-| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide)                                                    |
-| `repeaterId`           | Connects the scan to a Repeater agent, which provides secure access to local networks.                                                                                                             |
-| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                     |
-| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default.      |
-| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                           |
-| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                          |
-| `slowEpTimeout`        | Automatically validate entry-point response time before initiating the vulnerability testing, and reduce scan time by skipping any entry-points that take too long to respond. By default, 1000ms. |
-| `targetTimeout`        | Measure timeout responses from the target application globally, and stop the scan if the target is unresponsive for longer than the specified time. By default, 5min.                              |
-| `name`                 | The scan name. The method and hostname by default, e.g. `GET example.com`.                                                                                                                         |
+| Option                 | Description                                                                                                                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `target`               | The target that will be attacked. For details, see [here](#defining-a-target-for-attack).                                                                                                     |
+| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide)                                               |
+| `repeaterId`           | Connects the scan to a Repeater agent, which provides secure access to local networks.                                                                                                        |
+| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                |
+| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default. |
+| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                      |
+| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                     |
+| `name`                 | The scan name. The method and hostname by default, e.g. `GET /users/1`.                                                                                                                       |
 
 ### Defining a target for attack
 
