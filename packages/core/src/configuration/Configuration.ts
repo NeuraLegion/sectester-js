@@ -11,6 +11,7 @@ import { container } from 'tsyringe';
 
 export interface ConfigurationOptions {
   hostname: string;
+  projectId: string;
   logLevel?: LogLevel;
   credentials?: Credentials | CredentialsOptions;
   credentialProviders?: CredentialProvider[];
@@ -38,6 +39,12 @@ export class Configuration {
     return this._credentials;
   }
 
+  private _projectId!: string;
+
+  get projectId() {
+    return this._projectId;
+  }
+
   private _baseURL!: string;
 
   get baseURL() {
@@ -61,6 +68,7 @@ export class Configuration {
   constructor({
     hostname,
     credentials,
+    projectId,
     logLevel = LogLevel.ERROR,
     credentialProviders = [new EnvCredentialProvider()]
   }: ConfigurationOptions) {
@@ -81,6 +89,12 @@ export class Configuration {
     }
 
     this.resolveUrls(hostname);
+
+    if (!projectId) {
+      throw new Error(`Please provide 'projectId' option.`);
+    }
+
+    this._projectId = projectId;
 
     this._logLevel = logLevel;
 

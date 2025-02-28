@@ -3,6 +3,7 @@ import { Configuration } from './Configuration';
 import { EnvCredentialProvider } from '../credentials-provider';
 import { instance, mock, reset, verify, when } from 'ts-mockito';
 import { resolve } from 'path';
+import { randomUUID } from 'crypto';
 
 describe('Configuration', () => {
   const mockedProvider = mock<EnvCredentialProvider>();
@@ -12,7 +13,8 @@ describe('Configuration', () => {
   describe('constructor', () => {
     it('should be a single instance', () => {
       const configuration = new Configuration({
-        hostname: 'example.com'
+        hostname: 'example.com',
+        projectId: randomUUID()
       });
       const configuration2 = configuration.container.resolve(Configuration);
       expect(configuration).toBe(configuration2);
@@ -22,7 +24,17 @@ describe('Configuration', () => {
       expect(
         () =>
           new Configuration({
-            hostname: ''
+            hostname: '',
+            projectId: randomUUID()
+          })
+      ).toThrow());
+
+    it('should throw if projectId is not passed', () =>
+      expect(
+        () =>
+          new Configuration({
+            hostname: 'example.com',
+            projectId: ''
           })
       ).toThrow());
 
@@ -31,13 +43,15 @@ describe('Configuration', () => {
         () =>
           new Configuration({
             hostname: 'example.com',
-            credentialProviders: []
+            credentialProviders: [],
+            projectId: randomUUID()
           })
       ).toThrow());
 
     it('should return an expected name', () => {
       const configuration = new Configuration({
-        hostname: 'example.com'
+        hostname: 'example.com',
+        projectId: randomUUID()
       });
       const pathToRootPackageJson = resolve(
         __dirname,
@@ -53,7 +67,8 @@ describe('Configuration', () => {
 
     it('should return an expected version', () => {
       const configuration = new Configuration({
-        hostname: 'example.com'
+        hostname: 'example.com',
+        projectId: randomUUID()
       });
       const pathToPackageJson = resolve(__dirname, '../../package.json');
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -66,7 +81,8 @@ describe('Configuration', () => {
 
     it('should use options with default values', () => {
       const config = new Configuration({
-        hostname: 'example.com'
+        hostname: 'example.com',
+        projectId: randomUUID()
       });
 
       expect(config).toMatchObject({
@@ -79,76 +95,75 @@ describe('Configuration', () => {
     it.each([
       {
         input: 'localhost',
-        expected: { api: 'http://localhost:8000' }
+        expected: { baseURL: 'http://localhost:8000' }
       },
       {
         input: 'localhost:8080',
-        expected: { api: 'http://localhost:8000' }
+        expected: { baseURL: 'http://localhost:8000' }
       },
       {
         input: 'http://localhost',
-        expected: { api: 'http://localhost:8000' }
+        expected: { baseURL: 'http://localhost:8000' }
       },
       {
         input: 'http://localhost:8080',
-        expected: { api: 'http://localhost:8000' }
+        expected: { baseURL: 'http://localhost:8000' }
       },
       {
         input: '127.0.0.1',
-        expected: { api: 'http://127.0.0.1:8000' }
+        expected: { baseURL: 'http://127.0.0.1:8000' }
       },
       {
         input: '127.0.0.1:8080',
-        expected: { api: 'http://127.0.0.1:8000' }
+        expected: { baseURL: 'http://127.0.0.1:8000' }
       },
       {
         input: 'http://127.0.0.1',
-        expected: { api: 'http://127.0.0.1:8000' }
+        expected: { baseURL: 'http://127.0.0.1:8000' }
       },
       {
         input: 'http://127.0.0.1:8080',
-        expected: { api: 'http://127.0.0.1:8000' }
+        expected: { baseURL: 'http://127.0.0.1:8000' }
       },
       {
         input: 'example.com',
         expected: {
-          api: 'https://example.com'
+          baseURL: 'https://example.com'
         }
       },
       {
         input: 'example.com:443',
         expected: {
-          api: 'https://example.com'
+          baseURL: 'https://example.com'
         }
       },
       {
         input: 'http://example.com',
         expected: {
-          api: 'https://example.com'
+          baseURL: 'https://example.com'
         }
       },
       {
         input: 'http://example.com:443',
         expected: {
-          api: 'https://example.com'
+          baseURL: 'https://example.com'
         }
       }
-    ])(
-      'should generate correct api and bus for $input',
-      ({ expected, input }) => {
-        const configuration = new Configuration({
-          hostname: input
-        });
+    ])('should generate correct base URL for $input', ({ expected, input }) => {
+      const configuration = new Configuration({
+        hostname: input,
+        projectId: randomUUID()
+      });
 
-        expect(configuration).toMatchObject(expected);
-      }
-    );
+      expect(configuration).toMatchObject(expected);
+    });
 
     it('should throw an error if hostname is wrong', () => {
       expect(
         () =>
           new Configuration({
-            hostname: ':test'
+            hostname: ':test',
+            projectId: randomUUID()
           })
       ).toThrow("pass correct 'hostname' option");
     });
@@ -161,6 +176,7 @@ describe('Configuration', () => {
       };
       const configuration = new Configuration({
         credentials,
+        projectId: randomUUID(),
         hostname: 'app.neuralegion.com'
       });
 
@@ -175,6 +191,7 @@ describe('Configuration', () => {
       };
       const configuration = new Configuration({
         hostname: 'app.neuralegion.com',
+        projectId: randomUUID(),
         credentialProviders: [instance(mockedProvider)]
       });
       when(mockedProvider.get()).thenResolve(credentials);
@@ -188,6 +205,7 @@ describe('Configuration', () => {
     it('should throw an error if no one provider does not find credentials', async () => {
       const configuration = new Configuration({
         hostname: 'app.neuralegion.com',
+        projectId: randomUUID(),
         credentialProviders: [instance(mockedProvider)]
       });
       when(mockedProvider.get()).thenResolve(undefined);
