@@ -123,7 +123,7 @@ const target = new Target({
 
 #### query
 
-- type: `string | URLSearchParams | Record<string, string | string[]>`
+- type: `URLSearchParams | string | Record<string, string | readonly string[]>`
 
 The query parameters to be sent with the request:
 
@@ -178,7 +178,7 @@ console.log(target.queryString); // a[0]=b&a[1]=c&a[2]=d
 
 #### headers
 
-- type: `Record<string, string | string[]>`
+- type: `Headers | Record<string, string | string[]>`
 
 The HTTP headers to be sent:
 
@@ -195,7 +195,7 @@ const target = new Target({
 
 #### body
 
-- type: `unknown`
+- type: `ArrayBuffer | AsyncIterable<Uint8Array> | Blob | FormData | NodeJS.ReadableStream | Iterable<Uint8Array> | NodeJS.ArrayBufferView | URLSearchParams | string | Record<string, unknown>`
 
 The data to be sent as the request body. Makes sense only for `POST`, `PUT`, `PATCH`, and `DELETE`:
 
@@ -210,11 +210,10 @@ const target = new Target({
 });
 ```
 
-You can use `FormData` objects, such as [form-data](https://www.npmjs.com/package/form-data), as request body as well:
+You can use `FormData` objects, as request body as well:
 
 ```ts
 import { Target } from '@sectester/scan';
-import FormData from 'form-data';
 
 const form = new FormData();
 form.append('greeting', 'Hello, world!');

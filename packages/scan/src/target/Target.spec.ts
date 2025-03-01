@@ -1,670 +1,140 @@
-import { Target } from './Target';
-// eslint-disable-next-line @typescript-eslint/naming-convention
-import FormData from 'form-data';
+import { HttpMethod } from '../models';
+import { Target, TargetOptions } from './Target';
 
 describe('Target', () => {
-  describe('toHarRequest', () => {
-    it('should return a simple GET request', () => {
-      // arrange
+  describe('constructor', () => {
+    it('should create a target with default values', () => {
       const target = new Target({ url: 'https://example.com' });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+      expect(target.url).toBe('https://example.com/');
+      expect(target.method).toBe(HttpMethod.GET);
+      expect(target.headers).toEqual({});
+      expect(target.body).toBeUndefined();
+      expect(target.query).toBe('');
     });
 
-    it('should set `queryString`', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com',
-        query: 'foo=bar'
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/?foo=bar',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [{ name: 'foo', value: 'bar' }],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should use a custom query string serializer', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com',
-        query: { foo: ['bar', 'baz'] },
-        serializeQuery(_: Record<string, string | string[]>): string {
-          return 'foo=bar|baz';
-        }
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/?foo=bar|baz',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [{ name: 'foo', value: 'bar|baz' }],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `queryString` parsing a URLSearchParams', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com',
-        query: new URLSearchParams('foo=bar')
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/?foo=bar',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [{ name: 'foo', value: 'bar' }],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `queryString` parsing a record', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com',
-        query: { foo: 'bar' }
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/?foo=bar',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [{ name: 'foo', value: 'bar' }],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `queryString` parsing an URL', () => {
-      // arrange
-      const target = new Target({ url: 'https://example.com?foo=bar' });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/?foo=bar',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [{ name: 'foo', value: 'bar' }],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `queryString` merging keys with the same name', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com',
-        query: { baz: ['foo', 'bar'] }
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/?baz=foo%2Cbar',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [{ name: 'baz', value: 'foo,bar' }],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should override a `queryString`', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com?foo=bar',
-        query: 'bar=foo'
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/?bar=foo',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [{ name: 'bar', value: 'foo' }],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `headers`', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com',
-        method: 'POST',
-        headers: { 'content-type': 'application/json' }
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [{ name: 'content-type', value: 'application/json' }],
-        queryString: [],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `headers` merging keys with the same name', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com',
-        headers: { cookie: ['foo=bar', 'bar=foo'] }
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          { name: 'cookie', value: 'foo=bar' },
-          { name: 'cookie', value: 'bar=foo' }
-        ],
-        queryString: [],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+    it('should create a target with custom values', () => {
+      const options: TargetOptions = {
+        url: 'https://example.com/api',
+        method: HttpMethod.POST,
+        headers: { 'Content-Type': 'application/json' },
+        body: { key: 'value' },
+        query: { param: 'value' }
+      };
+      const target = new Target(options);
+      expect(target.url).toBe('https://example.com/api?param=value');
+      expect(target.method).toBe(HttpMethod.POST);
+      expect(target.headers).toEqual({ 'content-type': 'application/json' });
+      expect(target.body).toEqual({ key: 'value' });
     });
 
     it('should normalize URL', () => {
-      // arrange
-      const target = new Target({
-        url: 'HTTPS://EXAMPLE.COM///'
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+      const target = new Target({ url: 'example.com' });
+      expect(target.url).toBe('https://example.com/');
     });
 
-    it('should obtain HTTP version', () => {
-      // arrange
+    it('should handle string method that is not HttpMethod', () => {
       const target = new Target({
-        url: 'https://example.com/',
-        headers: { version: 'HTTP/1.1' }
+        url: 'https://example.com',
+        method: 'CUSTOM'
       });
+      expect(target.method).toBe(HttpMethod.GET);
+    });
+  });
 
-      // act
-      const result = target.toHarRequest();
+  describe('parsedURL', () => {
+    it('should return URL object', () => {
+      const target = new Target({ url: 'https://example.com' });
+      expect(target.parsedURL instanceof URL).toBeTruthy();
+      expect(target.parsedURL.href).toBe('https://example.com/');
+    });
+  });
 
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/1.1',
-        headers: [{ name: 'version', value: 'HTTP/1.1' }],
-        queryString: [],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
+  describe('query', () => {
+    it('should handle query parameters as object', () => {
+      const target = new Target({
+        url: 'https://example.com',
+        query: { param1: 'value1', param2: 'value2' }
       });
+      expect(target.url).toBe(
+        'https://example.com/?param1=value1&param2=value2'
+      );
+      expect(target.queryString).toBe('param1=value1&param2=value2');
     });
 
-    it('should set method to default if supplied value is invalid', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com/',
-        method: 'xxx'
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'GET',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+    it('should preserve query parameters from URL', () => {
+      const target = new Target({ url: 'https://example.com?existing=param' });
+      expect(target.url).toBe('https://example.com/?existing=param');
+      expect(target.queryString).toBe('existing=param');
     });
 
-    it('should set `postData` parsing a FormData', () => {
-      // arrange
-      const value = Buffer.from([0x01, 0x09, 0x09, 0x04]);
-      const form = new FormData();
-      form.append('file', value, {
-        filename: 'file.bin'
-      });
-
+    it('should override URL query parameters with query option', () => {
       const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        body: form
+        url: 'https://example.com?old=param',
+        query: { new: 'param' }
       });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          {
-            name: 'content-type',
-            value: form.getHeaders()?.['content-type']
-          }
-        ],
-        queryString: [],
-        postData: {
-          mimeType: expect.stringMatching('multipart/form-data'),
-          text: form.getBuffer().toString(),
-          params: [
-            {
-              contentType: 'application/octet-stream',
-              fileName: 'file.bin',
-              name: 'file',
-              value: value.toString()
-            }
-          ]
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+      expect(target.url).toBe('https://example.com/?new=param');
+      expect(target.queryString).toBe('new=param');
     });
 
-    it('should set `postData` parsing multipart/form-data', () => {
-      // arrange
-      const value = Buffer.from([0x01, 0x09, 0x09, 0x04]);
-      const form = new FormData();
-      form.append('file', value, {
-        filename: 'file.bin'
-      });
+    it('should handle custom query serializer', () => {
+      const customSerializer = (params: Record<string, string>) =>
+        Object.entries(params)
+          .map(([key, value]: [string, string]) => `${key}:${value}`)
+          .join(';');
 
       const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        headers: form.getHeaders(),
-        body: form.getBuffer().toString()
+        url: 'https://example.com',
+        query: { param1: 'value1', param2: 'value2' },
+        serializeQuery: customSerializer
       });
 
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          {
-            name: 'content-type',
-            value: form.getHeaders()?.['content-type']
-          }
-        ],
-        queryString: [],
-        postData: {
-          mimeType: expect.stringMatching('multipart/form-data'),
-          text: form.getBuffer().toString(),
-          params: [
-            {
-              contentType: 'application/octet-stream',
-              fileName: 'file.bin',
-              name: 'file',
-              value: value.toString()
-            }
-          ]
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+      expect(target.queryString).toBe('param1:value1;param2:value2');
+      expect(target.url).toBe(
+        'https://example.com/?param1:value1;param2:value2'
+      );
     });
+  });
 
-    it('should set `postData` parsing a plain object', () => {
-      // arrange
-      const value = { foo: 'bar' };
+  describe('body', () => {
+    it('should handle string body', async () => {
       const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        body: value
+        url: 'https://example.com',
+        body: 'text body'
       });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          {
-            name: 'content-type',
-            value: 'application/json'
-          }
-        ],
-        queryString: [],
-        postData: {
-          mimeType: expect.stringMatching('application/json'),
-          text: JSON.stringify(value)
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+      expect(target.body).toBe('text body');
+      await expect(target.text()).resolves.toBe('text body');
     });
 
-    it('should set `postData` parsing a JSON', () => {
-      // arrange
-      const value = { foo: 'bar' };
+    it('should handle object body', async () => {
+      const body = { key: 'value' };
       const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(value)
+        url: 'https://example.com',
+        body
       });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          {
-            name: 'content-type',
-            value: 'application/json'
-          }
-        ],
-        queryString: [],
-        postData: {
-          mimeType: expect.stringMatching('application/json'),
-          text: JSON.stringify(value)
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+      expect(target.body).toBe(body);
+      await expect(target.text()).resolves.toBe(JSON.stringify(body));
     });
 
-    it('should recognize a JSON by content-type', () => {
-      // arrange
-      const value = [{ op: 'replace', path: '/firstName', value: 'First' }];
+    it('should handle undefined body', async () => {
+      const target = new Target({ url: 'https://example.com' });
+      expect(target.body).toBeUndefined();
+      await expect(target.text()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('headers', () => {
+    it('should return empty object when headers not set', () => {
+      const target = new Target({ url: 'https://example.com' });
+      expect(target.headers).toEqual({});
+    });
+
+    it('should return headers when set', () => {
+      const headers = { 'content-type': 'application/json', 'x-test': 'value' };
       const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        headers: { 'content-type': 'application/json-patch+json' },
-        body: value
+        headers,
+        url: 'https://example.com'
       });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          {
-            name: 'content-type',
-            value: 'application/json-patch+json'
-          }
-        ],
-        queryString: [],
-        postData: {
-          mimeType: 'application/json-patch+json',
-          text: JSON.stringify(value)
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
+      expect(target.headers).toEqual(headers);
     });
-
-    it('should set `postData` parsing an URLSearchParams', () => {
-      // arrange
-      const value = new URLSearchParams('foo=bar');
-      const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        body: value
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          {
-            name: 'content-type',
-            value: 'application/x-www-form-urlencoded'
-          }
-        ],
-        queryString: [],
-        postData: {
-          mimeType: expect.stringMatching('application/x-www-form-urlencoded'),
-          text: value.toString(),
-          params: [
-            {
-              name: 'foo',
-              value: 'bar'
-            }
-          ]
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `postData` parsing application/x-www-form-urlencoded', () => {
-      // arrange
-      const value = 'foo=bar';
-      const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: value
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [
-          {
-            name: 'content-type',
-            value: 'application/x-www-form-urlencoded'
-          }
-        ],
-        queryString: [],
-        postData: {
-          mimeType: expect.stringMatching('application/x-www-form-urlencoded'),
-          text: value,
-          params: [
-            {
-              name: 'foo',
-              value: 'bar'
-            }
-          ]
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `postData` to undefined', () => {
-      // arrange
-      const value = Symbol('foo');
-      const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        body: value
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [],
-        queryString: [],
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it('should set `postData` parsing a Buffer', () => {
-      // arrange
-      const target = new Target({
-        url: 'https://example.com/',
-        method: 'POST',
-        body: Buffer.from('text')
-      });
-
-      // act
-      const result = target.toHarRequest();
-
-      // assert
-      expect(result).toEqual({
-        method: 'POST',
-        url: 'https://example.com/',
-        httpVersion: 'HTTP/0.9',
-        headers: [{ name: 'content-type', value: 'application/octet-stream' }],
-        queryString: [],
-        postData: {
-          mimeType: 'application/octet-stream',
-          text: 'text'
-        },
-        cookies: [],
-        headersSize: -1,
-        bodySize: -1
-      });
-    });
-
-    it.each(['text', 1, false, new Date()])(
-      'should set `postData` serializing %o',
-      input => {
-        // arrange
-        const target = new Target({
-          url: 'https://example.com/',
-          method: 'POST',
-          body: input
-        });
-
-        // act
-        const result = target.toHarRequest();
-
-        // assert
-        expect(result).toEqual({
-          method: 'POST',
-          url: 'https://example.com/',
-          httpVersion: 'HTTP/0.9',
-          headers: [{ name: 'content-type', value: 'text/plain' }],
-          queryString: [],
-          postData: {
-            mimeType: 'text/plain',
-            text: input.toString()
-          },
-          cookies: [],
-          headersSize: -1,
-          bodySize: -1
-        });
-      }
-    );
   });
 });

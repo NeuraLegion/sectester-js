@@ -1,5 +1,3 @@
-import { isNumber } from './types';
-
 export interface NumBoundaries {
   min?: number;
   max?: number;
@@ -24,6 +22,9 @@ const checkMaximum = (
     exclusiveMax = false
   }: WithRequiredProperty<Pick<NumBoundaries, 'max' | 'exclusiveMax'>, 'max'>
 ): boolean => (exclusiveMax ? value < max : value <= max);
+
+const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && !isNaN(value);
 
 export const checkBoundaries = (
   value: unknown,

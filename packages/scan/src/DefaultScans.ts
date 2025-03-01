@@ -1,6 +1,5 @@
 import { Scans } from './Scans';
 import { Issue, ScanConfig, ScanState } from './models';
-import { Target } from './target';
 import { inject, injectable } from 'tsyringe';
 import { ApiClient, ApiError, Configuration } from '@sectester/core';
 import ci from 'ci-info';
@@ -80,38 +79,5 @@ export class DefaultScans implements Scans {
     const result = (await response.json()) as ScanState;
 
     return result;
-  }
-
-  public async createEntrypoint(
-    target: Target,
-    repeaterId: string
-  ): Promise<{ id: string }> {
-    let response = await this.client.request(
-      `/api/v2/projects/${this.configuration.projectId}/entry-points`,
-      {
-        method: 'POST',
-        body: JSON.stringify({
-          repeaterId,
-          request: {
-            method: target.method,
-            url: target.url,
-            headers: target.headers,
-            body: target.postData?.text
-          }
-        }),
-        headers: {
-          'content-type': 'application/json'
-        }
-      }
-    );
-
-    if (response.status === 409 && response.headers.has('location')) {
-      const location = response.headers.get('location') as string;
-      response = await this.client.request(location);
-    }
-
-    const data = (await response.json()) as { id: string };
-
-    return data;
   }
 }

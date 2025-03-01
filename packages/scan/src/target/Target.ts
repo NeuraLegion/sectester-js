@@ -1,69 +1,48 @@
 import { HttpMethod, isHttpMethod } from '../models';
-import { entriesToList } from '../utils';
-import { BodyParser } from './body-parsers';
-import {
-  Header,
-  normalizeUrl,
-  PostData,
-  QueryString,
-  Request
-} from '@har-sdk/core';
-import { isPresent, isString } from '@sectester/core';
-import { container } from 'tsyringe';
-import { format } from 'url';
+import { Body, BodyType } from './Body';
+import { HeadersType } from './HeadersType';
+import { QueryParamsType } from './QueryParamsType';
+import { normalizeUrl } from '@har-sdk/core';
 
 export interface TargetOptions {
   // The server URL that will be used for the request
   url: string;
   // The query parameters to be sent with the request
-  query?: URLSearchParams | Record<string, string | string[]> | string;
+  query?: QueryParamsType;
   // The data to be sent as the request body.
   // The only required for POST, PUT, PATCH, and DELETE
-  body?: unknown;
+  body?: BodyType;
   // The request method to be used when making the request, GET by default
   method?: HttpMethod | string;
   // The headers
-  headers?: Record<string, string | string[]>;
+  headers?: HeadersType;
   // The optional method of serializing `query`
   // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
-  serializeQuery?(
-    params: URLSearchParams | Record<string, string | string[]>
-  ): string;
+  serializeQuery?(params: QueryParamsType): string;
 }
 
 export class Target implements TargetOptions {
-  private _serializeQuery: (
-    params: URLSearchParams | Record<string, string | string[]>
-  ) => string;
-
-  get serializeQuery() {
-    return this._serializeQuery;
-  }
-
   private _parsedURL!: URL;
 
   get parsedURL(): URL {
     return this._parsedURL;
   }
 
-  private _url?: string;
+  private _cachedUrl?: string;
 
   get url(): string {
-    if (!this._url) {
-      this._url = format(this._parsedURL, {
-        fragment: false
-      });
+    if (!this._cachedUrl) {
+      this._cachedUrl = this._parsedURL.toString();
     }
 
-    return this._url;
+    return this._cachedUrl;
   }
 
   private set url(value: string) {
     this._parsedURL = new URL(normalizeUrl(value));
-    delete this._url;
-    delete this._query;
-    delete this._queryString;
-    delete this._queryParameters;
+    this._cachedUrl = undefined;
+    this._query = undefined;
+    this._queryString = undefined;
   }
 
   private _method!: HttpMethod;
@@ -72,119 +51,73 @@ export class Target implements TargetOptions {
     return this._method;
   }
 
-  set method(value: HttpMethod) {
+  private set method(value: HttpMethod) {
     this._method = value;
   }
 
   private _queryString?: string;
+  private _query?: QueryParamsType;
 
-  get queryString() {
+  get queryString(): string {
     if (!this._queryString) {
       const params = this._query || this._parsedURL.search;
-
-      this._queryString = !isString(params)
-        ? this.serializeQuery(params)
-        : params.replace(/^\?/, '');
+      this._queryString =
+        typeof params !== 'string'
+          ? this.serializeQuery(params)
+          : params.replace(/^\?/, '');
     }
 
     return this._queryString;
   }
 
-  private _queryParameters?: QueryString[];
-
-  get queryParameters(): QueryString[] {
-    if (!this._queryParameters) {
-      this._queryParameters = entriesToList(
-        new URLSearchParams(this.queryString)
-      );
-    }
-
-    return this._queryParameters ?? [];
-  }
-
-  private _query?: URLSearchParams | Record<string, string | string[]> | string;
-
-  get query() {
+  get query(): QueryParamsType {
     return this._query ?? '';
   }
 
-  private set query(
-    queryString: URLSearchParams | Record<string, string | string[]> | string
-  ) {
+  private set query(queryString: QueryParamsType) {
     this._query = queryString;
+    this._queryString = undefined;
     this._parsedURL.search = this.queryString;
+    this._cachedUrl = undefined;
   }
 
-  private _headerValues = new Map<string, string | undefined>();
-  private _headerParameters?: Header[];
+  private _parsedHeaders!: Headers;
+  private _headers?: HeadersType;
 
-  get headerParameters() {
-    if (!this._headerParameters?.length) {
-      this._headerParameters = entriesToList(Object.entries(this.headers));
-    }
-
-    return this._headerParameters ?? [];
-  }
-
-  private _headers?: Record<string, string | string[]>;
-
-  get headers() {
-    return this._headers ?? {};
-  }
-
-  private set headers(headers: Record<string, string | string[]>) {
-    this._headers = headers;
-    this._headerValues.clear();
-    delete this._headerParameters;
-  }
-
-  private _postData: PostData | undefined;
-
-  get postData(): PostData | undefined {
-    if (!this._postData && isPresent(this.body)) {
-      const parsedBody = container
-        .resolveAll<BodyParser>(BodyParser)
-        .find(x => x.canParse(this))
-        ?.parse(this);
-
-      if (parsedBody) {
-        this.setContentTypeIfUnset(parsedBody.contentType);
-
-        this._postData = {
-          text: parsedBody.text,
-          params: parsedBody.params,
-          mimeType: parsedBody.contentType
-        } as PostData;
+  get headers(): HeadersType {
+    if (!this._headers) {
+      if (!this._parsedHeaders.has('content-type') && this._parsedBody) {
+        this._parsedHeaders.set('content-type', this._parsedBody.type());
       }
+      this._headers = Object.fromEntries(this._parsedHeaders);
     }
 
-    return this._postData;
+    return this._headers;
   }
 
-  private _body?: unknown;
+  private set headers(value: HeadersType) {
+    this._parsedHeaders = new Headers(value);
+    delete this._headers;
+  }
 
-  get body(): unknown {
+  private _body?: BodyType;
+  private _parsedBody?: Body;
+
+  get body(): BodyType | undefined {
     return this._body;
   }
 
-  private set body(value: unknown) {
+  private set body(value: BodyType | undefined) {
     this._body = value;
-    delete this._postData;
-  }
-
-  get contentType(): string | undefined {
-    return this.getHeaderValue('content-type');
-  }
-
-  get httpVersion(): string {
-    const version =
-      this.getHeaderValue('version') || this.getHeaderValue(':version');
-
-    if (version) {
-      return version;
+    if (value !== undefined) {
+      this._parsedBody = new Body(value);
     }
+  }
 
-    return 'HTTP/0.9';
+  private readonly _serializeQuery: (params: QueryParamsType) => string;
+
+  get serializeQuery(): (params: QueryParamsType) => string {
+    return this._serializeQuery;
   }
 
   constructor({
@@ -197,62 +130,22 @@ export class Target implements TargetOptions {
   }: TargetOptions) {
     this.url = url;
     this.method = isHttpMethod(method) ? method : HttpMethod.GET;
-    this.body = body;
     this.headers = headers;
-    this._serializeQuery =
-      serializeQuery ??
-      ((params: URLSearchParams | string | Record<string, string | string[]>) =>
-        new URLSearchParams(params).toString());
-    this.query = query ?? '';
-  }
+    this._serializeQuery = serializeQuery ?? this.defaultSerializeQuery;
 
-  public toHarRequest(): Request {
-    return {
-      postData: this.postData,
-      headers: [...this.headerParameters],
-      method: this.method,
-      url: this.url,
-      httpVersion: this.httpVersion,
-      queryString: [...this.queryParameters],
-      cookies: [],
-      headersSize: -1,
-      bodySize: -1
-    };
-  }
+    if (body !== undefined) {
+      this.body = body;
+    }
 
-  private setContentTypeIfUnset(contentType: string): void {
-    if (!this.contentType) {
-      this.headers = {
-        ...this.headers,
-        'content-type': contentType
-      };
+    if (query) {
+      this.query = query;
     }
   }
 
-  private getHeaderValue(headerName: string): string | undefined {
-    if (!this._headerValues.has(headerName)) {
-      this._headerValues.set(headerName, this.computeHeaderValue(headerName));
-    }
-
-    return this._headerValues.get(headerName);
+  public async text(): Promise<string | undefined> {
+    return this._parsedBody?.text();
   }
 
-  private computeHeaderValue(headerName: string): string | undefined {
-    const normalizedName = headerName.toLowerCase();
-
-    const values: string[] = this.headerParameters
-      .filter(({ name }: Header) => name.toLowerCase() === normalizedName)
-      .map(({ value }: Header) => value);
-
-    if (!values.length) {
-      return;
-    }
-
-    // Set-Cookie values should be separated by '\n', not comma, otherwise cookies could not be parsed.
-    if (normalizedName === 'set-cookie') {
-      return values.join('\n');
-    }
-
-    return values.join(', ');
-  }
+  private readonly defaultSerializeQuery = (params: QueryParamsType): string =>
+    new URLSearchParams(params).toString();
 }
