@@ -25,7 +25,7 @@ export class DefaultDiscoveries implements Discoveries {
             method: target.method,
             url: target.url,
             headers: target.headers,
-            body: target.postData?.text
+            body: await target.text()
           }
         }),
         headers: {

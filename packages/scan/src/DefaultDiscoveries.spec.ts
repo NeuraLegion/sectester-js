@@ -54,7 +54,7 @@ describe('DefaultDiscoveries', () => {
                 method: testTarget.method,
                 url: testTarget.url,
                 headers: testTarget.headers,
-                body: testTarget.postData?.text
+                body: await testTarget.text()
               }
             })
           })
@@ -88,7 +88,7 @@ describe('DefaultDiscoveries', () => {
                 method: testTarget.method,
                 url: testTarget.url,
                 headers: testTarget.headers,
-                body: testTarget.postData?.text
+                body: await testTarget.text()
               }
             })
           })
