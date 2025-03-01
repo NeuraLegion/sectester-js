@@ -42,8 +42,7 @@ With SecTester you can:
 
 Trying out Bright’s SecTester is _**free**_ 💸, so let’s get started!
 
-> ⚠️ **Disclaimer**
->
+> [!WARNING]  
 > The SecTester project is currently in beta as an early-access tool. We are looking for your feedback to make it the best possible solution for developers, aimed to be used as part of your team’s SDLC. We apologize if not everything will work smoothly from the start, and hope a few bugs or missing features will be no match for you!
 >
 > Thank you! We appreciate your help and feedback!
@@ -56,7 +55,6 @@ First install the module via `yarn` or `npm` and do not forget to install the pe
 
 ```bash
 $ npm i -s @sectester/runner \
-  @sectester/bus             \
   @sectester/core            \
   @sectester/repeater        \
   @sectester/reporter        \
@@ -67,7 +65,6 @@ or
 
 ```bash
 $ yarn add @sectester/runner  \
-  @sectester/bus              \
   @sectester/core             \
   @sectester/repeater         \
   @sectester/reporter         \
@@ -84,7 +81,23 @@ $ yarn add @sectester/runner  \
    2. If you don’t use that option, make sure you save the key in a secure location. You will need to access it later on in the project but will not be able to view it again.
    3. More info on [**how to use ENV vars in Github actions**](https://docs.github.com/en/actions/learn-github-actions/environment-variables)
 
-> ⚠️ Make sure your API key is saved in a location where you can retrieve it later! You will need it in these next steps!
+> [!IMPORTANT]
+> Create a Bright API key with the following scopes:
+>
+> - `auth-objects:read`
+> - `bot`
+> - `entry-points:manage`
+> - `issues:read`
+> - `projects:read`
+> - `repeaters:read`
+> - `repeaters:write`
+> - `scans:delete`
+> - `scans:read`
+> - `scans:run`
+> - `scans:stop`
+
+> [!TIP]
+> Make sure your API key is saved in a location where you can retrieve it later! You will need it in these next steps!
 
 ### Usage examples
 
