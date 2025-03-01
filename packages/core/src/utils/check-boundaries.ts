@@ -23,6 +23,9 @@ const checkMaximum = (
   }: WithRequiredProperty<Pick<NumBoundaries, 'max' | 'exclusiveMax'>, 'max'>
 ): boolean => (exclusiveMax ? value < max : value <= max);
 
+const isNumber = (value: unknown): value is number =>
+  typeof value === 'number' && !isNaN(value);
+
 export const checkBoundaries = (
   value: unknown,
   { min, max, exclusiveMax, exclusiveMin }: NumBoundaries = {}
@@ -31,17 +34,17 @@ export const checkBoundaries = (
     value = parseFloat(value);
   }
 
-  if (typeof value !== 'number') {
+  if (!isNumber(value)) {
     return false;
   }
 
   let valid = true;
 
-  if (typeof max === 'number') {
+  if (isNumber(max)) {
     valid = checkMaximum(value, { max, exclusiveMax });
   }
 
-  if (valid && typeof min === 'number') {
+  if (valid && isNumber(min)) {
     valid = checkMinimum(value, { min, exclusiveMin });
   }
 
