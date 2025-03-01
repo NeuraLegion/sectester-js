@@ -129,7 +129,7 @@ describe('Target', () => {
     });
 
     it('should return headers when set', () => {
-      const headers = { 'content-Type': 'application/json', 'x-test': 'value' };
+      const headers = { 'content-type': 'application/json', 'x-test': 'value' };
       const target = new Target({
         headers,
         url: 'https://example.com'

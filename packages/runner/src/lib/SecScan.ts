@@ -2,6 +2,7 @@ import { FunctionScanTarget } from './FunctionScanTarget';
 import { IssueFound } from './IssueFound';
 import { Formatter, Reporter } from '@sectester/reporter';
 import {
+  BodyType,
   Issue,
   Scan,
   ScanFactory,
@@ -27,7 +28,7 @@ export class SecScan {
     private readonly reporter?: Reporter
   ) {}
 
-  public async run<T>(
+  public async run<T extends BodyType>(
     options: TargetOptions | FunctionScanOptions<T>
   ): Promise<void> {
     let functionScanTarget: FunctionScanTarget | undefined;
