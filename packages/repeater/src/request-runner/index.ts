@@ -1,4 +1,4 @@
-export * from './protocols';
+export * from './HttpRequestRunner';
 export * from './Request';
 export * from './RequestRunner';
 export * from './RequestRunnerOptions';

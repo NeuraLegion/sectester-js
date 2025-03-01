@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import { HttpRequestRunner } from './HttpRequestRunner';
-import { Protocol } from '../../models/Protocol';
-import { Request, RequestOptions } from '../Request';
-import { RequestRunnerOptions } from '../RequestRunnerOptions';
-import { ProxyFactory } from '../../utils';
+import { Protocol } from '../models/Protocol';
+import { Request, RequestOptions } from './Request';
+import { RequestRunnerOptions } from './RequestRunnerOptions';
+import { ProxyFactory } from '../utils';
 import { Logger } from '@sectester/core';
 import nock from 'nock';
 import { anything, instance, mock, reset, spy, verify, when } from 'ts-mockito';
@@ -278,6 +278,38 @@ describe('HttpRequestRunner', () => {
       nock(requestOptions.url).get('/').reply(200, bigBody, {
         'content-type': 'text/plain',
         'content-encoding': 'deflate'
+      });
+
+      const response = await sut.run(request);
+
+      expect(response.body).toEqual(expected);
+    });
+
+    it('should decode body using charset from content-type header', async () => {
+      when(spiedRunnerOptions.maxContentLength).thenReturn(1);
+      when(spiedRunnerOptions.allowedMimes).thenReturn(['text/plain']);
+      const { request, requestOptions } = createRequest();
+      const expected = 'привет';
+
+      // We need to use iconv-lite or similar for proper encoding to windows-1251
+      // For this test, manually create a Buffer with proper encoding for simulation
+      const encodedText = Buffer.from([
+        0xef,
+        0xf0,
+        0xe8,
+        0xe2,
+        0xe5,
+        0xf2 // "привет" in windows-1251 encoding
+      ]);
+
+      const gzippedBody = await promisify(gzip)(encodedText, {
+        flush: constants.Z_SYNC_FLUSH,
+        finishFlush: constants.Z_SYNC_FLUSH
+      });
+
+      nock(requestOptions.url).get('/').reply(200, gzippedBody, {
+        'content-type': 'text/plain; charset=windows-1251',
+        'content-encoding': 'gzip'
       });
 
       const response = await sut.run(request);

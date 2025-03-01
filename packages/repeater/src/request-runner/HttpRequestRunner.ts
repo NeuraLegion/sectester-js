@@ -1,13 +1,12 @@
-import { RequestRunner } from '../RequestRunner';
-import { Response } from '../Response';
-import { Request } from '../Request';
-import { Protocol } from '../../models';
-import { RequestRunnerOptions } from '../RequestRunnerOptions';
-import { ProxyFactory, NormalizeZlibDeflateTransformStream } from '../../utils';
+import { RequestRunner } from './RequestRunner';
+import { Response } from './Response';
+import { Request } from './Request';
+import { Protocol } from '../models';
+import { RequestRunnerOptions } from './RequestRunnerOptions';
+import { ProxyFactory, NormalizeZlibDeflateTransformStream } from '../utils';
 import { Logger } from '@sectester/core';
 import { inject, injectable } from 'tsyringe';
 import iconv from 'iconv-lite';
-import { safeParse } from 'fast-content-type-parse';
 import { parse as parseUrl } from 'node:url';
 import http, {
   ClientRequest,
@@ -27,6 +26,7 @@ import {
   createInflate
 } from 'node:zlib';
 import { IncomingHttpHeaders } from 'http';
+import { MIMEType } from 'node:util';
 
 @injectable()
 export class HttpRequestRunner implements RequestRunner {
@@ -241,12 +241,9 @@ export class HttpRequestRunner implements RequestRunner {
   } {
     const contentType =
       res.headers['content-type'] || 'application/octet-stream';
-    const {
-      type,
-      parameters: { charset }
-    } = safeParse(contentType);
+    const { params, essence: type } = new MIMEType(contentType);
 
-    let encoding: string | undefined = charset;
+    let encoding: string | null = params.get('charset');
 
     if (!encoding || !iconv.encodingExists(encoding)) {
       encoding = 'utf8';
