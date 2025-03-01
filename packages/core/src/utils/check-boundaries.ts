@@ -1,5 +1,3 @@
-import { isNumber } from './types';
-
 export interface NumBoundaries {
   min?: number;
   max?: number;
@@ -33,17 +31,17 @@ export const checkBoundaries = (
     value = parseFloat(value);
   }
 
-  if (!isNumber(value)) {
+  if (typeof value !== 'number') {
     return false;
   }
 
   let valid = true;
 
-  if (isNumber(max)) {
+  if (typeof max === 'number') {
     valid = checkMaximum(value, { max, exclusiveMax });
   }
 
-  if (valid && isNumber(min)) {
+  if (valid && typeof min === 'number') {
     valid = checkMinimum(value, { min, exclusiveMin });
   }
 

@@ -96,7 +96,7 @@ export class DefaultScans implements Scans {
             method: target.method,
             url: target.url,
             headers: target.headers,
-            body: target.postData?.text
+            body: await target.text()
           }
         }),
         headers: {
