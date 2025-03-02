@@ -1,4 +1,4 @@
-import { AttackParamLocation, TestType } from './models';
+import { AttackParamLocation, HttpMethod, TestType } from './models';
 import { Target, TargetOptions } from './target';
 import { checkBoundaries, contains, truncate } from '@sectester/core';
 
@@ -120,13 +120,7 @@ export class ScanSettings implements ScanSettingsOptions {
       throw new Error('Unknown attack param location supplied.');
     }
 
-    const uniqueAttackParamLocations = new Set<AttackParamLocation>(value);
-
-    if (uniqueAttackParamLocations.size < 1) {
-      throw new Error('Please provide a least one attack parameter location.');
-    }
-
-    this._attackParamLocations = [...uniqueAttackParamLocations];
+    this._attackParamLocations = this.resolveAttackParamLocations(value);
   }
 
   constructor({
@@ -137,13 +131,8 @@ export class ScanSettings implements ScanSettingsOptions {
     smart = true,
     poolSize = 10,
     skipStaticParams = true,
-    attackParamLocations = [
-      AttackParamLocation.BODY,
-      AttackParamLocation.QUERY,
-      AttackParamLocation.FRAGMENT
-    ]
+    attackParamLocations = []
   }: ScanSettingsOptions) {
-    this.attackParamLocations = attackParamLocations;
     this.target = target;
     const { method, parsedURL } = this.target;
     this.name = name || truncate(`${method} ${parsedURL.pathname}`, 200);
@@ -152,5 +141,48 @@ export class ScanSettings implements ScanSettingsOptions {
     this.skipStaticParams = skipStaticParams;
     this.smart = smart;
     this.tests = tests;
+    this.attackParamLocations = attackParamLocations;
+  }
+
+  private resolveAttackParamLocations(
+    providedLocations: AttackParamLocation[]
+  ): AttackParamLocation[] {
+    if (providedLocations.length > 0) {
+      return [...new Set(providedLocations)];
+    }
+
+    const detectedLocations = this.detectAttackParamLocations();
+
+    // Use default locations if none detected
+    return detectedLocations.length > 0
+      ? detectedLocations
+      : [
+          AttackParamLocation.BODY,
+          AttackParamLocation.QUERY,
+          AttackParamLocation.FRAGMENT
+        ];
+  }
+
+  private detectAttackParamLocations(): AttackParamLocation[] {
+    const locations: AttackParamLocation[] = [];
+
+    const hasBody =
+      this.target.body !== undefined &&
+      this.target.method !== HttpMethod.GET &&
+      this.target.method !== HttpMethod.HEAD;
+
+    if (hasBody) {
+      locations.push(AttackParamLocation.BODY);
+    }
+
+    if (this.target.query) {
+      locations.push(AttackParamLocation.QUERY);
+    }
+
+    if (this.target.fragment) {
+      locations.push(AttackParamLocation.FRAGMENT);
+    }
+
+    return locations;
   }
 }

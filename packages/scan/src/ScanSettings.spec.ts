@@ -18,12 +18,6 @@ describe('ScanSettings', () => {
       },
       {
         input: {
-          attackParamLocations: []
-        },
-        expected: 'Please provide a least one attack parameter location'
-      },
-      {
-        input: {
           poolSize: 51
         },
         expected: 'Invalid pool size'
@@ -68,6 +62,40 @@ describe('ScanSettings', () => {
         attackParamLocations: [AttackParamLocation.QUERY]
       });
     });
+
+    it.each([
+      {
+        input: { query: { a: '1' } },
+        expected: [AttackParamLocation.QUERY],
+        name: 'query supplied'
+      },
+      {
+        input: {
+          method: 'POST',
+          body: 'a=1',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        },
+        expected: [AttackParamLocation.BODY],
+        name: 'body supplied'
+      }
+    ])(
+      'should create a settings resolving attack locations when $name',
+      ({ input, expected }) => {
+        // arrange
+        const settings: ScanSettingsOptions = {
+          target: { url: 'https://example.com', ...input },
+          tests: [TestType.XPATH_INJECTION]
+        };
+
+        // act
+        const result = new ScanSettings(settings);
+
+        // assert
+        expect(result).toMatchObject({
+          attackParamLocations: expected
+        });
+      }
+    );
 
     it('should create a settings with unique tests', () => {
       // arrange
