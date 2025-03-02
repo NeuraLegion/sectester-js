@@ -27,6 +27,30 @@ describe('Target', () => {
       expect(target.body).toEqual({ key: 'value' });
     });
 
+    it.each([
+      { data: { key: 'value' }, name: 'object', expected: 'application/json' },
+      { data: [{ key: 'value' }], name: 'array', expected: 'application/json' },
+      { data: 'text body', name: 'string', expected: 'text/plain' },
+      { data: 123, name: 'number', expected: undefined },
+      { data: null, name: 'null', expected: 'text/plain' },
+      {
+        data: new Blob(['blob content']),
+        name: 'Blob',
+        expected: 'application/octet-stream'
+      },
+      {
+        data: new URLSearchParams({ key: 'value' }),
+        name: 'URLSearchParams',
+        expected: 'application/x-www-form-urlencoded'
+      }
+    ])('should guess content type from body: $name', ({ data, expected }) => {
+      const target = new Target({
+        body: data,
+        url: 'https://example.com'
+      });
+      expect(target.headers).toEqual({ 'content-type': expected });
+    });
+
     it('should normalize URL', () => {
       const target = new Target({ url: 'example.com' });
       expect(target.url).toBe('https://example.com/');
