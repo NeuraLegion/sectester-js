@@ -2,10 +2,13 @@ import 'reflect-metadata';
 import { ApiClient, FetchApiClient } from './api';
 import { Configuration } from './configuration';
 import { Logger } from './logger';
+import { DefaultProjects } from './DefaultProjects';
+import { Projects } from './Projects';
 import {
   container,
   DependencyContainer,
-  instancePerContainerCachingFactory
+  instancePerContainerCachingFactory,
+  Lifecycle
 } from 'tsyringe';
 
 container.register(Logger, {
@@ -28,3 +31,13 @@ container.register(ApiClient, {
     });
   }
 });
+
+container.register(
+  Projects,
+  {
+    useClass: DefaultProjects
+  },
+  {
+    lifecycle: Lifecycle.ContainerScoped
+  }
+);

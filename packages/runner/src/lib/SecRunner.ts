@@ -87,10 +87,8 @@ export class SecRunner {
   }
 
   private async initConfiguration(configuration: Configuration): Promise<void> {
-    await Promise.all([
-      configuration.loadCredentials(),
-      configuration.fetchProjectId()
-    ]);
+    await configuration.loadCredentials();
+    await configuration.fetchProjectId();
 
     configuration.container.register(Formatter, {
       useClass: PlainTextFormatter

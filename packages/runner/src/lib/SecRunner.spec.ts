@@ -70,9 +70,6 @@ describe('SecRunner', () => {
     when(mockedContainer.createChildContainer()).thenReturn(container);
 
     when(mockedConfiguration.container).thenReturn(container);
-
-    when(mockedConfiguration.loadCredentials()).thenResolve();
-
     when(mockedRepeater.repeaterId).thenReturn(repeaterId);
 
     when(mockedRepeaterFactory.createRepeater()).thenResolve(
