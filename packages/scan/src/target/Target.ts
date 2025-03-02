@@ -82,6 +82,10 @@ export class Target implements TargetOptions {
     this._cachedUrl = undefined;
   }
 
+  get fragment(): string {
+    return this._parsedURL.hash;
+  }
+
   private _parsedHeaders!: Headers;
   private _headers?: HeadersType;
 
@@ -115,7 +119,15 @@ export class Target implements TargetOptions {
   }
 
   private set body(value: BodyType | undefined) {
+    if (
+      value !== undefined &&
+      (this.method === HttpMethod.GET || this.method === HttpMethod.HEAD)
+    ) {
+      throw new Error('Cannot set body for GET or HEAD requests');
+    }
+
     this._body = value;
+
     if (value !== undefined) {
       const contentType = this._parsedHeaders.get('content-type');
       const { essence } = contentType ? new MIMEType(contentType) : {};

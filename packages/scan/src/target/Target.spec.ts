@@ -4,12 +4,21 @@ import { Target, TargetOptions } from './Target';
 describe('Target', () => {
   describe('constructor', () => {
     it('should create a target with default values', () => {
-      const target = new Target({ url: 'https://example.com' });
-      expect(target.url).toBe('https://example.com/');
+      const target = new Target({
+        url: 'https://example.com?search=something#foo'
+      });
+      expect(target.url).toBe('https://example.com/?search=something#foo');
       expect(target.method).toBe(HttpMethod.GET);
       expect(target.headers).toEqual({});
       expect(target.body).toBeUndefined();
-      expect(target.query).toBe('');
+      expect(target.queryString).toBe('search=something');
+      expect(target.fragment).toBe('#foo');
+    });
+
+    it('should throw error when request body is not allowed', () => {
+      expect(
+        () => new Target({ url: 'https://example.com', body: 'body' })
+      ).toThrow('Cannot set body for GET or HEAD requests');
     });
 
     it('should create a target with custom values', () => {
@@ -46,7 +55,8 @@ describe('Target', () => {
     ])('should guess content type from body: $name', ({ data, expected }) => {
       const target = new Target({
         body: data,
-        url: 'https://example.com'
+        url: 'https://example.com',
+        method: HttpMethod.POST
       });
       expect(target.headers).toEqual({ 'content-type': expected });
     });
@@ -123,7 +133,8 @@ describe('Target', () => {
     it('should handle string body', async () => {
       const target = new Target({
         url: 'https://example.com',
-        body: 'text body'
+        body: 'text body',
+        method: HttpMethod.POST
       });
       expect(target.body).toBe('text body');
       await expect(target.text()).resolves.toBe('text body');
@@ -132,8 +143,9 @@ describe('Target', () => {
     it('should handle object body', async () => {
       const body = { key: 'value' };
       const target = new Target({
-        url: 'https://example.com',
-        body
+        body,
+        method: HttpMethod.POST,
+        url: 'https://example.com'
       });
       expect(target.body).toBe(body);
       await expect(target.text()).resolves.toBe(JSON.stringify(body));
