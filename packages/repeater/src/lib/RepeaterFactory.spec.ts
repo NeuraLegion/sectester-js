@@ -54,8 +54,6 @@ describe('RepeaterFactory', () => {
   beforeEach(() => {
     when(mockedConfiguration.container).thenReturn(instance(mockedContainer));
 
-    when(mockedConfiguration.loadCredentials()).thenResolve();
-
     when(mockedContainer.createChildContainer()).thenReturn(
       instance(mockedChildContainer)
     );
