@@ -3,6 +3,7 @@ import { Body, BodyType } from './Body';
 import { HeadersType } from './HeadersType';
 import { QueryParamsType } from './QueryParamsType';
 import { normalizeUrl } from '@har-sdk/core';
+import { MIMEType } from 'util';
 
 export interface TargetOptions {
   // The server URL that will be used for the request
@@ -85,12 +86,18 @@ export class Target implements TargetOptions {
   private _headers?: HeadersType;
 
   get headers(): HeadersType {
-    if (!this._headers) {
-      if (!this._parsedHeaders.has('content-type') && this._parsedBody) {
-        this._parsedHeaders.set('content-type', this._parsedBody.type());
-      }
-      this._headers = Object.fromEntries(this._parsedHeaders);
+    if (this._headers) {
+      return this._headers;
     }
+
+    if (!this._parsedHeaders.has('content-type') && this._parsedBody) {
+      const contentType = this._parsedBody.type();
+      if (contentType) {
+        this._parsedHeaders.set('content-type', contentType);
+      }
+    }
+
+    this._headers = Object.fromEntries(this._parsedHeaders);
 
     return this._headers;
   }
@@ -110,7 +117,10 @@ export class Target implements TargetOptions {
   private set body(value: BodyType | undefined) {
     this._body = value;
     if (value !== undefined) {
-      this._parsedBody = new Body(value);
+      const contentType = this._parsedHeaders.get('content-type');
+      const { essence } = contentType ? new MIMEType(contentType) : {};
+
+      this._parsedBody = new Body(value, essence);
     }
   }
 

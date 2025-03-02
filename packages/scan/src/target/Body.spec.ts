@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import { Body } from './Body';
 import { File } from 'node:buffer';
 import { Readable } from 'node:stream';
@@ -7,6 +8,11 @@ describe('Body', () => {
     it('should return text/plain for null data', () => {
       const body = new Body(null);
       expect(body.type()).toBe('text/plain');
+    });
+
+    it('should return application/json when the type is explicitly set', () => {
+      const body = new Body('"1"', 'application/json');
+      expect(body.type()).toBe('application/json');
     });
 
     it.each([
@@ -76,7 +82,7 @@ describe('Body', () => {
     it.each([
       ['text/custom', 'text/custom'],
       ['application/custom-json', 'application/custom-json'],
-      ['', '']
+      ['', 'application/octet-stream']
     ])('should use the type property of a Blob: %s', (mimeType, expected) => {
       const blob = new Blob(['content'], { type: mimeType });
       const body = new Body(blob);
@@ -84,7 +90,8 @@ describe('Body', () => {
     });
 
     it.each([
-      [{ name: 'test', value: 123 }],
+      { name: 'test', value: 123 },
+      { person: { name: 'John', age: 30 } },
       [{ person: { name: 'John', age: 30 } }]
     ])('should return application/json for plain objects: %j', testObject => {
       const body = new Body(testObject);
@@ -92,92 +99,122 @@ describe('Body', () => {
     });
 
     it.each([
-      ['ArrayBuffer', () => new ArrayBuffer(10)],
-      ['Uint8Array', () => new Uint8Array(10)]
+      {
+        name: 'ArrayBuffer',
+        data: new ArrayBuffer(10),
+        expected: 'application/octet-stream'
+      },
+      {
+        name: 'Uint8Array',
+        data: new Uint8Array(10),
+        expected: 'application/octet-stream'
+      }
     ])(
-      'should return application/octet-stream for binary data: %s',
-      (_, createData) => {
-        const body = new Body(createData());
-        expect(body.type()).toBe('application/octet-stream');
+      'should return application/octet-stream for binary data: $name',
+      ({ data, expected }) => {
+        const body = new Body(data);
+        expect(body.type()).toBe(expected);
       }
     );
 
     it.each([
-      ['ReadableStream', () => Readable.from(['data'])],
-      [
-        'Iterable<Uint8Array>',
-        () => {
-          function* generator() {
-            yield new Uint8Array([1, 2, 3]);
-          }
+      {
+        name: 'ReadableStream',
+        data: Readable.from(['data']),
+        expected: 'application/octet-stream'
+      },
+      {
+        name: 'Iterable<Uint8Array>',
+        data: (function* generator() {
+          yield new Uint8Array([1, 2, 3]);
+        })(),
+        expected: 'application/octet-stream'
+      }
+    ])(
+      'should return application/octet-stream for $name',
+      ({ data, expected }) => {
+        const body = new Body(data);
+        expect(body.type()).toBe(expected);
+      }
+    );
 
-          return generator();
+    it('should return application/json for custom iterator objects', () => {
+      const iterableObj = {
+        *[Symbol.iterator]() {
+          yield 1;
+          yield 2;
+          yield 3;
         }
-      ]
-    ])('should return application/octet-stream for %s', (_, createData) => {
-      const body = new Body(createData());
-      expect(body.type()).toBe('application/octet-stream');
+      };
+
+      const body = new Body(iterableObj);
+      expect(body.type()).toBe('application/json');
     });
   });
 
   describe('text', () => {
-    it('should handle string data', async () => {
-      const body = new Body('Hello, World!');
-      await expect(body.text()).resolves.toBe('Hello, World!');
-    });
-
-    it('should handle null data', async () => {
-      const body = new Body(null);
-      await expect(body.text()).resolves.toBe(undefined);
-    });
-
     it.each([
-      [
-        'URLSearchParams',
-        new URLSearchParams({ foo: 'bar', baz: 'qux' }),
-        'foo=bar&baz=qux'
-      ],
-      [
-        'JSON object',
-        { foo: 'bar', nested: { value: 42 } },
-        JSON.stringify({ foo: 'bar', nested: { value: 42 } })
-      ]
-    ])('should handle %s data', async (_, data, expected) => {
-      const body = new Body(data);
-      await expect(body.text()).resolves.toBe(expected);
-    });
-
-    it.each([
-      [
-        'ArrayBuffer',
-        {
-          data: new TextEncoder().encode('Hello, Binary World!').buffer,
-          expected: 'Hello, Binary World!'
-        }
-      ],
-      [
-        'ArrayBufferView',
-        {
-          data: new TextEncoder().encode('ArrayBufferView data test'),
-          expected: 'ArrayBufferView data test'
-        }
-      ],
-      [
-        'Blob',
-        {
-          data: new Blob(['Blob content'], { type: 'text/plain' }),
-          expected: 'Blob content'
-        }
-      ],
-      [
-        'File',
-        {
-          data: new File(['file content'], 'test.txt', { type: 'text/plain' }),
-          expected: 'file content'
-        }
-      ]
-    ])('should handle %s data', async (_, testData) => {
-      const { data, expected } = testData;
+      {
+        name: 'string',
+        data: 'Hello, World!',
+        expected: 'Hello, World!'
+      },
+      {
+        name: 'null',
+        data: null,
+        expected: 'null'
+      },
+      {
+        name: 'URLSearchParams',
+        data: new URLSearchParams({ foo: 'bar', baz: 'qux' }),
+        expected: 'foo=bar&baz=qux'
+      },
+      {
+        name: 'JSON object',
+        data: { foo: 'bar', nested: { value: 42 } },
+        expected: JSON.stringify({ foo: 'bar', nested: { value: 42 } })
+      },
+      {
+        name: 'JSON array',
+        data: [{ foo: 'bar', nested: { value: 42 } }],
+        expected: JSON.stringify([{ foo: 'bar', nested: { value: 42 } }])
+      },
+      {
+        name: 'ArrayBufferView',
+        data: new TextEncoder().encode('Hello, Binary World!').buffer,
+        expected: 'Hello, Binary World!'
+      },
+      {
+        name: 'ArrayBufferView',
+        data: new TextEncoder().encode('ArrayBufferView data test'),
+        expected: 'ArrayBufferView data test'
+      },
+      {
+        name: 'Blob',
+        data: new Blob(['Blob content'], { type: 'text/plain' }),
+        expected: 'Blob content'
+      },
+      {
+        name: 'File',
+        data: new File(['file content'], 'test.txt', { type: 'text/plain' }),
+        expected: 'file content'
+      },
+      { name: 'number', data: 123, expected: '123' },
+      { name: 'boolean', data: true, expected: 'true' },
+      { name: 'bigint', data: BigInt(42), expected: '42' },
+      {
+        name: 'Date',
+        data: new Date('2021-01-01T12:00:00Z'),
+        expected: '"2021-01-01T12:00:00.000Z"'
+      },
+      {
+        name: 'Instance of custom class',
+        data: new (class CustomClass {
+          public foo = 'bar';
+        })(),
+        expected: '{"foo":"bar"}'
+      }
+    ])('should handle $name data', async ({ data, expected }) => {
       const body = new Body(data);
       await expect(body.text()).resolves.toBe(expected);
     });
@@ -248,15 +285,32 @@ describe('Body', () => {
 
       expect(result).toContain('name="name"');
       expect(result).toContain('John Doe');
-      expect(result).toContain('name="blob"');
+      expect(result).toContain('name="file"');
       expect(result).toContain('content-type: text/plain');
       expect(result).toContain('file content');
     });
 
-    it('should throw error for unsupported data types', async () => {
-      // @ts-expect-error Testing with an invalid type
-      const body = new Body(Symbol('test'));
-      await expect(body.text()).rejects.toThrow('Unsupported data type');
-    });
+    it.each([
+      { name: 'number', data: 123, expected: '123' },
+      { name: 'boolean', data: true, expected: 'true' },
+      {
+        name: 'date',
+        data: new Date('2021-01-01T12:00:00Z'),
+        expected: '"2021-01-01T12:00:00.000Z"'
+      },
+      {
+        name: 'Instance of custom class',
+        data: new (class CustomClass {
+          public foo = 'bar';
+        })(),
+        expected: '{"foo":"bar"}'
+      }
+    ])(
+      'should handle primitive as JSON data: $name',
+      async ({ data, expected }) => {
+        const body = new Body(data, 'application/json');
+        await expect(body.text()).resolves.toBe(expected);
+      }
+    );
   });
 });
