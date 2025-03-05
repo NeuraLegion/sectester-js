@@ -42,26 +42,24 @@ const target = new Target({
 The factory exposes the `createScan` method that returns a new [Scan instance](#managing-a-scan):
 
 ```ts
-import { TestType } from '@sectester/scan';
-
 const scan = await scanFactory.createScan({
   target,
-  tests: [TestType.INSECURE_OUTPUT_HANDLING]
+  tests: ['insecure_output_handling']
 });
 ```
 
 Below you will find a list of parameters that can be used to configure a `Scan`:
 
-| Option                 | Description                                                                                                                                                                                   |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `target`               | The target that will be attacked. For details, see [here](#defining-a-target-for-attack).                                                                                                     |
-| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide)                                               |
-| `repeaterId`           | Connects the scan to a Repeater agent, which provides secure access to local networks.                                                                                                        |
-| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                |
-| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default. |
-| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                      |
-| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                     |
-| `name`                 | The scan name. The method and hostname by default, e.g. `GET /users/1`.                                                                                                                       |
+| Option                 | Description                                                                                                                                                                                                                                                |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `target`               | The target that will be attacked. For details, see [here](#defining-a-target-for-attack).                                                                                                                                                                  |
+| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide). To retrieve the complete list, send a request to the [API](https://app.brightsec.com/api/v1/scans/tests). |
+| `repeaterId`           | Connects the scan to a Repeater agent, which provides secure access to local networks.                                                                                                                                                                     |
+| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                                                                             |
+| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default.                                                              |
+| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                                                                                   |
+| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                                                                                  |
+| `name`                 | The scan name. The method and hostname by default, e.g. `GET /users/1`.                                                                                                                                                                                    |
 
 ### Defining a target for attack
 

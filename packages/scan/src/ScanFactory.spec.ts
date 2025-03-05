@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import { Scans } from './Scans';
 import { ScanFactory } from './ScanFactory';
-import { TestType } from './models';
 import { ScanSettingsOptions } from './ScanSettings';
 import { Discoveries } from './Discoveries';
 import {
@@ -63,7 +62,7 @@ describe('ScanFactory', () => {
       const settings: ScanSettingsOptions = {
         name: 'Test Scan',
         target: { url: 'https://example.com' },
-        tests: [TestType.CROSS_SITE_SCRIPTING]
+        tests: ['xss']
       };
 
       when(
@@ -80,7 +79,7 @@ describe('ScanFactory', () => {
             projectId,
             name: 'Test Scan',
             entryPointIds: [entrypointId],
-            tests: [TestType.CROSS_SITE_SCRIPTING]
+            tests: ['xss']
           })
         )
       ).once();
@@ -90,7 +89,7 @@ describe('ScanFactory', () => {
     it('should create entrypoint from target', async () => {
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
-        tests: [TestType.CROSS_SITE_SCRIPTING]
+        tests: ['xss']
       };
 
       when(
@@ -113,7 +112,7 @@ describe('ScanFactory', () => {
       const settings: ScanSettingsOptions = {
         repeaterId,
         target: { url: 'https://example.com' },
-        tests: [TestType.CROSS_SITE_SCRIPTING]
+        tests: ['xss']
       };
 
       when(

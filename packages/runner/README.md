@@ -72,19 +72,19 @@ await runner.clear();
 To start scanning your application, first you have to create a `SecScan` instance, as shown below:
 
 ```ts
-const scan = runner.createScan({ tests: [TestType.CROSS_SITE_SCRIPTING] });
+const scan = runner.createScan({ tests: ['xss'] });
 ```
 
 Below you will find a list of parameters that can be used to configure a `Scan`:
 
-| Option                 | Description                                                                                                                                                                                                                                                          |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide). To retrieve the list of available tests, send a request to the [API](https://app.brightsec.com/api/v1/scans/tests). |
-| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                                                                                       |
-| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default.                                                                        |
-| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                                                                                             |
-| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                                                                                            |
-| `name`                 | The scan name. The method and hostname by default, e.g. `GET example.com`.                                                                                                                                                                                           |
+| Option                 | Description                                                                                                                                                                                                                                                |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tests`                | The list of tests to be performed against the target application. [Learn more about tests](https://docs.brightsec.com/docs/vulnerability-guide). To retrieve the complete list, send a request to the [API](https://app.brightsec.com/api/v1/scans/tests). |
+| `smart`                | Minimize scan time by using automatic smart decisions regarding parameter skipping, detection phases, etc. Enabled by default.                                                                                                                             |
+| `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default.                                                              |
+| `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                                                                                   |
+| `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                                                                                  |
+| `name`                 | The scan name. The method and hostname by default, e.g. `GET example.com`.                                                                                                                                                                                 |
 
 #### Endpoint scan
 
@@ -116,7 +116,7 @@ const inputSample = {
 // assuming `calculateWeekdays` is your function under test
 const fn = ({ from, to }) => calculateWeekdays(from, to);
 
-const scan = runner.createScan({ tests: [TestType.DATE_MANIPULATION] });
+const scan = runner.createScan({ tests: ['date_manipulation'] });
 await scan.run({ inputSample, fn });
 ```
 
@@ -148,7 +148,6 @@ The default timeout value for `SecScan` is 10 minutes.
 
 ```ts
 import { SecRunner, SecScan } from '@sectester/runner';
-import { Severity, TestType } from '@sectester/scan';
 
 describe('/api', () => {
   let runner!: SecRunner;
@@ -163,7 +162,7 @@ describe('/api', () => {
     await runner.init();
 
     scan = runner
-      .createScan({ tests: [TestType.CROSS_SITE_SCRIPTING] })
+      .createScan({ tests: ['xss'] })
       .threshold(Severity.MEDIUM) // i. e. ignore LOW severity issues
       .timeout(300000); // i. e. fail if last longer than 5 minutes
   });
