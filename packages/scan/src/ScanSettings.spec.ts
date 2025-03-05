@@ -5,7 +5,7 @@ import { randomBytes } from 'crypto';
 describe('ScanSettings', () => {
   describe('constructor', () => {
     it.each([
-      { input: { tests: [] }, expected: 'Please provide a least one test' },
+      { input: { tests: [] }, expected: 'Please provide at least one test' },
       {
         input: {
           attackParamLocations: ['xxx' as AttackParamLocation]

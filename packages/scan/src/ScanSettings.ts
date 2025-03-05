@@ -99,7 +99,7 @@ export class ScanSettings implements ScanSettingsOptions {
     const uniqueTestTypes = new Set<string>(value);
 
     if (uniqueTestTypes.size < 1) {
-      throw new Error('Please provide a least one test.');
+      throw new Error('Please provide at least one test.');
     }
 
     this._tests = [...uniqueTestTypes];
