@@ -1,10 +1,10 @@
-import { AttackParamLocation, HttpMethod, TestType } from './models';
+import { AttackParamLocation, HttpMethod } from './models';
 import { Target, TargetOptions } from './target';
 import { checkBoundaries, contains, truncate } from '@sectester/core';
 
 export interface ScanSettingsOptions {
   // The list of tests to be performed against the target application
-  tests: TestType[];
+  tests: string[];
   // The target that will be attacked
   target: Target | TargetOptions;
   // The scan name
@@ -89,21 +89,17 @@ export class ScanSettings implements ScanSettingsOptions {
     this._poolSize = value;
   }
 
-  private _tests!: TestType[];
+  private _tests!: string[];
 
-  get tests(): TestType[] {
+  get tests(): string[] {
     return this._tests;
   }
 
-  private set tests(value: TestType[]) {
-    if (!contains(TestType, value)) {
-      throw new Error('Unknown test type supplied.');
-    }
-
-    const uniqueTestTypes = new Set<TestType>(value);
+  private set tests(value: string[]) {
+    const uniqueTestTypes = new Set<string>(value);
 
     if (uniqueTestTypes.size < 1) {
-      throw new Error('Please provide a least one test.');
+      throw new Error('Please provide at least one test.');
     }
 
     this._tests = [...uniqueTestTypes];

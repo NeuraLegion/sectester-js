@@ -1,15 +1,11 @@
-import { AttackParamLocation, TestType } from './models';
+import { AttackParamLocation } from './models';
 import { ScanSettings, ScanSettingsOptions } from './ScanSettings';
 import { randomBytes } from 'crypto';
 
 describe('ScanSettings', () => {
   describe('constructor', () => {
     it.each([
-      {
-        input: { tests: ['xxx' as unknown as TestType] },
-        expected: 'Unknown test type supplied'
-      },
-      { input: { tests: [] }, expected: 'Please provide a least one test' },
+      { input: { tests: [] }, expected: 'Please provide at least one test' },
       {
         input: {
           attackParamLocations: ['xxx' as AttackParamLocation]
@@ -34,7 +30,7 @@ describe('ScanSettings', () => {
         // arrange
         const settings: ScanSettingsOptions = {
           target: { url: 'https://example.com' },
-          tests: [TestType.XPATH_INJECTION],
+          tests: ['xpathi'],
           ...input
         };
 
@@ -47,7 +43,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
-        tests: [TestType.XPATH_INJECTION],
+        tests: ['xpathi'],
         attackParamLocations: [
           AttackParamLocation.QUERY,
           AttackParamLocation.QUERY
@@ -84,7 +80,7 @@ describe('ScanSettings', () => {
         // arrange
         const settings: ScanSettingsOptions = {
           target: { url: 'https://example.com', ...input },
-          tests: [TestType.XPATH_INJECTION]
+          tests: ['xpathi']
         };
 
         // act
@@ -101,7 +97,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
-        tests: [TestType.XPATH_INJECTION, TestType.XPATH_INJECTION]
+        tests: ['xpathi', 'xpathi']
       };
 
       // act
@@ -109,7 +105,7 @@ describe('ScanSettings', () => {
 
       // assert
       expect(result).toMatchObject({
-        tests: [TestType.XPATH_INJECTION]
+        tests: ['xpathi']
       });
     });
 
@@ -117,7 +113,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         name: 'my scan',
-        tests: [TestType.CROSS_SITE_SCRIPTING],
+        tests: ['xss'],
         target: { url: 'https://example.com' }
       };
 
@@ -133,7 +129,7 @@ describe('ScanSettings', () => {
     it('should create a settings with default name', () => {
       // arrange
       const settings: ScanSettingsOptions = {
-        tests: [TestType.CROSS_SITE_SCRIPTING],
+        tests: ['xss'],
         target: { url: 'https://example.com/users/1' }
       };
 
@@ -150,7 +146,7 @@ describe('ScanSettings', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         name: randomBytes(201).toString('hex'),
-        tests: [TestType.CROSS_SITE_SCRIPTING],
+        tests: ['xss'],
         target: { url: 'https://example.com/users/1' }
       };
 
@@ -163,7 +159,7 @@ describe('ScanSettings', () => {
     it('should truncate a default name if hostname is greater than 200 characters', () => {
       // arrange
       const settings: ScanSettingsOptions = {
-        tests: [TestType.CROSS_SITE_SCRIPTING],
+        tests: ['xss'],
         target: {
           url: `https://subdomain-${randomBytes(200).toString(
             'hex'

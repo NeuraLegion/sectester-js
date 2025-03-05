@@ -1,7 +1,6 @@
 import { SecRunner } from './SecRunner';
 import { SecScan } from './SecScan';
 import { Configuration, Logger } from '@sectester/core';
-import { TestType } from '@sectester/scan';
 import {
   anyString,
   anything,
@@ -175,7 +174,7 @@ describe('SecRunner', () => {
   });
 
   describe('createScan', () => {
-    const options = { tests: [TestType.CROSS_SITE_SCRIPTING] };
+    const options = { tests: ['xss'] };
 
     it('should create scan', async () => {
       await secRunner.init();

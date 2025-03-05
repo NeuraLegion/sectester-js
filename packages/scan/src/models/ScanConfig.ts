@@ -1,11 +1,10 @@
-import { TestType } from './TestType';
 import { AttackParamLocation } from './AttackParamLocation';
 
 export interface ScanConfig {
   name: string;
   projectId: string;
   entryPointIds: string[];
-  tests?: TestType[];
+  tests?: string[];
   poolSize?: number;
   attackParamLocations?: AttackParamLocation[];
   repeaters?: string[];

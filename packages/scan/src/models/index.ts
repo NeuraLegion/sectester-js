@@ -1,7 +1,6 @@
 export * from './AttackParamLocation';
 export * from './Severity';
 export * from './ScanStatus';
-export * from './TestType';
 export * from './Issue';
 export * from './IssueGroup';
 export * from './ScanState';

@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { DefaultScans } from './DefaultScans';
-import { HttpMethod, ScanStatus, Severity, TestType } from './models';
+import { HttpMethod, ScanStatus, Severity } from './models';
 import { deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
 import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
@@ -50,7 +50,7 @@ describe('DefaultScans', () => {
               projectId,
               name: 'test',
               entryPointIds: [entryPointId],
-              tests: [TestType.CROSS_SITE_SCRIPTING],
+              tests: ['xss'],
               info: {
                 source: 'utlib',
                 provider: 'github',
@@ -65,7 +65,7 @@ describe('DefaultScans', () => {
         projectId,
         name: 'test',
         entryPointIds: [entryPointId],
-        tests: [TestType.CROSS_SITE_SCRIPTING]
+        tests: ['xss']
       });
 
       expect(result).toEqual({ id });
