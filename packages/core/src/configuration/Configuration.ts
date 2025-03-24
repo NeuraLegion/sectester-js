@@ -82,7 +82,7 @@ export class Configuration {
   }
 
   constructor({
-    hostname = 'app.brightsec.com',
+    hostname,
     credentials,
     projectId,
     logLevel = LogLevel.ERROR,
@@ -100,7 +100,7 @@ export class Configuration {
 
     this._credentialProviders = credentialProviders;
 
-    this.resolveUrls(hostname);
+    this.resolveUrls(hostname ? hostname : 'app.brightsec.com');
 
     this._projectId = projectId;
 
