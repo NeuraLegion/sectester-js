@@ -11,7 +11,7 @@ import { Projects } from '../Projects';
 import { container } from 'tsyringe';
 
 export interface ConfigurationOptions {
-  hostname: string;
+  hostname?: string;
   projectId?: string;
   logLevel?: LogLevel;
   credentials?: Credentials | CredentialsOptions;
@@ -82,7 +82,7 @@ export class Configuration {
   }
 
   constructor({
-    hostname,
+    hostname = 'app.brightsec.com',
     credentials,
     projectId,
     logLevel = LogLevel.ERROR,
@@ -99,10 +99,6 @@ export class Configuration {
     }
 
     this._credentialProviders = credentialProviders;
-
-    if (!hostname) {
-      throw new Error(`Please provide 'hostname' option.`);
-    }
 
     this.resolveUrls(hostname);
 

@@ -25,7 +25,7 @@ const issue: Issue = {
     method: HttpMethod.GET,
     url: 'https://brokencrystals.com/'
   },
-  link: 'https://app.neuralegion.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9'
+  link: 'https://app.brightsec.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9'
 };
 
 describe('GitHubCheckRunReporter', () => {

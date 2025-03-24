@@ -21,7 +21,7 @@ describe('MultiItemsPayloadBuilder', () => {
       method: HttpMethod.GET,
       url: 'https://example.com/api/test'
     },
-    link: 'https://app.neuralegion.com/scan/test-id'
+    link: 'https://app.brightsec.com/scan/test-id'
   });
 
   it('should build payload with multiple issues of different severities', () => {

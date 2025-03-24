@@ -21,7 +21,7 @@ describe('SingleItemPayloadBuilder', () => {
       method: HttpMethod.POST,
       url: 'https://example.com/api/users'
     },
-    link: 'https://app.neuralegion.com/scan/test-id'
+    link: 'https://app.brightsec.com/scan/test-id'
   };
 
   it('should build basic payload without optional fields', () => {

@@ -25,7 +25,7 @@ import { Configuration } from '@sectester/core';
 import { RepeaterFactory } from '@sectester/repeater';
 
 const configuration = new Configuration({
-  hostname: 'app.neuralegion.com'
+  hostname: 'app.brightsec.com'
 });
 
 const repeaterFactory = new RepeaterFactory(configuration);
@@ -99,9 +99,8 @@ The `RepeaterFactory` also provides a method to create a `Repeater` instance usi
 
 ```ts
 const existingRepeaterId = '<your repater ID>';
-const repeater = await repeaterFactory.createRepeaterFromExisting(
-  existingRepeaterId
-);
+const repeater =
+  await repeaterFactory.createRepeaterFromExisting(existingRepeaterId);
 ```
 
 This method retrieves the existing repeater's details from the cloud using its ID and returns a `Repeater` instance associated with the specified ID.
@@ -152,7 +151,7 @@ describe('Scan', () => {
 
   beforeAll(async () => {
     const configuration = new Configuration({
-      hostname: 'app.neuralegion.com'
+      hostname: 'app.brightsec.com'
     });
 
     repeater = await new RepeaterFactory(configuration).createRepeater();
@@ -197,6 +196,6 @@ Custom scripts and self-signed certificates
 
 ## License
 
-Copyright © 2024 [Bright Security](https://brightsec.com/).
+Copyright © 2025 [Bright Security](https://brightsec.com/).
 
 This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.
