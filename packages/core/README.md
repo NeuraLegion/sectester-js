@@ -43,8 +43,8 @@ Configuration can be customized using the following options:
 
 ```ts
 export interface ConfigurationOptions {
-  hostname: string;
-  projectId: string;
+  hostname?: string;
+  projectId?: string;
   credentials?: Credentials;
   logLevel?: LogLevel;
   credentialProviders?: CredentialProvider[];
@@ -64,7 +64,7 @@ The default configuration is as follows:
 
 - type: `string`
 
-Set the application name (domain name), that is used to establish connection with.
+Set the hostname (domain name) used to establish a connection.
 
 ```ts
 import { Configuration } from '@sectester/core';
@@ -74,11 +74,14 @@ const config = new Configuration({
 });
 ```
 
+> [!NOTE]
+> If you omit the `hostname` parameter, 'app.brightsec.com' will be used by default.
+
 #### projectId
 
 - type: `string`
 
-Set ID of the project you want to work with.
+Set the ID of the project you want to work with.
 
 ```ts
 import { Configuration } from '@sectester/core';
@@ -93,13 +96,13 @@ const config = new Configuration({
 > The project ID can be found in the URL of the project page. For example, in the URL `https://app.brightsec.com/projects/1234`, the project ID is `1234`. We recommend using the dedicated project ID for each application.
 
 > [!WARNING]
-> If you omit the `projectId` parameter, we will use the default project ID. This is not recommended ecpesially if you have multiple projects.
+> If you omit the `projectId` parameter, we will use the default project ID. This is not recommended especially if you have multiple projects.
 
 #### logLevel
 
 - type: `LogLevel`
 
-What level of logs to report. Any logs of a higher level than the setting are shown.
+Set the maximum log level to report.
 
 ```ts
 import { Configuration, LogLevel } from '@sectester/core';
@@ -114,7 +117,7 @@ const config = new Configuration({
 
 - type: `Credentials`
 
-Set credentials to access the application.
+Set credentials for accessing the application.
 
 ```ts
 import { Configuration } from '@sectester/core';
@@ -133,7 +136,7 @@ More info about [setting up an API key](https://docs.brightsec.com/docs/manage-y
 
 - type: `CredentialProvider[]`
 
-Allows you to provide credentials and load it in runtime. The configuration will invoke one provider at a time and only continue to the next if no credentials have been located. For example, if the process finds values defined via the `BRIGHT_TOKEN` environment variables, the file at `.sectesterrc` will not be read.
+Allows you to provide credentials that are loaded at runtime. The configuration will invoke one provider at a time and only continue to the next if no credentials have been located. For example, if the process finds values defined via the `BRIGHT_TOKEN` environment variables, the file at `.sectesterrc` will not be read.
 
 #### EnvCredentialProvider
 
@@ -159,7 +162,7 @@ The `ApiClient` interface and its implementation `FetchApiClient` provide a robu
 import { FetchApiClient } from '@sectester/core';
 
 const client = new FetchApiClient({
-  baseUrl: 'https://app.neuralegion.com',
+  baseUrl: 'https://app.brightsec.com',
   apiKey: 'your-api-key',
   timeout: 5000 // optional, defaults to 5000ms
 });
@@ -190,6 +193,6 @@ The client can be configured using the following options:
 
 ## License
 
-Copyright © 2024 [Bright Security](https://brightsec.com/).
+Copyright © 2025 [Bright Security](https://brightsec.com/).
 
 This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.

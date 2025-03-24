@@ -73,10 +73,9 @@ $ yarn add @sectester/runner  \
 
 ### Getting a Bright API key
 
-1. Register for a free account at Bright’s [**signup**](https://app.neuralegion.com/signup) page
-2. Optional: Skip the quickstart wizard and go directly to [**User API key creation**](https://app.neuralegion.com/profile)
-3. Create a Bright API key ([**check out our doc on how to create a user key**](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens))
-4. Save the Bright API key
+1. Navigate to the [**User API key creation**](https://app.brightsec.com/profile) section on the profile page.
+2. Create a Bright API key ([**check out our doc on how to create a user key**](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens))
+3. Save the Bright API key
    1. We recommend using your Github repository secrets feature to store the key, accessible via the `Settings > Security > Secrets > Actions` configuration. We use the ENV variable called `BRIGHT_TOKEN` in our examples
    2. If you don’t use that option, make sure you save the key in a secure location. You will need to access it later on in the project but will not be able to view it again.
    3. More info on [**how to use ENV vars in Github actions**](https://docs.github.com/en/actions/learn-github-actions/environment-variables)
@@ -128,6 +127,6 @@ Please read [contributing guidelines here](./CONTRIBUTING.md).
 
 ## License
 
-Copyright © 2022 [Bright Security](https://brightsec.com/).
+Copyright © 2025 [Bright Security](https://brightsec.com/).
 
 This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.

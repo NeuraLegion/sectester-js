@@ -37,13 +37,13 @@ describe('Configuration', () => {
       expect(configuration).toBe(configuration2);
     });
 
-    it('should throw if hostname is not passed', () =>
+    it('should throw if empty hostname is passed', () =>
       expect(
         () =>
           new Configuration({
             hostname: ''
           })
-      ).toThrow());
+      ).toThrow("Please make sure that you pass correct 'hostname' option."));
 
     it('should throw an error if credentials or credential providers are not passed', () =>
       expect(
@@ -96,6 +96,9 @@ describe('Configuration', () => {
     });
 
     it.each([
+      {
+        expected: { baseURL: 'https://app.brightsec.com' }
+      },
       {
         input: 'localhost',
         expected: { baseURL: 'http://localhost:8000' }
@@ -160,6 +163,11 @@ describe('Configuration', () => {
       expect(configuration).toMatchObject(expected);
     });
 
+    it('should use default hostname if not explicitly passed', () => {
+      const configuration = new Configuration({});
+      expect(configuration.baseURL).toBe('https://app.brightsec.com');
+    });
+
     it('should throw an error if hostname is wrong', () => {
       expect(
         () =>
@@ -206,7 +214,7 @@ describe('Configuration', () => {
       const configuration = new Configuration({
         credentials,
         projectId: randomUUID(),
-        hostname: 'app.neuralegion.com'
+        hostname: 'app.brightsec.com'
       });
 
       await configuration.loadCredentials();
@@ -219,7 +227,7 @@ describe('Configuration', () => {
         token: 'weobbz5.nexa.vennegtzr2h7urpxgtksetz2kwppdgj0'
       };
       const configuration = new Configuration({
-        hostname: 'app.neuralegion.com',
+        hostname: 'app.brightsec.com',
         projectId: randomUUID(),
         credentialProviders: [instance(mockedEnvCredentialProvider)]
       });
@@ -233,7 +241,7 @@ describe('Configuration', () => {
 
     it('should throw an error if no one provider does not find credentials', async () => {
       const configuration = new Configuration({
-        hostname: 'app.neuralegion.com',
+        hostname: 'app.brightsec.com',
         projectId: randomUUID(),
         credentialProviders: [instance(mockedEnvCredentialProvider)]
       });

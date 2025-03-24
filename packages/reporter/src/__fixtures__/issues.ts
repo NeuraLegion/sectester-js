@@ -1,7 +1,7 @@
 import { HttpMethod, Issue, Severity } from '@sectester/scan';
 import { randomUUID } from 'crypto';
 
-export const issueWithoutResourcesText = `Issue in Bright UI:   http://app.neuralegion.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9
+export const issueWithoutResourcesText = `Issue in Bright UI:   http://app.brightsec.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9
 Name:                 Database connection crashed
 Severity:             Medium
 Remediation:
@@ -26,7 +26,7 @@ export const issueWithoutResources = {
     method: HttpMethod.GET,
     url: 'https://brokencrystals.com/'
   },
-  link: 'http://app.neuralegion.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9',
+  link: 'http://app.brightsec.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9',
   certainty: true
 } satisfies Issue;
 

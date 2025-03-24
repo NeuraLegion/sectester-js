@@ -54,7 +54,7 @@ formatter.format(issue);
 <summary>Sample output</summary>
 
 ```
-Issue in Bright UI:   https://app.neuralegion.com/scans/djoqtSDRJYaR6sH8pfYpDX/issues/8iacauN1FH9vFvDCLoo42v
+Issue in Bright UI:   https://app.brightsec.com/scans/djoqtSDRJYaR6sH8pfYpDX/issues/8iacauN1FH9vFvDCLoo42v
 Name:                 Missing Strict-Transport-Security Header
 Severity:             Low
 Remediation:

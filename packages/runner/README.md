@@ -23,12 +23,12 @@ Then put obtained token into `BRIGHT_TOKEN` environment variable to make it acce
 
 > Refer to `@sectester/core` package [documentation](https://github.com/NeuraLegion/sectester-js/tree/master/packages/core#credentials) for the details on alternative ways of configuring credential providers.
 
-Once it is done, create a configuration object. Single required option is Bright `hostname` domain you are going to use, e.g. `app.neuralegion.com` as the main one:
+Once it is done, create a configuration object. Single required option is Bright `hostname` domain you are going to use, e.g. `app.brightsec.com` as the main one:
 
 ```ts
 import { Configuration } from '@sectester/core';
 
-const configuration = new Configuration({ hostname: 'app.neuralegion.com' });
+const configuration = new Configuration({ hostname: 'app.brightsec.com' });
 ```
 
 ### Setup runner
@@ -40,7 +40,7 @@ import { Configuration } from '@sectester/core';
 import { SecRunner } from '@sectester/runner';
 
 const configuration = new Configuration({
-  hostname: 'app.neuralegion.com',
+  hostname: 'app.brightsec.com',
   projectId: 'your project ID'
 });
 const runner = new SecRunner(configuration);
@@ -48,7 +48,7 @@ const runner = new SecRunner(configuration);
 // or
 
 const runner2 = new SecRunner({
-  hostname: 'app.neuralegion.com',
+  hostname: 'app.brightsec.com',
   projectId: 'your project ID'
 });
 ```
@@ -155,7 +155,7 @@ describe('/api', () => {
 
   beforeEach(async () => {
     runner = new SecRunner({
-      hostname: 'app.neuralegion.com',
+      hostname: 'app.brightsec.com',
       projectId: 'your project ID'
     });
 
@@ -194,6 +194,6 @@ describe('/api', () => {
 
 ## License
 
-Copyright © 2024 [Bright Security](https://brightsec.com/).
+Copyright © 2025 [Bright Security](https://brightsec.com/).
 
 This project is licensed under the MIT License - see the [LICENSE file](LICENSE) for details.
