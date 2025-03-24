@@ -156,14 +156,14 @@ describe('ScanSettings', () => {
       );
     });
 
-    it('should truncate a default name if hostname is greater than 200 characters', () => {
+    it('should truncate a default name if pathname is greater than 200 characters', () => {
       // arrange
       const settings: ScanSettingsOptions = {
         tests: ['xss'],
         target: {
-          url: `https://subdomain-${randomBytes(200).toString(
+          url: `https://subdomain.example.com/${randomBytes(200).toString(
             'hex'
-          )}.example.com`
+          )}`
         }
       };
 
@@ -172,7 +172,7 @@ describe('ScanSettings', () => {
 
       // assert
       expect(result).toMatchObject({
-        name: expect.stringMatching(/^.{1,200}$/)
+        name: expect.stringMatching(/^.{1,199}…$/)
       });
     });
   });
