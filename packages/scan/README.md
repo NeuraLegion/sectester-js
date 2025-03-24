@@ -59,7 +59,7 @@ Below you will find a list of parameters that can be used to configure a `Scan`:
 | `skipStaticParams`     | Use an advanced algorithm to automatically determine if a parameter has any effect on the target system's behavior when changed, and skip testing such static parameters. Enabled by default.                                                              |
 | `poolSize`             | Sets the maximum concurrent requests for the scan, to control the load on your server. By default, `10`.                                                                                                                                                   |
 | `attackParamLocations` | Defines which part of the request to attack. By default, `body`, `query`, and `fragment`.                                                                                                                                                                  |
-| `name`                 | The scan name. The method and hostname by default, e.g. `GET /users/1`.                                                                                                                                                                                    |
+| `name`                 | The scan name. The method and pathname by default, e.g. `GET /users/1`.                                                                                                                                                                                    |
 
 ### Defining a target for attack
 
