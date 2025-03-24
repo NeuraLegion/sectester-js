@@ -37,14 +37,6 @@ describe('Configuration', () => {
       expect(configuration).toBe(configuration2);
     });
 
-    it('should throw if empty hostname is passed', () =>
-      expect(
-        () =>
-          new Configuration({
-            hostname: ''
-          })
-      ).toThrow("Please make sure that you pass correct 'hostname' option."));
-
     it('should throw an error if credentials or credential providers are not passed', () =>
       expect(
         () =>
@@ -97,6 +89,18 @@ describe('Configuration', () => {
 
     it.each([
       {
+        expected: { baseURL: 'https://app.brightsec.com' }
+      },
+      {
+        input: '',
+        expected: { baseURL: 'https://app.brightsec.com' }
+      },
+      {
+        input: undefined,
+        expected: { baseURL: 'https://app.brightsec.com' }
+      },
+      {
+        input: null as unknown as string,
         expected: { baseURL: 'https://app.brightsec.com' }
       },
       {
