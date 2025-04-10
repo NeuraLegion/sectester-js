@@ -54,14 +54,25 @@ export class GitHubCheckRunReporter implements Reporter {
 
   // TODO subject to improvement
   private getTestFilePath(): string {
-    const state = (global as any).expect?.getState();
-    if (!state) {
-      return 'unknown';
+    // Check if running in Jest environment
+    const jestState = (global as any).expect?.getState();
+    if (jestState) {
+      const testPath = jestState.testPath;
+      const rootDir = jestState.snapshotState._rootDir;
+
+      return path.join(
+        path.basename(rootDir),
+        path.relative(rootDir, testPath)
+      );
     }
 
-    const testPath = state.testPath;
-    const rootDir = state.snapshotState._rootDir;
+    // Relies on `TestContext` from Node.js built-in test runner appearing in the stack
+    const matchRes = String(new Error().stack).match(
+      /\n\s+at (?:async )?TestContext.* \((.*):\d+:\d+\)\n/
+    );
 
-    return path.join(path.basename(rootDir), path.relative(rootDir, testPath));
+    return matchRes?.[1]
+      ? path.relative(process.cwd(), matchRes[1] || '')
+      : 'unknown';
   }
 }
