@@ -233,6 +233,20 @@ const target = new Target({
 });
 ```
 
+#### auth
+
+- type: `string | undefined`
+  The authentication ID to be used for the target. For more information, see [here](https://docs.brightsec.com/docs/add-new-auth-object).
+
+```ts
+import { Target } from '@sectester/scan';
+
+const target = new Target({
+  url: 'https://example.com',
+  auth: 'your-auth-id' // Add your authentication ID here
+});
+```
+
 ### Managing a scan
 
 The `Scan` provides a lightweight API to revise and control the status of test execution.
