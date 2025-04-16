@@ -21,6 +21,7 @@ export class DefaultDiscoveries implements Discoveries {
         method: 'POST',
         body: JSON.stringify({
           repeaterId,
+          authObjectId: target.auth,
           request: {
             method: target.method,
             url: target.url,

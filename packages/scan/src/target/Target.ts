@@ -17,6 +17,8 @@ export interface TargetOptions {
   method?: HttpMethod | string;
   // The headers
   headers?: HeadersType;
+  // The authentication/authorization to be used when making the request
+  auth?: string;
   // The optional method of serializing `query`
   // (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
   serializeQuery?(params: QueryParamsType): string;
@@ -142,10 +144,21 @@ export class Target implements TargetOptions {
     return this._serializeQuery;
   }
 
+  private authId?: string;
+
+  get auth(): string | undefined {
+    return this.authId;
+  }
+
+  private set auth(value: string) {
+    this.authId = value;
+  }
+
   constructor({
     url,
     body,
     query,
+    auth,
     headers = {},
     serializeQuery,
     method = HttpMethod.GET
@@ -154,6 +167,10 @@ export class Target implements TargetOptions {
     this.method = isHttpMethod(method) ? method : HttpMethod.GET;
     this.headers = headers;
     this._serializeQuery = serializeQuery ?? this.defaultSerializeQuery;
+
+    if (auth) {
+      this.auth = auth;
+    }
 
     if (body !== undefined) {
       this.body = body;
