@@ -19,6 +19,8 @@ export class DefaultDiscoveries implements Discoveries {
       `/api/v2/projects/${this.configuration.projectId}/entry-points`,
       {
         method: 'POST',
+        // Use a 2 minute timeout for the request to allow passing the authentication
+        signal: AbortSignal.timeout(120_000),
         body: JSON.stringify({
           repeaterId,
           authObjectId: target.auth,
