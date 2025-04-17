@@ -85,6 +85,7 @@ $ yarn add @sectester/runner  \
 >
 > - `auth-objects:read`
 > - `bot`
+> - `entry-points:read`
 > - `entry-points:manage`
 > - `issues:read`
 > - `projects:read`
