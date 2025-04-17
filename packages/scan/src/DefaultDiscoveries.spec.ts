@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { DefaultDiscoveries } from './DefaultDiscoveries';
 import { HttpMethod } from './models';
 import { Target } from './target';
-import { deepEqual, instance, mock, reset, when } from 'ts-mockito';
+import { anyOfClass, deepEqual, instance, mock, reset, when } from 'ts-mockito';
 import { ApiClient, Configuration } from '@sectester/core';
 import { randomUUID } from 'crypto';
 
@@ -44,6 +44,7 @@ describe('DefaultDiscoveries', () => {
         mockedApiClient.request(
           `/api/v2/projects/${projectId}/entry-points`,
           deepEqual({
+            signal: anyOfClass(AbortSignal),
             method: 'POST',
             headers: {
               'content-type': 'application/json'
@@ -78,6 +79,7 @@ describe('DefaultDiscoveries', () => {
         mockedApiClient.request(
           `/api/v2/projects/${projectId}/entry-points`,
           deepEqual({
+            signal: anyOfClass(AbortSignal),
             method: 'POST',
             headers: {
               'content-type': 'application/json'
@@ -118,6 +120,7 @@ describe('DefaultDiscoveries', () => {
         mockedApiClient.request(
           `/api/v2/projects/${projectId}/entry-points`,
           deepEqual({
+            signal: anyOfClass(AbortSignal),
             method: 'POST',
             headers: {
               'content-type': 'application/json'
