@@ -30,6 +30,9 @@ import { MIMEType } from 'node:util';
 
 @injectable()
 export class HttpRequestRunner implements RequestRunner {
+  public readonly DEFAULT_MIME_TYPE = 'application/octet-stream';
+  public readonly DEFAULT_ENCODING = 'utf8';
+
   private readonly httpProxyAgent?: http.Agent;
   private readonly httpsProxyAgent?: https.Agent;
   private readonly httpAgent?: http.Agent;
@@ -239,17 +242,30 @@ export class HttpRequestRunner implements RequestRunner {
     type: string;
     encoding: string;
   } {
-    const contentType =
-      res.headers['content-type'] || 'application/octet-stream';
-    const { params, essence: type } = new MIMEType(contentType);
+    const contentType = res.headers['content-type'] || this.DEFAULT_MIME_TYPE;
 
-    let encoding: string | null = params.get('charset');
+    try {
+      const { params, essence: type } = new MIMEType(contentType);
 
-    if (!encoding || !iconv.encodingExists(encoding)) {
-      encoding = 'utf8';
+      let encoding: string | null = params.get('charset');
+
+      if (!encoding || !iconv.encodingExists(encoding)) {
+        encoding = this.DEFAULT_ENCODING;
+      }
+
+      return { type, encoding };
+    } catch (err) {
+      this.logger.debug(
+        'Invalid content-type header "%s", falling back to defaults: %s',
+        contentType,
+        err instanceof Error ? err.message : String(err)
+      );
+
+      return {
+        type: this.DEFAULT_MIME_TYPE,
+        encoding: this.DEFAULT_ENCODING
+      };
     }
-
-    return { type, encoding };
   }
 
   private unzipBody(response: IncomingMessage): Readable {

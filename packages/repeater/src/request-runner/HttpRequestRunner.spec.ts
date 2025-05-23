@@ -361,5 +361,35 @@ describe('HttpRequestRunner', () => {
 
       expect(response.body).toEqual('');
     });
+
+    it('should handle malformed content-type header and fall back to defaults', async () => {
+      const { request, requestOptions } = createRequest();
+      const body = 'test response body';
+      nock(requestOptions.url).get('/').reply(200, body, {
+        'content-type': 'completely malformed content type'
+      });
+
+      const response = await sut.run(request);
+
+      expect(response).toMatchObject({
+        statusCode: 200,
+        body
+      });
+    });
+
+    it('should handle empty content-type header and use fallback', async () => {
+      const { request, requestOptions } = createRequest();
+      const body = 'test response body';
+      nock(requestOptions.url).get('/').reply(200, body, {
+        'content-type': ''
+      });
+
+      const response = await sut.run(request);
+
+      expect(response).toMatchObject({
+        statusCode: 200,
+        body
+      });
+    });
   });
 });
