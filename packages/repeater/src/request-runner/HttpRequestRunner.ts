@@ -241,15 +241,29 @@ export class HttpRequestRunner implements RequestRunner {
   } {
     const contentType =
       res.headers['content-type'] || 'application/octet-stream';
-    const { params, essence: type } = new MIMEType(contentType);
 
-    let encoding: string | null = params.get('charset');
+    try {
+      const { params, essence: type } = new MIMEType(contentType);
 
-    if (!encoding || !iconv.encodingExists(encoding)) {
-      encoding = 'utf8';
+      let encoding: string | null = params.get('charset');
+
+      if (!encoding || !iconv.encodingExists(encoding)) {
+        encoding = 'utf8';
+      }
+
+      return { type, encoding };
+    } catch (err) {
+      this.logger.debug(
+        'Invalid content-type header "%s", falling back to defaults: %s',
+        contentType,
+        err instanceof Error ? err.message : String(err)
+      );
+
+      return {
+        type: 'application/octet-stream',
+        encoding: 'utf8'
+      };
     }
-
-    return { type, encoding };
   }
 
   private unzipBody(response: IncomingMessage): Readable {
