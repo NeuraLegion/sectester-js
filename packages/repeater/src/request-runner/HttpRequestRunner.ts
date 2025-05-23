@@ -30,6 +30,9 @@ import { MIMEType } from 'node:util';
 
 @injectable()
 export class HttpRequestRunner implements RequestRunner {
+  public readonly DEFAULT_MIME_TYPE = 'application/octet-stream';
+  public readonly DEFAULT_ENCODING = 'utf8';
+
   private readonly httpProxyAgent?: http.Agent;
   private readonly httpsProxyAgent?: https.Agent;
   private readonly httpAgent?: http.Agent;
@@ -239,8 +242,7 @@ export class HttpRequestRunner implements RequestRunner {
     type: string;
     encoding: string;
   } {
-    const contentType =
-      res.headers['content-type'] || 'application/octet-stream';
+    const contentType = res.headers['content-type'] || this.DEFAULT_MIME_TYPE;
 
     try {
       const { params, essence: type } = new MIMEType(contentType);
@@ -248,7 +250,7 @@ export class HttpRequestRunner implements RequestRunner {
       let encoding: string | null = params.get('charset');
 
       if (!encoding || !iconv.encodingExists(encoding)) {
-        encoding = 'utf8';
+        encoding = this.DEFAULT_ENCODING;
       }
 
       return { type, encoding };
@@ -260,8 +262,8 @@ export class HttpRequestRunner implements RequestRunner {
       );
 
       return {
-        type: 'application/octet-stream',
-        encoding: 'utf8'
+        type: this.DEFAULT_MIME_TYPE,
+        encoding: this.DEFAULT_ENCODING
       };
     }
   }
