@@ -74,30 +74,21 @@ export class Repeater {
   private async connect(): Promise<void> {
     this.logger.log('Connecting the Bridges');
 
-    this.subscribeDiagnosticEvents();
+    this.subscribeEvents();
 
     await this.repeaterServer.connect();
-
-    this.logger.log('Deploying the repeater');
-
-    await this.deploy();
-
-    this.logger.log('The Repeater (%s) started', this.repeaterId);
-
-    this.subscribeConnectedEvent();
   }
 
-  private async deploy() {
+  private deploy = async () => {
+    this.logger.log('Deploying the Repeater (%s)', this.repeaterId);
     await this.repeaterServer.deploy({
       repeaterId: this.repeaterId
     });
-  }
+    this.logger.log('The Repeater (%s) started', this.repeaterId);
+  };
 
-  private subscribeConnectedEvent() {
+  private subscribeEvents() {
     this.repeaterServer.on(RepeaterServerEvents.CONNECTED, this.deploy);
-  }
-
-  private subscribeDiagnosticEvents() {
     this.repeaterServer.on(RepeaterServerEvents.ERROR, this.handleError);
 
     this.repeaterServer.on(

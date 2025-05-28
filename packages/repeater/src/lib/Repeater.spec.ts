@@ -52,6 +52,12 @@ describe('Repeater', () => {
 
   describe('start', () => {
     it('should start', async () => {
+      // arrange
+      let handler: () => void;
+      when(
+        mockedRepeaterServer.on(RepeaterServerEvents.CONNECTED, anything())
+      ).thenCall((_, h) => (handler = h));
+      when(mockedRepeaterServer.connect()).thenCall(() => handler());
       // act
       await sut.start();
 
@@ -77,6 +83,11 @@ describe('Repeater', () => {
 
     it('should throw when underlying deploy throws', async () => {
       // arrange
+      let handler: () => void;
+      when(
+        mockedRepeaterServer.on(RepeaterServerEvents.CONNECTED, anything())
+      ).thenCall((_, h) => (handler = h));
+      when(mockedRepeaterServer.connect()).thenCall(() => handler());
       when(mockedRepeaterServer.deploy(anything())).thenReject(
         new Error('foo')
       );
