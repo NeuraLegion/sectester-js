@@ -27,6 +27,7 @@ export const RepeaterId = Symbol('RepeaterId');
 @injectable()
 export class Repeater {
   private _runningStatus = RunningStatus.OFF;
+  private deploymentPromise?: Promise<void>;
 
   get runningStatus(): RunningStatus {
     return this._runningStatus;
@@ -67,6 +68,7 @@ export class Repeater {
     this._runningStatus = RunningStatus.OFF;
 
     this.repeaterServer.disconnect();
+    this.deploymentPromise = undefined;
 
     return Promise.resolve();
   }
@@ -77,6 +79,8 @@ export class Repeater {
     this.subscribeEvents();
 
     await this.repeaterServer.connect();
+
+    await this.deploymentPromise;
   }
 
   private deploy = async () => {
@@ -88,7 +92,10 @@ export class Repeater {
   };
 
   private subscribeEvents() {
-    this.repeaterServer.on(RepeaterServerEvents.CONNECTED, this.deploy);
+    this.repeaterServer.on(
+      RepeaterServerEvents.CONNECTED,
+      () => (this.deploymentPromise = this.deploy())
+    );
     this.repeaterServer.on(RepeaterServerEvents.ERROR, this.handleError);
 
     this.repeaterServer.on(
