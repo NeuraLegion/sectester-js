@@ -1,6 +1,6 @@
 import { ApiError } from '../exceptions/ApiError';
 import { RateLimitError } from '../exceptions/RateLimitError';
-import { ApiClient } from './ApiClient';
+import { ApiClient, ApiRequestInit } from './ApiClient';
 import { RateLimiter } from './RateLimiter';
 import { RetryConfig, RetryHandler } from './RetryHandler';
 import { MIMEType } from 'node:util';
@@ -37,15 +37,16 @@ export class FetchApiClient implements ApiClient {
     });
   }
 
-  public request(path: string, options?: RequestInit): Promise<Response> {
+  public request(path: string, options?: ApiRequestInit): Promise<Response> {
     const url = new URL(path, this.config.baseUrl);
     const requestOptions = {
       redirect: 'follow',
       keepalive: true,
       ...options,
       headers: this.createHeaders(options?.headers),
-      method: (options?.method ?? 'GET').toUpperCase()
-    } satisfies RequestInit;
+      method: (options?.method ?? 'GET').toUpperCase(),
+      handle409Redirects: options?.handle409Redirects ?? true
+    } satisfies ApiRequestInit;
 
     const idempotent = FetchApiClient.IDEMPOTENT_METHODS.has(
       requestOptions.method
@@ -62,22 +63,31 @@ export class FetchApiClient implements ApiClient {
 
   private async makeRequest(
     url: string | URL,
-    options?: RequestInit
+    options?: ApiRequestInit
   ): Promise<Response> {
+    const { handle409Redirects = true, ...requestOptions } = options ?? {};
     const signal =
-      options?.signal ?? AbortSignal.timeout(this.config.timeout ?? 10_000);
+      requestOptions?.signal ??
+      AbortSignal.timeout(this.config.timeout ?? 10_000);
     const response = await fetch(url, {
-      ...options,
+      ...requestOptions,
       signal
     });
 
-    return this.handleResponse(response);
+    return this.handleResponse(response, handle409Redirects);
   }
 
   // eslint-disable-next-line complexity
-  private async handleResponse(response: Response): Promise<Response> {
+  private async handleResponse(
+    response: Response,
+    handle409Redirects: boolean = true
+  ): Promise<Response> {
     if (!response.ok) {
-      if (response.status === 409 && response.headers.has('location')) {
+      if (
+        response.status === 409 &&
+        response.headers.has('location') &&
+        handle409Redirects
+      ) {
         const locationPath = response.headers.get('location');
         // eslint-disable-next-line max-depth
         if (locationPath) {
