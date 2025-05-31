@@ -1,7 +1,12 @@
 import { Target } from './target';
 import { Discoveries } from './Discoveries';
 import { inject, injectable } from 'tsyringe';
-import { ApiClient, Configuration } from '@sectester/core';
+import {
+  ApiClient,
+  Configuration,
+  ApiError,
+  ApiRequestInit
+} from '@sectester/core';
 
 @injectable()
 export class DefaultDiscoveries implements Discoveries {
@@ -34,35 +39,57 @@ export class DefaultDiscoveries implements Discoveries {
       headers: { 'content-type': 'application/json' }
     };
 
-    let response = await this.client.request(
-      `/api/v2/projects/${this.configuration.projectId}/entry-points`,
-      { ...requestOptions, method: 'POST' }
-    );
+    try {
+      const response = await this.client.request(
+        `/api/v2/projects/${this.configuration.projectId}/entry-points`,
+        { ...requestOptions, handle409Redirects: false, method: 'POST' }
+      );
 
-    if (response.status === 409 && response.headers.has('location')) {
-      const location = response.headers.get('location') as string;
-      const putResponse = await this.client.request(location, {
+      const data = (await response.json()) as { id: string };
+
+      return data;
+    } catch (error) {
+      if (this.isConflictError(error)) {
+        return this.handleConflictError(error, requestOptions);
+      }
+
+      throw error;
+    }
+  }
+
+  private isConflictError(error: unknown): error is ApiError {
+    if (!(error instanceof ApiError) || error.response.status !== 409) {
+      return false;
+    }
+
+    const location = error.response.headers.get('location');
+
+    return !!location && location.trim() !== '';
+  }
+
+  private async handleConflictError(
+    error: ApiError,
+    requestOptions?: ApiRequestInit
+  ): Promise<{ id: string }> {
+    const location = error.response.headers.get('location') as string;
+
+    try {
+      await this.client.request(location, {
         ...requestOptions,
         method: 'PUT'
       });
 
-      if (!putResponse.ok) {
-        const errorText = await putResponse.text();
+      const response = await this.client.request(location);
+      const data = (await response.json()) as { id: string };
+
+      return data;
+    } catch (putError) {
+      if (putError instanceof ApiError) {
         throw new Error(
-          `Failed to update existing entrypoint at ${location}: ${errorText}`
+          `Failed to update existing entrypoint at ${location}: ${putError.message}`
         );
       }
-
-      response = await this.client.request(location);
+      throw putError;
     }
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to create entrypoint: ${errorText}`);
-    }
-
-    const data = (await response.json()) as { id: string };
-
-    return data;
   }
 }
