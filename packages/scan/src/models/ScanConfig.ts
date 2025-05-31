@@ -6,10 +6,9 @@ export interface ScanConfig {
   entryPointIds: string[];
   tests?: string[];
   poolSize?: number;
+  requestsRateLimit?: number;
   attackParamLocations?: AttackParamLocation[];
   repeaters?: string[];
   smart?: boolean;
   skipStaticParams?: boolean;
-  slowEpTimeout?: number;
-  targetTimeout?: number;
 }

@@ -23,6 +23,18 @@ describe('ScanSettings', () => {
           poolSize: 0
         },
         expected: 'Invalid pool size'
+      },
+      {
+        input: {
+          requestsRateLimit: 1001
+        },
+        expected: 'Invalid requests rate limit'
+      },
+      {
+        input: {
+          requestsRateLimit: -1
+        },
+        expected: 'Invalid requests rate limit'
       }
     ])(
       'should raise the error `$expected` when invalid config ($input) is supplied',
