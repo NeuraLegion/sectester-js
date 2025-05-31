@@ -40,6 +40,7 @@ export class ScanFactory {
     repeaterId,
     smart,
     poolSize,
+    requestsRateLimit,
     skipStaticParams,
     attackParamLocations
   }: ScanSettings): Promise<ScanConfig> {
@@ -52,6 +53,7 @@ export class ScanFactory {
       name,
       smart,
       poolSize,
+      requestsRateLimit,
       skipStaticParams,
       projectId: this.configuration.projectId,
       entryPointIds: [entrypointId],

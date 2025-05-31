@@ -15,6 +15,8 @@ export interface ScanSettingsOptions {
   smart?: boolean;
   // Pool size
   poolSize?: number;
+  // Requests rate limit
+  requestsRateLimit?: number;
   // Allows to skip testing static parameters.
   skipStaticParams?: boolean;
   // Defines which part of the request to attack
@@ -89,6 +91,20 @@ export class ScanSettings implements ScanSettingsOptions {
     this._poolSize = value;
   }
 
+  private _requestsRateLimit!: number;
+
+  get requestsRateLimit(): number {
+    return this._requestsRateLimit;
+  }
+
+  private set requestsRateLimit(value: number) {
+    if (!checkBoundaries(value, { min: 0, max: 1000 })) {
+      throw new Error('Invalid requests rate limit.');
+    }
+
+    this._requestsRateLimit = value;
+  }
+
   private _tests!: string[];
 
   get tests(): string[] {
@@ -125,7 +141,8 @@ export class ScanSettings implements ScanSettingsOptions {
     target,
     repeaterId,
     smart = true,
-    poolSize = 10,
+    requestsRateLimit = 0, // automatic rate limiting
+    poolSize = 50, // up to 2x more than default pool size
     skipStaticParams = true,
     attackParamLocations = []
   }: ScanSettingsOptions) {
@@ -133,6 +150,7 @@ export class ScanSettings implements ScanSettingsOptions {
     const { method, parsedURL } = this.target;
     this.name = name || truncate(`${method} ${parsedURL.pathname}`, 200);
     this.poolSize = poolSize;
+    this.requestsRateLimit = requestsRateLimit;
     this.repeaterId = repeaterId;
     this.skipStaticParams = skipStaticParams;
     this.smart = smart;
