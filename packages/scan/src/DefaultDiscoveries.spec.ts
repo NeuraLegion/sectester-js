@@ -3,7 +3,7 @@ import { DefaultDiscoveries } from './DefaultDiscoveries';
 import { HttpMethod } from './models';
 import { Target } from './target';
 import { anyOfClass, deepEqual, instance, mock, reset, when } from 'ts-mockito';
-import { ApiClient, Configuration } from '@sectester/core';
+import { ApiClient, Configuration, ApiError } from '@sectester/core';
 import { randomUUID } from 'crypto';
 
 describe('DefaultDiscoveries', () => {
@@ -58,7 +58,8 @@ describe('DefaultDiscoveries', () => {
                 headers: testTarget.headers,
                 body: await testTarget.text()
               }
-            })
+            }),
+            handle409Redirects: false
           })
         )
       ).thenResolve(response);
@@ -95,10 +96,11 @@ describe('DefaultDiscoveries', () => {
                 headers: testTarget.headers,
                 body: await testTarget.text()
               }
-            })
+            }),
+            handle409Redirects: false
           })
         )
-      ).thenResolve(conflictResponse);
+      ).thenThrow(new ApiError(conflictResponse));
 
       when(
         mockedApiClient.request(
@@ -160,7 +162,8 @@ describe('DefaultDiscoveries', () => {
                 headers: getTarget.headers,
                 body: undefined
               }
-            })
+            }),
+            handle409Redirects: false
           })
         )
       ).thenResolve(response);
@@ -170,14 +173,13 @@ describe('DefaultDiscoveries', () => {
       expect(result).toEqual({ id: entryPointId });
     });
 
-    it('should get existing entry point even if PUT fails', async () => {
-      const redirectLocation =
-        'https://example.com/api/v2/projects/123/entry-points/456';
+    it('should throw error when PUT fails during 409 conflict handling', async () => {
+      const redirectLocation = `/api/v2/projects/${projectId}/entry-points/${entryPointId}`;
       const conflictResponse = new Response(null, {
         status: 409,
         headers: new Headers({ location: redirectLocation })
       });
-      const putFailResponse = new Response('Internal Server Error', {
+      const putErrorResponse = new Response('Internal Server Error', {
         status: 500,
         statusText: 'Internal Server Error'
       });
@@ -200,10 +202,11 @@ describe('DefaultDiscoveries', () => {
                 headers: testTarget.headers,
                 body: await testTarget.text()
               }
-            })
+            }),
+            handle409Redirects: false
           })
         )
-      ).thenResolve(conflictResponse);
+      ).thenThrow(new ApiError(conflictResponse));
 
       when(
         mockedApiClient.request(
@@ -226,12 +229,14 @@ describe('DefaultDiscoveries', () => {
             })
           })
         )
-      ).thenResolve(putFailResponse);
+      ).thenThrow(
+        new ApiError(putErrorResponse, 'API request failed with status 500')
+      );
 
       const result = discoveries.createEntrypoint(testTarget, repeaterId);
 
       await expect(result).rejects.toThrow(
-        `Failed to update existing entrypoint at ${redirectLocation}: Internal Server Error`
+        `Failed to update existing entrypoint at ${redirectLocation}: API request failed with status 500`
       );
     });
 
@@ -259,15 +264,18 @@ describe('DefaultDiscoveries', () => {
                 headers: testTarget.headers,
                 body: await testTarget.text()
               }
-            })
+            }),
+            handle409Redirects: false
           })
         )
-      ).thenResolve(errorResponse);
+      ).thenThrow(
+        new ApiError(errorResponse, 'API request failed with status 400')
+      );
 
       const result = discoveries.createEntrypoint(testTarget, repeaterId);
 
       await expect(result).rejects.toThrow(
-        'Failed to create entrypoint: Bad Request'
+        'API request failed with status 400'
       );
     });
 
@@ -295,15 +303,18 @@ describe('DefaultDiscoveries', () => {
                 headers: testTarget.headers,
                 body: await testTarget.text()
               }
-            })
+            }),
+            handle409Redirects: false
           })
         )
-      ).thenResolve(conflictResponse);
+      ).thenThrow(
+        new ApiError(conflictResponse, 'API request failed with status 409')
+      );
 
       const result = discoveries.createEntrypoint(testTarget, repeaterId);
 
       await expect(result).rejects.toThrow(
-        'Failed to create entrypoint: Conflict'
+        'API request failed with status 409'
       );
     });
 
@@ -337,10 +348,11 @@ describe('DefaultDiscoveries', () => {
                 headers: testTarget.headers,
                 body: await testTarget.text()
               }
-            })
+            }),
+            handle409Redirects: false
           })
         )
-      ).thenResolve(conflictResponse);
+      ).thenThrow(new ApiError(conflictResponse));
 
       when(
         mockedApiClient.request(
@@ -365,14 +377,14 @@ describe('DefaultDiscoveries', () => {
         )
       ).thenResolve(putResponse);
 
-      when(mockedApiClient.request(redirectLocation)).thenResolve(
-        getFailResponse
+      when(mockedApiClient.request(redirectLocation)).thenThrow(
+        new ApiError(getFailResponse, 'API request failed with status 404')
       );
 
       const result = discoveries.createEntrypoint(testTarget, repeaterId);
 
       await expect(result).rejects.toThrow(
-        'Failed to create entrypoint: Not Found'
+        'API request failed with status 404'
       );
     });
 
@@ -403,41 +415,19 @@ describe('DefaultDiscoveries', () => {
                 headers: testTarget.headers,
                 body: await testTarget.text()
               }
-            })
+            }),
+            handle409Redirects: false
           })
         )
-      ).thenResolve(conflictResponse);
+      ).thenThrow(
+        new ApiError(conflictResponse, 'API request failed with status 409')
+      );
 
-      const putResponse = new Response(null, { status: 204 });
-      when(
-        mockedApiClient.request(
-          '',
-          deepEqual({
-            signal: anyOfClass(AbortSignal),
-            method: 'PUT',
-            headers: {
-              'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-              repeaterId,
-              authObjectId: testTarget.auth,
-              request: {
-                method: testTarget.method,
-                url: testTarget.url,
-                headers: testTarget.headers,
-                body: await testTarget.text()
-              }
-            })
-          })
-        )
-      ).thenResolve(putResponse);
+      const result = discoveries.createEntrypoint(testTarget, repeaterId);
 
-      const finalResponse = new Response(JSON.stringify({ id: entryPointId }));
-      when(mockedApiClient.request('')).thenResolve(finalResponse);
-
-      const result = await discoveries.createEntrypoint(testTarget, repeaterId);
-
-      expect(result).toEqual({ id: entryPointId });
+      await expect(result).rejects.toThrow(
+        'API request failed with status 409'
+      );
     });
   });
 });
