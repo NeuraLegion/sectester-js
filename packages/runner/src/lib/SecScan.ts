@@ -20,6 +20,7 @@ export interface FunctionScanOptions<T> {
 export class SecScan {
   private _threshold = Severity.LOW;
   private _timeout = 600_000;
+  private _waitForCompletion = false;
 
   constructor(
     private readonly settings: Omit<ScanSettingsOptions, 'target'>,
@@ -61,9 +62,12 @@ export class SecScan {
     );
 
     try {
-      await scan.expect(this._threshold);
-
-      await this.assert(scan);
+      if (this._waitForCompletion) {
+        await scan.waitForCompletion();
+      } else {
+        await scan.expect(this._threshold);
+        await this.assert(scan);
+      }
     } finally {
       await scan.stop();
       await functionScanTarget?.stop();
@@ -79,6 +83,12 @@ export class SecScan {
 
   public timeout(value: number): SecScan {
     this._timeout = value;
+
+    return this;
+  }
+
+  public waitForCompletion(): SecScan {
+    this._waitForCompletion = true;
 
     return this;
   }
