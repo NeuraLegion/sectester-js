@@ -162,4 +162,39 @@ describe('SecScan', () => {
       verify(mockedIssueFormatter.format(anything())).never();
     });
   });
+
+  describe('waitForCompletion', () => {
+    const target: TargetOptions = { url: 'http://foo.bar' };
+    const issues: Issue[] = [
+      {
+        id: 'fooId',
+        severity: Severity.HIGH
+      } as Issue
+    ];
+
+    let secScan!: SecScan;
+
+    beforeEach(() => {
+      secScan = new SecScan({ tests }, scanFactory, issueFormatter);
+    });
+
+    it('should run scan without checking threshold when waitForCompletion is used', async () => {
+      when(mockedScan.waitForCompletion()).thenResolve();
+      when(mockedScan.issues()).thenResolve(issues);
+
+      await secScan.waitForCompletion().run(target);
+
+      verify(mockedScan.waitForCompletion()).once();
+      verify(mockedScan.expect(anything())).never();
+    });
+
+    it('should stop scan on any error', async () => {
+      when(mockedScan.expect(anything())).thenReject();
+
+      const res = secScan.waitForCompletion().run(target);
+
+      await expect(res).rejects.toThrow();
+      verify(mockedScan.stop()).once();
+    });
+  });
 });

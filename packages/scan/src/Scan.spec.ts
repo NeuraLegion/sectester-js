@@ -304,6 +304,57 @@ describe('Scan', () => {
     });
   });
 
+  describe('waitForCompletion', () => {
+    it('should wait for scan completion', async () => {
+      when(mockedScans.getScan(id)).thenResolve({
+        status: ScanStatus.DONE
+      });
+
+      await scan.waitForCompletion();
+
+      verify(mockedScans.getScan(id)).once();
+    });
+
+    it('should wait for scan completion after a few iterations', async () => {
+      when(mockedScans.getScan(id))
+        .thenResolve({
+          status: ScanStatus.RUNNING,
+          issuesBySeverity: [{ number: 1, type: Severity.LOW }]
+        })
+        .thenResolve({
+          status: ScanStatus.RUNNING
+        })
+        .thenResolve({
+          status: ScanStatus.DONE
+        });
+
+      await scan.waitForCompletion();
+
+      verify(mockedScans.getScan(id)).thrice();
+    });
+
+    it('should terminate due to timeout', async () => {
+      scan = new Scan({ ...options, timeout: 1 });
+      when(mockedScans.getScan(id)).thenResolve({
+        status: ScanStatus.RUNNING
+      });
+
+      const result = scan.waitForCompletion();
+
+      expect(timers.setTimeout).toHaveBeenCalled();
+      await expect(result).rejects.toThrow(ScanTimedOut);
+    });
+
+    it('should raise an error if the scan finishes with status different from `done`', async () => {
+      scan = new Scan({ ...options });
+      when(mockedScans.getScan(id)).thenResolve({
+        status: ScanStatus.FAILED
+      });
+
+      await expect(scan.waitForCompletion()).rejects.toThrow(ScanAborted);
+    });
+  });
+
   describe('stop', () => {
     it('should stop a scan', async () => {
       when(mockedScans.stopScan(id)).thenResolve();

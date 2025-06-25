@@ -96,6 +96,19 @@ export class Scan {
     this.assert(signal?.aborted);
   }
 
+  public async waitForCompletion(): Promise<void> {
+    const signal = this.timeout ? AbortSignal.timeout(this.timeout) : undefined;
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    for await (const _ of this.status()) {
+      if (this.done || signal?.aborted) {
+        break;
+      }
+    }
+
+    this.assert(signal?.aborted);
+  }
+
   public async dispose(): Promise<void> {
     try {
       await this.refreshState();
