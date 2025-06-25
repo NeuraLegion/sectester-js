@@ -189,7 +189,7 @@ describe('SecScan', () => {
     });
 
     it('should stop scan on any error', async () => {
-      when(mockedScan.expect(anything())).thenReject();
+      when(mockedScan.waitForCompletion()).thenReject();
 
       const res = secScan.waitForCompletion().run(target);
 
