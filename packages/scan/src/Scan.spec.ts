@@ -304,13 +304,13 @@ describe('Scan', () => {
     });
   });
 
-  describe('waitForCompletion', () => {
+  describe('expect with failFast: false', () => {
     it('should wait for scan completion', async () => {
       when(mockedScans.getScan(id)).thenResolve({
         status: ScanStatus.DONE
       });
 
-      await scan.waitForCompletion();
+      await scan.expect(Severity.LOW, { failFast: false });
 
       verify(mockedScans.getScan(id)).once();
     });
@@ -328,7 +328,7 @@ describe('Scan', () => {
           status: ScanStatus.DONE
         });
 
-      await scan.waitForCompletion();
+      await scan.expect(Severity.LOW, { failFast: false });
 
       verify(mockedScans.getScan(id)).thrice();
     });
@@ -339,7 +339,7 @@ describe('Scan', () => {
         status: ScanStatus.RUNNING
       });
 
-      const result = scan.waitForCompletion();
+      const result = scan.expect(Severity.LOW, { failFast: false });
 
       expect(timers.setTimeout).toHaveBeenCalled();
       await expect(result).rejects.toThrow(ScanTimedOut);
@@ -351,7 +351,9 @@ describe('Scan', () => {
         status: ScanStatus.FAILED
       });
 
-      await expect(scan.waitForCompletion()).rejects.toThrow(ScanAborted);
+      await expect(
+        scan.expect(Severity.LOW, { failFast: false })
+      ).rejects.toThrow(ScanAborted);
     });
   });
 
