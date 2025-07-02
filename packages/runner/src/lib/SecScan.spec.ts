@@ -76,7 +76,7 @@ describe('SecScan', () => {
     });
 
     it('should run scan with default threshold', async () => {
-      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.expect(anything(), anything())).thenResolve();
       when(mockedScan.issues()).thenResolve([]);
 
       await secScan.run(target);
@@ -84,11 +84,13 @@ describe('SecScan', () => {
       verify(
         mockedScanFactory.createScan(objectContaining({ target }), anything())
       ).once();
-      verify(mockedScan.expect(Severity.LOW)).once();
+      verify(
+        mockedScan.expect(Severity.LOW, objectContaining({ failFast: true }))
+      ).once();
     });
 
     it('should run scan with latest set threshold', async () => {
-      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.expect(anything(), anything())).thenResolve();
       when(mockedScan.issues()).thenResolve([]);
 
       secScan.threshold(Severity.MEDIUM);
@@ -98,11 +100,13 @@ describe('SecScan', () => {
       verify(
         mockedScanFactory.createScan(objectContaining({ target }), anything())
       ).once();
-      verify(mockedScan.expect(Severity.HIGH)).once();
+      verify(
+        mockedScan.expect(Severity.HIGH, objectContaining({ failFast: true }))
+      ).once();
     });
 
     it('should run scan with provided timeout', async () => {
-      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.expect(anything(), anything())).thenResolve();
       when(mockedScan.issues()).thenResolve([]);
 
       secScan.timeout(42);
@@ -117,7 +121,7 @@ describe('SecScan', () => {
     });
 
     it('should throw an error on found issues', async () => {
-      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.expect(anything(), anything())).thenResolve();
       when(mockedScan.issues()).thenResolve(issues);
 
       const res = secScan.run(target);
@@ -126,7 +130,7 @@ describe('SecScan', () => {
     });
 
     it('should stop scan after resolved expectation', async () => {
-      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.expect(anything(), anything())).thenResolve();
       when(mockedScan.issues()).thenResolve([]);
 
       await secScan.run(target);
@@ -144,7 +148,7 @@ describe('SecScan', () => {
     });
 
     it('should report if issues are found', async () => {
-      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.expect(anything(), anything())).thenResolve();
       when(mockedScan.issues()).thenResolve(issues);
 
       const res = secScan.run(target);
@@ -154,12 +158,26 @@ describe('SecScan', () => {
     });
 
     it('should not report if there are not issues', async () => {
-      when(mockedScan.expect(anything())).thenResolve();
+      when(mockedScan.expect(anything(), anything())).thenResolve();
       when(mockedScan.issues()).thenResolve([]);
 
       await secScan.run(target);
 
       verify(mockedIssueFormatter.format(anything())).never();
+    });
+
+    it('should run scan without failing fast', async () => {
+      when(
+        mockedScan.expect(anything(), objectContaining({ failFast: false }))
+      ).thenResolve();
+      when(mockedScan.issues()).thenResolve([]);
+
+      await secScan.setFailFast(false).run(target);
+
+      verify(
+        mockedScan.expect(anything(), objectContaining({ failFast: false }))
+      ).once();
+      verify(mockedScan.expect(anything())).never();
     });
   });
 });

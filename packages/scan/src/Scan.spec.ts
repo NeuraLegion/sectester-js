@@ -302,6 +302,24 @@ describe('Scan', () => {
 
       verify(mockedScans.getScan(id)).twice();
     });
+
+    it('should wait for scan completion', async () => {
+      when(mockedScans.getScan(id))
+        .thenResolve({
+          status: ScanStatus.RUNNING
+        })
+        .thenResolve({
+          status: ScanStatus.RUNNING,
+          issuesBySeverity: [{ number: 1, type: Severity.LOW }]
+        })
+        .thenResolve({
+          status: ScanStatus.DONE
+        });
+
+      await scan.expect(Severity.LOW, { failFast: false });
+
+      verify(mockedScans.getScan(id)).thrice();
+    });
   });
 
   describe('stop', () => {

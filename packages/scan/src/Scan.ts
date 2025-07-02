@@ -77,18 +77,19 @@ export class Scan {
   }
 
   public async expect(
-    expectation: Severity | ((scan: Scan) => unknown)
+    expectation: Severity | ((scan: Scan) => unknown),
+    options: { failFast?: boolean } = { failFast: true }
   ): Promise<void> {
     const signal = this.timeout ? AbortSignal.timeout(this.timeout) : undefined;
-
     const predicate = this.createPredicate(expectation);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     for await (const _ of this.status()) {
-      const preventFurtherPolling =
-        (await predicate()) || this.done || signal?.aborted;
+      if (this.done || signal?.aborted) {
+        break;
+      }
 
-      if (preventFurtherPolling) {
+      if ((options.failFast ?? true) && (await predicate())) {
         break;
       }
     }
