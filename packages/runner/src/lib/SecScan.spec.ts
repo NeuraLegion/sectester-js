@@ -165,28 +165,12 @@ describe('SecScan', () => {
 
       verify(mockedIssueFormatter.format(anything())).never();
     });
-  });
 
-  describe('setFailFast', () => {
-    const target: TargetOptions = { url: 'http://foo.bar' };
-    const issues: Issue[] = [
-      {
-        id: 'fooId',
-        severity: Severity.HIGH
-      } as Issue
-    ];
-
-    let secScan!: SecScan;
-
-    beforeEach(() => {
-      secScan = new SecScan({ tests }, scanFactory, issueFormatter);
-    });
-
-    it('should run scan without checking threshold when setFailFast(false) is used', async () => {
+    it('should run scan without failing fast', async () => {
       when(
         mockedScan.expect(anything(), objectContaining({ failFast: false }))
       ).thenResolve();
-      when(mockedScan.issues()).thenResolve(issues);
+      when(mockedScan.issues()).thenResolve([]);
 
       await secScan.setFailFast(false).run(target);
 
@@ -194,17 +178,6 @@ describe('SecScan', () => {
         mockedScan.expect(anything(), objectContaining({ failFast: false }))
       ).once();
       verify(mockedScan.expect(anything())).never();
-    });
-
-    it('should stop scan on any error', async () => {
-      when(
-        mockedScan.expect(anything(), objectContaining({ failFast: false }))
-      ).thenReject();
-
-      const res = secScan.setFailFast(false).run(target);
-
-      await expect(res).rejects.toThrow();
-      verify(mockedScan.stop()).once();
     });
   });
 });

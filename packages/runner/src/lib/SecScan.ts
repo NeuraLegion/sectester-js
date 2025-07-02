@@ -63,10 +63,7 @@ export class SecScan {
 
     try {
       await scan.expect(this._threshold, { failFast: this._failFast });
-
-      if (this._failFast) {
-        await this.assert(scan);
-      }
+      await this.assert(scan);
     } finally {
       await scan.stop();
       await functionScanTarget?.stop();

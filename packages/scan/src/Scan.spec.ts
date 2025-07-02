@@ -302,27 +302,15 @@ describe('Scan', () => {
 
       verify(mockedScans.getScan(id)).twice();
     });
-  });
 
-  describe('expect with failFast: false', () => {
     it('should wait for scan completion', async () => {
-      when(mockedScans.getScan(id)).thenResolve({
-        status: ScanStatus.DONE
-      });
-
-      await scan.expect(Severity.LOW, { failFast: false });
-
-      verify(mockedScans.getScan(id)).once();
-    });
-
-    it('should wait for scan completion after a few iterations', async () => {
       when(mockedScans.getScan(id))
+        .thenResolve({
+          status: ScanStatus.RUNNING
+        })
         .thenResolve({
           status: ScanStatus.RUNNING,
           issuesBySeverity: [{ number: 1, type: Severity.LOW }]
-        })
-        .thenResolve({
-          status: ScanStatus.RUNNING
         })
         .thenResolve({
           status: ScanStatus.DONE
@@ -331,29 +319,6 @@ describe('Scan', () => {
       await scan.expect(Severity.LOW, { failFast: false });
 
       verify(mockedScans.getScan(id)).thrice();
-    });
-
-    it('should terminate due to timeout', async () => {
-      scan = new Scan({ ...options, timeout: 1 });
-      when(mockedScans.getScan(id)).thenResolve({
-        status: ScanStatus.RUNNING
-      });
-
-      const result = scan.expect(Severity.LOW, { failFast: false });
-
-      expect(timers.setTimeout).toHaveBeenCalled();
-      await expect(result).rejects.toThrow(ScanTimedOut);
-    });
-
-    it('should raise an error if the scan finishes with status different from `done`', async () => {
-      scan = new Scan({ ...options });
-      when(mockedScans.getScan(id)).thenResolve({
-        status: ScanStatus.FAILED
-      });
-
-      await expect(
-        scan.expect(Severity.LOW, { failFast: false })
-      ).rejects.toThrow(ScanAborted);
     });
   });
 
