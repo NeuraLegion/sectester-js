@@ -153,11 +153,11 @@ export class ScanSettings implements ScanSettingsOptions {
     target,
     repeaterId,
     smart = true,
+    starMetadata,
     requestsRateLimit = 0, // automatic rate limiting
     poolSize = 50, // up to 2x more than default pool size
     skipStaticParams = true,
-    attackParamLocations = [],
-    starMetadata
+    attackParamLocations = []
   }: ScanSettingsOptions) {
     this.target = target;
     const { method, parsedURL } = this.target;
