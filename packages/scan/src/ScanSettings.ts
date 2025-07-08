@@ -21,9 +21,21 @@ export interface ScanSettingsOptions {
   skipStaticParams?: boolean;
   // Defines which part of the request to attack
   attackParamLocations?: AttackParamLocation[];
+  // Star metadata to be passed to the scan
+  starMetadata?: string;
 }
 
 export class ScanSettings implements ScanSettingsOptions {
+  private _starMetadata?: string;
+
+  get starMetadata(): string | undefined {
+    return this._starMetadata;
+  }
+
+  private set starMetadata(value: string | undefined) {
+    this._starMetadata = value;
+  }
+
   private _name!: string;
 
   get name(): string {
@@ -144,7 +156,8 @@ export class ScanSettings implements ScanSettingsOptions {
     requestsRateLimit = 0, // automatic rate limiting
     poolSize = 50, // up to 2x more than default pool size
     skipStaticParams = true,
-    attackParamLocations = []
+    attackParamLocations = [],
+    starMetadata
   }: ScanSettingsOptions) {
     this.target = target;
     const { method, parsedURL } = this.target;
@@ -156,6 +169,7 @@ export class ScanSettings implements ScanSettingsOptions {
     this.smart = smart;
     this.tests = tests;
     this.attackParamLocations = attackParamLocations;
+    this.starMetadata = starMetadata;
   }
 
   private resolveAttackParamLocations(

@@ -132,5 +132,29 @@ describe('ScanFactory', () => {
         )
       ).once();
     });
+
+    it('should pass starMetadata when provided', async () => {
+      const starMetadataString = 'star-metadata';
+      const settings: ScanSettingsOptions = {
+        target: { url: 'https://example.com' },
+        tests: ['xss'],
+        starMetadata: starMetadataString
+      };
+
+      when(
+        mockedDiscoveries.createEntrypoint(anything(), anything())
+      ).thenResolve({ id: entrypointId });
+      when(mockedScans.createScan(anything())).thenResolve({ id: scanId });
+
+      await scanFactory.createScan(settings);
+
+      verify(
+        mockedScans.createScan(
+          objectContaining({
+            starMetadata: starMetadataString
+          })
+        )
+      ).once();
+    });
   });
 });
