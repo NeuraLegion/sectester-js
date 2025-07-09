@@ -11,5 +11,5 @@ export interface ScanConfig {
   repeaters?: string[];
   smart?: boolean;
   skipStaticParams?: boolean;
-  starMetadata?: string;
+  starMetadata?: Record<string, unknown>;
 }

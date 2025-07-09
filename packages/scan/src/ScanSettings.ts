@@ -21,18 +21,18 @@ export interface ScanSettingsOptions {
   skipStaticParams?: boolean;
   // Defines which part of the request to attack
   attackParamLocations?: AttackParamLocation[];
-  // Star metadata to be passed to the scan
-  starMetadata?: string;
+  // Star metadata to be passed to the scan (internal use only)
+  starMetadata?: Record<string, unknown>;
 }
 
 export class ScanSettings implements ScanSettingsOptions {
-  private _starMetadata?: string;
+  private _starMetadata?: Record<string, unknown>;
 
-  get starMetadata(): string | undefined {
+  get starMetadata(): Record<string, unknown> | undefined {
     return this._starMetadata;
   }
 
-  private set starMetadata(value: string | undefined) {
+  private set starMetadata(value: Record<string, unknown> | undefined) {
     this._starMetadata = value;
   }
 

@@ -134,11 +134,11 @@ describe('ScanFactory', () => {
     });
 
     it('should pass starMetadata when provided', async () => {
-      const starMetadataString = 'star-metadata';
+      const starMetadataObject = { key: 'value' };
       const settings: ScanSettingsOptions = {
         target: { url: 'https://example.com' },
         tests: ['xss'],
-        starMetadata: starMetadataString
+        starMetadata: starMetadataObject
       };
 
       when(
@@ -151,7 +151,7 @@ describe('ScanFactory', () => {
       verify(
         mockedScans.createScan(
           objectContaining({
-            starMetadata: starMetadataString
+            starMetadata: starMetadataObject
           })
         )
       ).once();
