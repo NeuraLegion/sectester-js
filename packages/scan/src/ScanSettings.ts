@@ -21,7 +21,10 @@ export interface ScanSettingsOptions {
   skipStaticParams?: boolean;
   // Defines which part of the request to attack
   attackParamLocations?: AttackParamLocation[];
-  // Star metadata to be passed to the scan (internal use only)
+  /**
+   * Star metadata to be passed to the scan.
+   * @internal
+   */
   starMetadata?: Record<string, unknown>;
 }
 
