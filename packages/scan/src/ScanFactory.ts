@@ -42,7 +42,8 @@ export class ScanFactory {
     poolSize,
     requestsRateLimit,
     skipStaticParams,
-    attackParamLocations
+    attackParamLocations,
+    starMetadata
   }: ScanSettings): Promise<ScanConfig> {
     const { id: entrypointId } = await this.discoveries.createEntrypoint(
       new Target(target),
@@ -55,6 +56,7 @@ export class ScanFactory {
       poolSize,
       requestsRateLimit,
       skipStaticParams,
+      starMetadata,
       projectId: this.configuration.projectId,
       entryPointIds: [entrypointId],
       attackParamLocations: [...attackParamLocations],
