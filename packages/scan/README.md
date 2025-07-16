@@ -267,6 +267,14 @@ const issues = await scan.issues();
 
 > It returns control as soon as a scan is done, timeout is gone, or an expectation is satisfied.
 
+The `expect` method accepts an optional second parameter with options:
+
+```ts
+await scan.expect(Severity.HIGH, { failFast: false });
+```
+
+When `failFast` is set to `false`, the scan will continue running even if issues meeting the threshold are found, collecting all issues before completing. By default, `failFast` is `true`, which means the scan will stop as soon as an issue matching the specified severity threshold is detected.
+
 You can also define a custom expectation passing a function that accepts an instance of `Scan` as follows:
 
 ```ts

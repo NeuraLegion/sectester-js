@@ -126,13 +126,23 @@ The `run` method returns promise that is resolved if scan finishes without any v
 
 If any vulnerabilities are found, they will be pretty printed to stdout or stderr (depending on severity) by [reporter](https://github.com/NeuraLegion/sectester-js/tree/master/packages/reporter).
 
-By default, each found issue will cause the scan to stop. To control this behavior you can set a severity threshold using the `threshold` method:
+By default, each found issue will cause the scan to stop immediately. To control this behavior, you can:
+
+1. Set a severity threshold using the `threshold` method:
 
 ```ts
 scan.threshold(Severity.HIGH);
 ```
 
 Now found issues with severity lower than `HIGH` will not cause the scan to stop.
+
+2. Control whether the scan fails immediately when an issue meeting the threshold is found using the `setFailFast` method:
+
+```ts
+scan.setFailFast(false);
+```
+
+When `failFast` is set to `false`, the scan will continue running even if issues meeting the threshold are found, collecting all issues before completing. This is useful when you want to identify all vulnerabilities in a single scan run rather than stopping at the first one found.
 
 Sometimes either due to scan configuration issues or target misbehave, the scan might take much more time than you expect.
 In this case, you can provide a timeout (in milliseconds) for specifying maximum scan running time:
