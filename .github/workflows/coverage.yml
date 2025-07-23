@@ -38,10 +38,8 @@ jobs:
       - name: npm run test:coverage:all
         run: npm run test:coverage:all
 
-      - name: Send reports to Codeclimate
-        uses: paambaati/codeclimate-action@v3.0.0
+      - uses: qltysh/qlty-action/coverage@v1
         if: ${{ hashFiles('coverage/**/lcov.info') }}
-        env:
-          CC_TEST_REPORTER_ID: d05b4f0a8ae4d2f1ef66147c5e6f3b506363e248dd8a64cc2660cbb2509ecbe4
         with:
-          coverageLocations: coverage/**/lcov.info:lcov
+          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+          files: coverage/**/lcov.info
