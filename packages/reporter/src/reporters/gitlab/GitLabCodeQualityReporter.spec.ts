@@ -57,12 +57,16 @@ describe('GitLabCodeQualityReporter', () => {
 
       await reporter.report(instance(mockedScan));
 
-      verify(mockedGitLabReportSender.sendCodeQualityReport(anything())).never();
+      verify(
+        mockedGitLabReportSender.sendCodeQualityReport(anything())
+      ).never();
     });
 
     it('should send code quality report when there are issues', async () => {
       when(mockedScan.issues()).thenResolve([issue] as Issue[]);
-      when(mockedGitLabReportSender.sendCodeQualityReport(anything())).thenResolve();
+      when(
+        mockedGitLabReportSender.sendCodeQualityReport(anything())
+      ).thenResolve();
 
       await reporter.report(instance(mockedScan));
 

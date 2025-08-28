@@ -14,4 +14,9 @@ export interface CodeQualityIssue {
 }
 
 export type CodeQualityReport = CodeQualityIssue[];
-export type CodeQualitySeverity = 'info' | 'minor' | 'major' | 'critical' | 'blocker';
+export type CodeQualitySeverity =
+  | 'info'
+  | 'minor'
+  | 'major'
+  | 'critical'
+  | 'blocker';

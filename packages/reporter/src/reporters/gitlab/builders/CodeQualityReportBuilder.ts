@@ -1,4 +1,8 @@
-import type { CodeQualityReport, CodeQualityIssue, CodeQualitySeverity } from '../types';
+import type {
+  CodeQualityReport,
+  CodeQualityIssue,
+  CodeQualitySeverity
+} from '../types';
 import type { Issue } from '@sectester/scan';
 import crypto from 'node:crypto';
 
@@ -14,7 +18,7 @@ export class CodeQualityReportBuilder {
 
   /**
    * Builds a GitLab Code Quality report from the provided issues.
-   * 
+   *
    * @returns An array of Code Quality issues in GitLab format
    */
   public build(): CodeQualityReport {
@@ -23,7 +27,7 @@ export class CodeQualityReportBuilder {
 
   /**
    * Converts a SecTester issue to GitLab Code Quality issue format.
-   * 
+   *
    * @param issue - The SecTester issue to convert
    * @returns The corresponding GitLab Code Quality issue
    */
@@ -54,7 +58,7 @@ export class CodeQualityReportBuilder {
 
   /**
    * Creates a unique fingerprint for an issue based on its characteristics.
-   * 
+   *
    * @param issue - The issue to create a fingerprint for
    * @returns A unique MD5 hash string
    */
@@ -66,13 +70,11 @@ export class CodeQualityReportBuilder {
 
   /**
    * Maps SecTester vulnerability severity levels to GitLab Code Quality severity levels.
-   * 
+   *
    * @param severity - The SecTester severity level (low, medium, high, critical)
    * @returns The corresponding GitLab Code Quality severity level
    */
-  private mapSeverity(
-    severity: string
-  ): CodeQualitySeverity {
+  private mapSeverity(severity: string): CodeQualitySeverity {
     switch (severity.toLowerCase()) {
       case 'low':
         return 'minor';

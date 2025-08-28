@@ -2,7 +2,10 @@ import { CodeQualityReportBuilder } from './CodeQualityReportBuilder';
 import { HttpMethod, Issue, Severity } from '@sectester/scan';
 import { randomUUID } from 'node:crypto';
 
-const createMockIssue = (name: string = 'SQL Injection', severity: Severity = Severity.HIGH): Issue => ({
+const createMockIssue = (
+  name: string = 'SQL Injection',
+  severity: Severity = Severity.HIGH
+): Issue => ({
   id: randomUUID(),
   certainty: true,
   details: 'Test vulnerability details',
@@ -41,7 +44,8 @@ describe('CodeQualityReportBuilder', () => {
 
       expect(report).toHaveLength(1);
       expect(report[0]).toEqual({
-        description: 'SQL Injection vulnerability found at POST https://example.com/api/login',
+        description:
+          'SQL Injection vulnerability found at POST https://example.com/api/login',
         check_name: 'SQL Injection',
         fingerprint: expect.any(String),
         severity: 'critical',
@@ -62,7 +66,10 @@ describe('CodeQualityReportBuilder', () => {
       const highIssue = createMockIssue('SQLi', Severity.HIGH);
       const criticalIssue = createMockIssue('RCE', Severity.CRITICAL);
 
-      const builder = new CodeQualityReportBuilder([lowIssue, mediumIssue, highIssue, criticalIssue], testFilePath);
+      const builder = new CodeQualityReportBuilder(
+        [lowIssue, mediumIssue, highIssue, criticalIssue],
+        testFilePath
+      );
       const report = builder.build();
 
       expect(report[0].severity).toBe('minor'); // LOW -> minor
@@ -74,8 +81,11 @@ describe('CodeQualityReportBuilder', () => {
     it('should create unique fingerprints for different issues', () => {
       const issue1 = createMockIssue('SQL Injection');
       const issue2 = createMockIssue('XSS');
-      
-      const builder = new CodeQualityReportBuilder([issue1, issue2], testFilePath);
+
+      const builder = new CodeQualityReportBuilder(
+        [issue1, issue2],
+        testFilePath
+      );
       const report = builder.build();
 
       expect(report[0].fingerprint).not.toBe(report[1].fingerprint);
@@ -84,13 +94,13 @@ describe('CodeQualityReportBuilder', () => {
     it('should create consistent fingerprints for same issue characteristics', () => {
       const issue1 = createMockIssue('SQL Injection');
       const issue2 = createMockIssue('SQL Injection');
-      
+
       // Ensure they have the same request details
       issue2.originalRequest = { ...issue1.originalRequest };
-      
+
       const builder1 = new CodeQualityReportBuilder([issue1], testFilePath);
       const builder2 = new CodeQualityReportBuilder([issue2], testFilePath);
-      
+
       const report1 = builder1.build();
       const report2 = builder2.build();
 

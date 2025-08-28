@@ -15,18 +15,19 @@ import path from 'node:path';
 @injectable()
 export class GitLabCodeQualityReporter implements Reporter {
   constructor(
-    @inject(GITLAB_REPORT_SENDER) private readonly gitlabReportSender: GitLabReportSender
+    @inject(GITLAB_REPORT_SENDER)
+    private readonly gitlabReportSender: GitLabReportSender
   ) {}
 
   /**
    * Reports scan results by writing a Code Quality report to file.
    * Only generates and writes a report if security issues are found.
-   * 
+   *
    * @param scan - The scan containing security issues to report
    */
   public async report(scan: Scan): Promise<void> {
     const issues = await scan.issues();
-    
+
     if (issues.length > 0) {
       await this.generateCodeQualityReport(issues);
     }
@@ -34,18 +35,21 @@ export class GitLabCodeQualityReporter implements Reporter {
 
   /**
    * Generates and writes a Code Quality report to file.
-   * 
+   *
    * @param issues - The security issues to include in the report
    */
   private async generateCodeQualityReport(issues: Issue[]): Promise<void> {
     const testFilePath = this.getTestFilePath();
-    const codeQualityReport = this.createCodeQualityReportBuilder(issues, testFilePath).build();
+    const codeQualityReport = this.createCodeQualityReportBuilder(
+      issues,
+      testFilePath
+    ).build();
     await this.gitlabReportSender.sendCodeQualityReport(codeQualityReport);
   }
 
   /**
    * Creates a Code Quality report builder for the given issues.
-   * 
+   *
    * @param issues - The security issues to include in the report
    * @param testFilePath - The path to the test file where issues were found
    * @returns A configured Code Quality report builder
@@ -60,7 +64,7 @@ export class GitLabCodeQualityReporter implements Reporter {
   /**
    * Determines the test file path where the scan was executed.
    * Attempts to detect the test file from Jest or Node.js test runner context.
-   * 
+   *
    * @returns The relative path to the test file, or 'unknown' if not detectable
    */
   // TODO subject to improvement

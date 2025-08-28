@@ -7,9 +7,7 @@ import { writeFile } from 'node:fs/promises';
 
 @injectable()
 export class GitLabCodeQualityFileWriter implements GitLabReportSender {
-  constructor(
-    @inject(GITLAB_CONFIG) private readonly config: GitLabConfig
-  ) {}
+  constructor(@inject(GITLAB_CONFIG) private readonly config: GitLabConfig) {}
 
   public async sendCodeQualityReport(report: CodeQualityReport): Promise<void> {
     // This method writes GitLab Code Quality reports to a file.
@@ -18,7 +16,8 @@ export class GitLabCodeQualityFileWriter implements GitLabReportSender {
     //     reports:
     //       codequality: gl-code-quality-report.json
     const reportJson = JSON.stringify(report, null, 2);
-    const filename = this.config.codeQualityReportFilename || 'gl-code-quality-report.json';
+    const filename =
+      this.config.codeQualityReportFilename || 'gl-code-quality-report.json';
     await writeFile(filename, reportJson, 'utf-8');
   }
 }
