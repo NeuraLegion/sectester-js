@@ -1,32 +1,12 @@
 import 'reflect-metadata';
 import { GitLabCodeQualityReporter } from './GitLabCodeQualityReporter';
 import { GitLabReportSender, GITLAB_REPORT_SENDER, GITLAB_CONFIG } from './api';
-import { HttpMethod, Issue, Scan, Severity } from '@sectester/scan';
+import { fullyDescribedIssue } from '../../__fixtures__/issues';
+import { Issue, Scan } from '@sectester/scan';
 import { container } from 'tsyringe';
 import { anything, instance, mock, reset, verify, when } from 'ts-mockito';
-import { randomUUID } from 'node:crypto';
 
-const issue: Issue = {
-  id: randomUUID(),
-  certainty: true,
-  details: 'Cross-site request forgery is a type of malicious website exploit.',
-  name: 'Database connection crashed',
-  severity: Severity.MEDIUM,
-  protocol: 'http',
-  remedy:
-    'The best way to protect against those kind of issues is making sure the Database resources are sufficient',
-  cvss: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L',
-  time: new Date(),
-  originalRequest: {
-    method: HttpMethod.GET,
-    url: 'https://brokencrystals.com/'
-  },
-  request: {
-    method: HttpMethod.GET,
-    url: 'https://brokencrystals.com/'
-  },
-  link: 'https://app.brightsec.com/scans/pDzxcEXQC8df1fcz1QwPf9/issues/pDzxcEXQC8df1fcz1QwPf9'
-};
+const issue = fullyDescribedIssue;
 
 describe('GitLabCodeQualityReporter', () => {
   let reporter: GitLabCodeQualityReporter;
