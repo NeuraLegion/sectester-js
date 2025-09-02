@@ -4,9 +4,9 @@ import type { GitHubClient } from './api';
 import { SingleItemPayloadBuilder, MultiItemsPayloadBuilder } from './builders';
 import type { CheckRunPayloadBuilder } from './builders';
 import type { GitHubConfig } from './types';
+import { TestFilePathResolver } from '../../utils';
 import { inject, injectable } from 'tsyringe';
 import type { Issue, Scan } from '@sectester/scan';
-import path from 'node:path';
 
 // TODO add `GitHubCheckRunReporter` description to README
 @injectable()
@@ -43,36 +43,12 @@ export class GitHubCheckRunReporter implements Reporter {
       ? new SingleItemPayloadBuilder(
           issues[0],
           this.config.commitSha,
-          this.getTestFilePath()
+          TestFilePathResolver.getTestFilePath()
         )
       : new MultiItemsPayloadBuilder(
           issues,
           this.config.commitSha,
-          this.getTestFilePath()
+          TestFilePathResolver.getTestFilePath()
         );
-  }
-
-  // TODO subject to improvement
-  private getTestFilePath(): string {
-    // Check if running in Jest environment
-    const jestState = (global as any).expect?.getState();
-    if (jestState) {
-      const testPath = jestState.testPath;
-      const rootDir = jestState.snapshotState._rootDir;
-
-      return path.join(
-        path.basename(rootDir),
-        path.relative(rootDir, testPath)
-      );
-    }
-
-    // Relies on `TestContext` from Node.js built-in test runner appearing in the stack
-    const matchRes = String(new Error().stack).match(
-      /\n\s+at (?:async )?TestContext.* \((.*):\d+:\d+\)\n/
-    );
-
-    return matchRes?.[1]
-      ? path.relative(process.cwd(), matchRes[1] || '')
-      : 'unknown';
   }
 }

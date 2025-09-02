@@ -2,10 +2,9 @@ import { Reporter } from '../../lib';
 import { GITLAB_REPORT_SENDER } from './api';
 import type { GitLabReportSender } from './api';
 import { CodeQualityReportBuilder } from './builders';
-
+import { TestFilePathResolver } from '../../utils';
 import { inject, injectable } from 'tsyringe';
 import type { Issue, Scan } from '@sectester/scan';
-import path from 'node:path';
 
 /**
  * GitLab Code Quality reporter that writes security scan results to files.
@@ -39,7 +38,7 @@ export class GitLabCodeQualityReporter implements Reporter {
    * @param issues - The security issues to include in the report
    */
   private async generateCodeQualityReport(issues: Issue[]): Promise<void> {
-    const testFilePath = this.getTestFilePath();
+    const testFilePath = TestFilePathResolver.getTestFilePath();
     const codeQualityReport = this.createCodeQualityReportBuilder(
       issues,
       testFilePath
@@ -59,35 +58,5 @@ export class GitLabCodeQualityReporter implements Reporter {
     testFilePath: string
   ): CodeQualityReportBuilder {
     return new CodeQualityReportBuilder(issues, testFilePath);
-  }
-
-  /**
-   * Determines the test file path where the scan was executed.
-   * Attempts to detect the test file from Jest or Node.js test runner context.
-   *
-   * @returns The relative path to the test file, or 'unknown' if not detectable
-   */
-  // TODO subject to improvement
-  private getTestFilePath(): string {
-    // Check if running in Jest environment
-    const jestState = (global as any).expect?.getState();
-    if (jestState) {
-      const testPath = jestState.testPath;
-      const rootDir = jestState.snapshotState._rootDir;
-
-      return path.join(
-        path.basename(rootDir),
-        path.relative(rootDir, testPath)
-      );
-    }
-
-    // Relies on `TestContext` from Node.js built-in test runner appearing in the stack
-    const matchRes = String(new Error().stack).match(
-      /\n\s+at (?:async )?TestContext.* \((.*):\d+:\d+\)\n/
-    );
-
-    return matchRes?.[1]
-      ? path.relative(process.cwd(), matchRes[1] || '')
-      : 'unknown';
   }
 }
