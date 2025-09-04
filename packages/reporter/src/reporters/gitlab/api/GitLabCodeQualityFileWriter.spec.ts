@@ -8,7 +8,7 @@ jest.mock('node:fs/promises', () => ({
   writeFile: jest.fn()
 }));
 
-const mockedWriteFile = writeFile as jest.Mock;
+const mockedWriteFile = jest.mocked(writeFile);
 
 describe('GitLabCodeQualityFileWriter', () => {
   let writer: GitLabCIArtifactsFileWriter;
