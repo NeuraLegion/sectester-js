@@ -1,17 +1,26 @@
 import 'reflect-metadata';
 import { GitLabCodeQualityReporter } from './GitLabCodeQualityReporter';
-import { GitLabReportSender, GITLAB_REPORT_SENDER, GITLAB_CONFIG } from './api';
+import { GitLabCIArtifacts, GITLAB_CI_ARTIFACTS, GITLAB_CONFIG } from './api';
 import { fullyDescribedIssue } from '../../__fixtures__/issues';
+import { TEST_FILE_PATH_RESOLVER, TestFilePathResolver } from '../../utils';
+import { CodeQualityReport } from './types/CodeQualityReport';
 import { Issue, Scan } from '@sectester/scan';
 import { container } from 'tsyringe';
-import { anything, instance, mock, reset, verify, when } from 'ts-mockito';
-
-const issue = fullyDescribedIssue;
+import {
+  anything,
+  capture,
+  instance,
+  mock,
+  reset,
+  verify,
+  when
+} from 'ts-mockito';
 
 describe('GitLabCodeQualityReporter', () => {
   let reporter: GitLabCodeQualityReporter;
   const mockedScan = mock<Scan>();
-  const mockedGitLabReportSender = mock<GitLabReportSender>();
+  const mockedGitLabCIArtifacts = mock<GitLabCIArtifacts>();
+  const mockedTestFilePathResolver = mock<TestFilePathResolver>();
 
   const mockConfig = {};
 
@@ -19,16 +28,26 @@ describe('GitLabCodeQualityReporter', () => {
     container.clearInstances();
 
     container.register(GITLAB_CONFIG, { useValue: mockConfig });
-    container.register(GITLAB_REPORT_SENDER, {
-      useValue: instance(mockedGitLabReportSender)
+    container.register(GITLAB_CI_ARTIFACTS, {
+      useValue: instance(mockedGitLabCIArtifacts)
     });
+    container.register(TEST_FILE_PATH_RESOLVER, {
+      useValue: instance(mockedTestFilePathResolver)
+    });
+
+    when(mockedTestFilePathResolver.getTestFilePath()).thenReturn(
+      'test.spec.ts'
+    );
 
     reporter = container.resolve(GitLabCodeQualityReporter);
   });
 
   afterEach(() => {
-    reset<Scan>(mockedScan);
-    reset<GitLabReportSender>(mockedGitLabReportSender);
+    reset<Scan | GitLabCIArtifacts | TestFilePathResolver>(
+      mockedScan,
+      mockedGitLabCIArtifacts,
+      mockedTestFilePathResolver
+    );
   });
 
   describe('report', () => {
@@ -38,19 +57,38 @@ describe('GitLabCodeQualityReporter', () => {
       await reporter.report(instance(mockedScan));
 
       verify(
-        mockedGitLabReportSender.sendCodeQualityReport(anything())
+        mockedGitLabCIArtifacts.writeCodeQualityReport(anything())
       ).never();
     });
 
     it('should send code quality report when there are issues', async () => {
-      when(mockedScan.issues()).thenResolve([issue] as Issue[]);
+      when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
       when(
-        mockedGitLabReportSender.sendCodeQualityReport(anything())
+        mockedGitLabCIArtifacts.writeCodeQualityReport(anything())
       ).thenResolve();
 
       await reporter.report(instance(mockedScan));
 
-      verify(mockedGitLabReportSender.sendCodeQualityReport(anything())).once();
+      verify(mockedGitLabCIArtifacts.writeCodeQualityReport(anything())).once();
+
+      const [actualReport]: [CodeQualityReport, ...any[]] = capture(
+        mockedGitLabCIArtifacts.writeCodeQualityReport
+      ).last();
+
+      expect(actualReport).toHaveLength(1);
+      expect(actualReport[0]).toEqual({
+        description: `${fullyDescribedIssue.name} vulnerability found at ${fullyDescribedIssue.originalRequest.method.toUpperCase()} ${fullyDescribedIssue.originalRequest.url}`,
+        fingerprint: expect.any(String),
+        check_name: fullyDescribedIssue.name,
+        severity: 'major',
+        raw_details: JSON.stringify(fullyDescribedIssue, null, 2),
+        location: {
+          path: 'test.spec.ts',
+          lines: {
+            begin: 1
+          }
+        }
+      });
     });
   });
 });

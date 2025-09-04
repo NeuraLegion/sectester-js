@@ -31,6 +31,7 @@ export interface Comment {
 
 export interface Issue {
   id: string;
+  entryPointId: string;
   details: string;
   name: string;
   certainty: boolean;

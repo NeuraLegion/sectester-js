@@ -1,5 +1,5 @@
 export interface GitLabConfig {
-  codeQualityReportFilename?: string;
+  codeQualityReportFilename: string;
 }
 
 export const GITLAB_CONFIG = Symbol('GITLAB_CONFIG');

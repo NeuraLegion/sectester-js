@@ -99,7 +99,7 @@ export class SecRunner {
       configuration.container.register(Reporter, {
         useClass: GitHubCheckRunReporter
       });
-    } else if (process.env.CI && process.env.GITLAB_CI === 'true') {
+    } else if (process.env.GITLAB_CI === 'true') {
       configuration.container.register(Reporter, {
         useClass: GitLabCodeQualityReporter
       });

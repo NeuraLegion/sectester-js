@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import { GitLabCodeQualityFileWriter } from './GitLabCodeQualityFileWriter';
-import { GITLAB_REPORT_SENDER } from './GitLabReportSender';
+import { GitLabCIArtifactsFileWriter } from './GitLabCodeQualityFileWriter';
+import { GITLAB_CI_ARTIFACTS } from './GitLabCIArtifacts';
 import { GITLAB_CONFIG } from './GitLabConfig';
 import { container } from 'tsyringe';
 
@@ -12,6 +12,6 @@ container.register(GITLAB_CONFIG, {
   }
 });
 
-container.register(GITLAB_REPORT_SENDER, {
-  useClass: GitLabCodeQualityFileWriter
+container.register(GITLAB_CI_ARTIFACTS, {
+  useClass: GitLabCIArtifactsFileWriter
 });

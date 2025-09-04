@@ -3,34 +3,19 @@ import type {
   CodeQualityIssue,
   CodeQualitySeverity
 } from '../types';
-import type { Issue } from '@sectester/scan';
-import crypto from 'node:crypto';
+import { Issue, Severity } from '@sectester/scan';
+import { createHash } from 'node:crypto';
 
-/**
- * Builder for creating GitLab Code Quality reports from SecTester scan issues.
- * Converts multiple issues into the GitLab Code Quality format.
- */
 export class CodeQualityReportBuilder {
   constructor(
     private readonly issues: Issue[],
     private readonly testFilePath: string
   ) {}
 
-  /**
-   * Builds a GitLab Code Quality report from the provided issues.
-   *
-   * @returns An array of Code Quality issues in GitLab format
-   */
   public build(): CodeQualityReport {
     return this.issues.map(issue => this.convertIssueToCodeQualityIssue(issue));
   }
 
-  /**
-   * Converts a SecTester issue to GitLab Code Quality issue format.
-   *
-   * @param issue - The SecTester issue to convert
-   * @returns The corresponding GitLab Code Quality issue
-   */
   private convertIssueToCodeQualityIssue(issue: Issue): CodeQualityIssue {
     const { originalRequest, name, severity } = issue;
     const description = `${name} vulnerability found at ${originalRequest.method.toUpperCase()} ${originalRequest.url}`;
@@ -42,47 +27,34 @@ export class CodeQualityReportBuilder {
 
     return {
       description,
-      check_name: name,
       fingerprint,
+      check_name: name,
       severity: gitlabSeverity,
       raw_details: JSON.stringify(issue, null, 2),
       location: {
         path: this.testFilePath,
         lines: {
-          begin: 1,
-          end: 1
+          begin: 1
         }
       }
     };
   }
 
-  /**
-   * Creates a unique fingerprint for an issue based on its characteristics.
-   *
-   * @param issue - The issue to create a fingerprint for
-   * @returns A unique MD5 hash string
-   */
   private createFingerprint(issue: Issue): string {
-    const content = `${issue.name}-${issue.originalRequest.method}-${issue.originalRequest.url}`;
+    const content = `${issue.name}-${issue.entryPointId}`;
 
-    return crypto.createHash('md5').update(content).digest('hex');
+    return createHash('md5').update(content).digest('hex');
   }
 
-  /**
-   * Maps SecTester vulnerability severity levels to GitLab Code Quality severity levels.
-   *
-   * @param severity - The SecTester severity level (low, medium, high, critical)
-   * @returns The corresponding GitLab Code Quality severity level
-   */
-  private mapSeverity(severity: string): CodeQualitySeverity {
-    switch (severity.toLowerCase()) {
-      case 'low':
+  private mapSeverity(severity: Severity): CodeQualitySeverity {
+    switch (severity) {
+      case Severity.LOW:
         return 'minor';
-      case 'medium':
+      case Severity.MEDIUM:
         return 'major';
-      case 'high':
+      case Severity.HIGH:
         return 'critical';
-      case 'critical':
+      case Severity.CRITICAL:
         return 'blocker';
       default:
         return 'info';

@@ -1,30 +1,11 @@
 import { CodeQualityReportBuilder } from './CodeQualityReportBuilder';
-import { HttpMethod, Issue, Severity } from '@sectester/scan';
-import { randomUUID } from 'node:crypto';
+import { fullyDescribedIssue } from '../../../__fixtures__/issues';
+import { Issue, Severity } from '@sectester/scan';
 
 const createMockIssue = (
   name: string = 'SQL Injection',
   severity: Severity = Severity.HIGH
-): Issue => ({
-  id: randomUUID(),
-  certainty: true,
-  details: 'Test vulnerability details',
-  name,
-  severity,
-  protocol: 'http',
-  remedy: 'Use parameterized queries',
-  cvss: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',
-  time: new Date(),
-  originalRequest: {
-    method: HttpMethod.POST,
-    url: 'https://example.com/api/login'
-  },
-  request: {
-    method: HttpMethod.POST,
-    url: 'https://example.com/api/login'
-  },
-  link: 'https://app.brightsec.com/scans/test/issues/test'
-});
+): Issue => ({ ...fullyDescribedIssue, name, severity });
 
 describe('CodeQualityReportBuilder', () => {
   const testFilePath = 'test/security.spec.js';
@@ -45,7 +26,7 @@ describe('CodeQualityReportBuilder', () => {
       expect(report).toHaveLength(1);
       expect(report[0]).toEqual({
         description:
-          'SQL Injection vulnerability found at POST https://example.com/api/login',
+          'SQL Injection vulnerability found at GET https://brokencrystals.com/',
         check_name: 'SQL Injection',
         fingerprint: expect.any(String),
         severity: 'critical',
@@ -53,29 +34,45 @@ describe('CodeQualityReportBuilder', () => {
         location: {
           path: testFilePath,
           lines: {
-            begin: 1,
-            end: 1
+            begin: 1
           }
         }
       });
     });
 
-    it('should map severities correctly', () => {
+    it('should map LOW severity to minor', () => {
       const lowIssue = createMockIssue('XSS', Severity.LOW);
-      const mediumIssue = createMockIssue('CSRF', Severity.MEDIUM);
-      const highIssue = createMockIssue('SQLi', Severity.HIGH);
-      const criticalIssue = createMockIssue('RCE', Severity.CRITICAL);
+      const builder = new CodeQualityReportBuilder([lowIssue], testFilePath);
+      const report = builder.build();
 
+      expect(report[0].severity).toBe('minor');
+    });
+
+    it('should map MEDIUM severity to major', () => {
+      const mediumIssue = createMockIssue('CSRF', Severity.MEDIUM);
+      const builder = new CodeQualityReportBuilder([mediumIssue], testFilePath);
+      const report = builder.build();
+
+      expect(report[0].severity).toBe('major');
+    });
+
+    it('should map HIGH severity to critical', () => {
+      const highIssue = createMockIssue('SQLi', Severity.HIGH);
+      const builder = new CodeQualityReportBuilder([highIssue], testFilePath);
+      const report = builder.build();
+
+      expect(report[0].severity).toBe('critical');
+    });
+
+    it('should map CRITICAL severity to blocker', () => {
+      const criticalIssue = createMockIssue('RCE', Severity.CRITICAL);
       const builder = new CodeQualityReportBuilder(
-        [lowIssue, mediumIssue, highIssue, criticalIssue],
+        [criticalIssue],
         testFilePath
       );
       const report = builder.build();
 
-      expect(report[0].severity).toBe('minor'); // LOW -> minor
-      expect(report[1].severity).toBe('major'); // MEDIUM -> major
-      expect(report[2].severity).toBe('critical'); // HIGH -> critical
-      expect(report[3].severity).toBe('blocker'); // CRITICAL -> blocker
+      expect(report[0].severity).toBe('blocker');
     });
 
     it('should create unique fingerprints for different issues', () => {
@@ -104,7 +101,7 @@ describe('CodeQualityReportBuilder', () => {
       const report1 = builder1.build();
       const report2 = builder2.build();
 
-      expect(report1[0].fingerprint).toBe(report2[0].fingerprint);
+      expect(report1[0]).toEqual(report2[0]);
     });
 
     it('should handle unknown severity gracefully', () => {
