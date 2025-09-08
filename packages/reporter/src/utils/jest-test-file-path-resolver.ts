@@ -1,9 +1,9 @@
 import { TestFilePathResolver } from './test-file-path-resolver';
 import { injectable } from 'tsyringe';
-import path from 'node:path';
+import { join, basename, relative } from 'node:path';
 
 @injectable()
-export class DefaultTestFilePathResolver implements TestFilePathResolver {
+export class JestTestFilePathResolver implements TestFilePathResolver {
   public getTestFilePath(): string {
     // Check if running in Jest environment
     const jestState = (global as any).expect?.getState?.();
@@ -11,9 +11,9 @@ export class DefaultTestFilePathResolver implements TestFilePathResolver {
       const testPath = jestState.testPath;
       const rootDir = jestState.snapshotState._rootDir;
 
-      return path.join(
-        path.basename(rootDir),
-        path.relative(rootDir, testPath)
+      return join(
+        basename(rootDir),
+        relative(rootDir, testPath)
       );
     }
 
@@ -23,7 +23,7 @@ export class DefaultTestFilePathResolver implements TestFilePathResolver {
     );
 
     return matchRes?.[1]
-      ? path.relative(process.cwd(), matchRes[1] || '')
+      ? relative(process.cwd(), matchRes[1] || '')
       : 'unknown';
   }
 }

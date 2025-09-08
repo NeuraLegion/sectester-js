@@ -22,7 +22,6 @@ export class CodeQualityReportBuilder {
 
     const fingerprint = this.createFingerprint(issue);
 
-    // Map sectester severity to GitLab severity
     const gitlabSeverity = this.mapSeverity(severity);
 
     return {
