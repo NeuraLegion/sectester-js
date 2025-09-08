@@ -11,10 +11,7 @@ export class JestTestFilePathResolver implements TestFilePathResolver {
       const testPath = jestState.testPath;
       const rootDir = jestState.snapshotState._rootDir;
 
-      return join(
-        basename(rootDir),
-        relative(rootDir, testPath)
-      );
+      return join(basename(rootDir), relative(rootDir, testPath));
     }
 
     // Relies on `TestContext` from Node.js built-in test runner appearing in the stack

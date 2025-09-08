@@ -6,7 +6,6 @@ import { TEST_FILE_PATH_RESOLVER, TestFilePathResolver } from '../../utils';
 import { CodeQualityReport } from './types/CodeQualityReport';
 import { Issue, Scan } from '@sectester/scan';
 import { container } from 'tsyringe';
-import { createHash } from 'node:crypto';
 import {
   anything,
   deepEqual,
@@ -16,6 +15,7 @@ import {
   verify,
   when
 } from 'ts-mockito';
+import { createHash } from 'node:crypto';
 
 describe('GitLabCodeQualityReporter', () => {
   let reporter: GitLabCodeQualityReporter;
@@ -69,26 +69,34 @@ describe('GitLabCodeQualityReporter', () => {
       ).thenResolve();
 
       const expectedFingerprint = createHash('md5')
-        .update(`${fullyDescribedIssue.name}-${fullyDescribedIssue.entryPointId}`)
+        .update(
+          `${fullyDescribedIssue.name}-${fullyDescribedIssue.entryPointId}`
+        )
         .digest('hex');
 
-      const expectedReport: CodeQualityReport = [{
-        description: `${fullyDescribedIssue.name} vulnerability found at ${fullyDescribedIssue.originalRequest.method.toUpperCase()} ${fullyDescribedIssue.originalRequest.url}`,
-        fingerprint: expectedFingerprint,
-        check_name: fullyDescribedIssue.name,
-        severity: 'major',
-        raw_details: JSON.stringify(fullyDescribedIssue, null, 2),
-        location: {
-          path: 'test.spec.ts',
-          lines: {
-            begin: 1
+      const expectedReport: CodeQualityReport = [
+        {
+          description: `${fullyDescribedIssue.name} vulnerability found at ${fullyDescribedIssue.originalRequest.method.toUpperCase()} ${fullyDescribedIssue.originalRequest.url}`,
+          fingerprint: expectedFingerprint,
+          check_name: fullyDescribedIssue.name,
+          severity: 'major',
+          raw_details: JSON.stringify(fullyDescribedIssue, null, 2),
+          location: {
+            path: 'test.spec.ts',
+            lines: {
+              begin: 1
+            }
           }
         }
-      }];
+      ];
 
       await reporter.report(instance(mockedScan));
 
-      verify(mockedGitLabCIArtifacts.writeCodeQualityReport(deepEqual(expectedReport))).once();
+      verify(
+        mockedGitLabCIArtifacts.writeCodeQualityReport(
+          deepEqual(expectedReport)
+        )
+      ).once();
     });
   });
 });

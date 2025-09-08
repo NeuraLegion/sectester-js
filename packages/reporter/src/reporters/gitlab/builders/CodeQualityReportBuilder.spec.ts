@@ -23,20 +23,22 @@ describe('CodeQualityReportBuilder', () => {
       const builder = new CodeQualityReportBuilder([issue], testFilePath);
       const report = builder.build();
 
-      expect(report).toEqual([{
-        description:
-          'SQL Injection vulnerability found at GET https://brokencrystals.com/',
-        check_name: 'SQL Injection',
-        fingerprint: expect.any(String),
-        severity: 'critical',
-        raw_details: expect.any(String),
-        location: {
-          path: testFilePath,
-          lines: {
-            begin: 1
+      expect(report).toEqual([
+        {
+          description:
+            'SQL Injection vulnerability found at GET https://brokencrystals.com/',
+          check_name: 'SQL Injection',
+          fingerprint: expect.any(String),
+          severity: 'critical',
+          raw_details: expect.any(String),
+          location: {
+            path: testFilePath,
+            lines: {
+              begin: 1
+            }
           }
         }
-      }]);
+      ]);
     });
 
     it.each([
@@ -65,25 +67,30 @@ describe('CodeQualityReportBuilder', () => {
         issueName: 'Unknown Issue',
         expectedSeverity: 'info'
       }
-    ])('should map $severity severity to $expectedSeverity', ({ severity, issueName, expectedSeverity }) => {
-      const issue = createMockIssue(issueName, severity);
-      const builder = new CodeQualityReportBuilder([issue], testFilePath);
-      const report = builder.build();
+    ])(
+      'should map $severity severity to $expectedSeverity',
+      ({ severity, issueName, expectedSeverity }) => {
+        const issue = createMockIssue(issueName, severity);
+        const builder = new CodeQualityReportBuilder([issue], testFilePath);
+        const report = builder.build();
 
-      expect(report).toEqual([{
-        description: `${issueName} vulnerability found at GET https://brokencrystals.com/`,
-        check_name: issueName,
-        fingerprint: expect.any(String),
-        severity: expectedSeverity,
-        raw_details: expect.any(String),
-        location: {
-          path: testFilePath,
-          lines: {
-            begin: 1
+        expect(report).toEqual([
+          {
+            description: `${issueName} vulnerability found at GET https://brokencrystals.com/`,
+            check_name: issueName,
+            fingerprint: expect.any(String),
+            severity: expectedSeverity,
+            raw_details: expect.any(String),
+            location: {
+              path: testFilePath,
+              lines: {
+                begin: 1
+              }
+            }
           }
-        }
-      }]);
-    });
+        ]);
+      }
+    );
 
     it('should create unique fingerprints for different issues', () => {
       const issue1 = createMockIssue('SQL Injection');
