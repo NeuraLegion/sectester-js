@@ -118,7 +118,7 @@ describe('CodeQualityReportBuilder', () => {
       const report1 = builder1.build();
       const report2 = builder2.build();
 
-      expect(report1[0]).toEqual(report2[0]);
+      expect(report1).toEqual(report2);
     });
   });
 });
