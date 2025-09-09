@@ -1,4 +1,4 @@
-import { TestFilePathResolver } from './test-file-path-resolver';
+import { TestFilePathResolver } from './TestFilePathResolver';
 import { injectable } from 'tsyringe';
 import { join, basename, relative } from 'node:path';
 
