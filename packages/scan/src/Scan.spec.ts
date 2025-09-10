@@ -73,6 +73,7 @@ describe('Scan', () => {
     it('should return a list of issues', async () => {
       const issue: Issue = {
         id: randomUUID(),
+        entryPointId: 'pDzxcEXQC8df1fcz1QwPf9',
         certainty: true,
         details:
           'Cross-site request forgery is a type of malicious website exploit.',

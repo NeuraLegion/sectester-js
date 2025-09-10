@@ -5,6 +5,7 @@ import { HttpMethod, Issue, Severity } from '@sectester/scan';
 describe('SingleItemPayloadBuilder', () => {
   const baseIssue: Issue = {
     id: 'test-id',
+    entryPointId: 'pDzxcEXQC8df1fcz1QwPf9',
     certainty: true,
     name: 'SQL Injection',
     severity: Severity.HIGH,

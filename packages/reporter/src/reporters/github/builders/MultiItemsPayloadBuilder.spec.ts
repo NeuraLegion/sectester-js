@@ -7,6 +7,7 @@ describe('MultiItemsPayloadBuilder', () => {
     name,
     severity,
     id: 'test-id',
+    entryPointId: 'pDzxcEXQC8df1fcz1QwPf9',
     certainty: true,
     details: 'Test details',
     remedy: 'Fix it',

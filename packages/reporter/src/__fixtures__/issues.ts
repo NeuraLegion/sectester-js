@@ -10,6 +10,7 @@ Details:
 Cross-site request forgery is a type of malicious website exploit.`;
 export const issueWithoutResources = {
   id: randomUUID(),
+  entryPointId: 'upmVm5iPkddvzY6RisT7Cr',
   details: 'Cross-site request forgery is a type of malicious website exploit.',
   name: 'Database connection crashed',
   severity: Severity.MEDIUM,
