@@ -3,18 +3,9 @@ export interface JUnitTestCase {
   name: string;
   file?: string;
   time?: number;
-  failure?: {
-    message?: string;
-    content: string;
-  };
-  error?: {
-    message?: string;
-    content: string;
-  };
-  skipped?: {
-    message?: string;
-    content?: string;
-  };
+  failure?: string;
+  error?: string;
+  skipped?: string;
   systemOut?: string;
   systemErr?: string;
 }

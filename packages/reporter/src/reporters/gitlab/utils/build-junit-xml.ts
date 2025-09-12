@@ -75,22 +75,19 @@ function addTestCaseResults(
 ): void {
   if (testcase.failure) {
     caseObject.failure = {
-      '@_message': testcase.failure.message || '',
-      '#text': testcase.failure.content
+      '#text': testcase.failure
     };
   }
 
   if (testcase.error) {
     caseObject.error = {
-      '@_message': testcase.error.message || '',
-      '#text': testcase.error.content
+      '#text': testcase.error
     };
   }
 
   if (testcase.skipped) {
     caseObject.skipped = {
-      '@_message': testcase.skipped.message || '',
-      '#text': testcase.skipped.content || ''
+      '#text': testcase.skipped
     };
   }
 }

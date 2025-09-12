@@ -21,7 +21,7 @@ export class GitLabReporter implements Reporter {
     const issues = await scan.issues();
 
     if (issues.length > 0) {
-      const reportFormat = this.config.reportFormat || 'both';
+      const reportFormat = this.config.reportFormat ?? 'test';
 
       switch (reportFormat) {
         case 'code-quality':

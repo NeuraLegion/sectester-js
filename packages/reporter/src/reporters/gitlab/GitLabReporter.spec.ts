@@ -3,7 +3,7 @@ import { GitLabReporter } from './GitLabReporter';
 import { GitLabCIArtifacts, GITLAB_CI_ARTIFACTS, GITLAB_CONFIG } from './api';
 import { fullyDescribedIssue } from '../../__fixtures__/issues';
 import { TEST_FILE_PATH_RESOLVER, TestFilePathResolver } from '../../utils';
-import { CodeQualityReport } from './types';
+import { CodeQualityReport, GitLabConfig } from './types';
 import { Issue, Scan } from '@sectester/scan';
 import { container } from 'tsyringe';
 import {
@@ -22,16 +22,21 @@ describe('GitLabReporter', () => {
   const mockedScan = mock<Scan>();
   const mockedGitLabCIArtifacts = mock<GitLabCIArtifacts>();
   const mockedTestFilePathResolver = mock<TestFilePathResolver>();
-
-  const createMockConfig = (reportFormat?: string) => ({
-    codeQualityReportFilename: 'gl-code-quality-report.json',
-    testReportFilename: 'gl-test-report.xml',
-    ...(reportFormat && { reportFormat })
-  });
+  const mockedGitLabConfig = mock<GitLabConfig>();
 
   beforeEach(() => {
     container.clearInstances();
 
+    when(mockedGitLabConfig.codeQualityReportFilename).thenReturn(
+      'gl-code-quality-report.json'
+    );
+    when(mockedGitLabConfig.testReportFilename).thenReturn(
+      'gl-test-report.xml'
+    );
+
+    container.register(GITLAB_CONFIG, {
+      useValue: instance(mockedGitLabConfig)
+    });
     container.register(GITLAB_CI_ARTIFACTS, {
       useValue: instance(mockedGitLabCIArtifacts)
     });
@@ -45,17 +50,17 @@ describe('GitLabReporter', () => {
   });
 
   afterEach(() => {
-    reset<Scan | GitLabCIArtifacts | TestFilePathResolver>(
+    reset<Scan | GitLabCIArtifacts | TestFilePathResolver | GitLabConfig>(
       mockedScan,
       mockedGitLabCIArtifacts,
-      mockedTestFilePathResolver
+      mockedTestFilePathResolver,
+      mockedGitLabConfig
     );
   });
 
   describe('report', () => {
     it('should not generate any reports when there are no issues', async () => {
       // arrange
-      container.register(GITLAB_CONFIG, { useValue: createMockConfig() });
       reporter = container.resolve(GitLabReporter);
       when(mockedScan.issues()).thenResolve([]);
 
@@ -69,27 +74,27 @@ describe('GitLabReporter', () => {
       verify(mockedGitLabCIArtifacts.writeTestReport(anything())).never();
     });
 
-    it('should generate both reports by default when there are issues', async () => {
+    it('should generate only test report by default when there are issues', async () => {
       // arrange
-      container.register(GITLAB_CONFIG, { useValue: createMockConfig() });
+      // Explicitly set reportFormat to undefined, which should default to 'test' per implementation
+      when(mockedGitLabConfig.reportFormat).thenReturn(undefined);
       reporter = container.resolve(GitLabReporter);
       when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
-      when(
-        mockedGitLabCIArtifacts.writeCodeQualityReport(anything())
-      ).thenResolve();
       when(mockedGitLabCIArtifacts.writeTestReport(anything())).thenResolve();
 
       // act
       await reporter.report(instance(mockedScan));
 
       // assert
-      verify(mockedGitLabCIArtifacts.writeCodeQualityReport(anything())).once();
+      verify(
+        mockedGitLabCIArtifacts.writeCodeQualityReport(anything())
+      ).never();
       verify(mockedGitLabCIArtifacts.writeTestReport(anything())).once();
     });
 
     it('should generate both reports when reportFormat is "both"', async () => {
       // arrange
-      container.register(GITLAB_CONFIG, { useValue: createMockConfig('both') });
+      when(mockedGitLabConfig.reportFormat).thenReturn('both');
       reporter = container.resolve(GitLabReporter);
       when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
       when(
@@ -107,9 +112,7 @@ describe('GitLabReporter', () => {
 
     it('should generate only code quality report when reportFormat is "code-quality"', async () => {
       // arrange
-      container.register(GITLAB_CONFIG, {
-        useValue: createMockConfig('code-quality')
-      });
+      when(mockedGitLabConfig.reportFormat).thenReturn('code-quality');
       reporter = container.resolve(GitLabReporter);
       when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
       when(
@@ -126,7 +129,7 @@ describe('GitLabReporter', () => {
 
     it('should generate only test report when reportFormat is "test"', async () => {
       // arrange
-      container.register(GITLAB_CONFIG, { useValue: createMockConfig('test') });
+      when(mockedGitLabConfig.reportFormat).thenReturn('test');
       reporter = container.resolve(GitLabReporter);
       when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
       when(mockedGitLabCIArtifacts.writeTestReport(anything())).thenResolve();
@@ -143,9 +146,7 @@ describe('GitLabReporter', () => {
 
     it('should generate correct code quality report structure', async () => {
       // arrange
-      container.register(GITLAB_CONFIG, {
-        useValue: createMockConfig('code-quality')
-      });
+      when(mockedGitLabConfig.reportFormat).thenReturn('code-quality');
       reporter = container.resolve(GitLabReporter);
       when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
       when(
@@ -187,7 +188,7 @@ describe('GitLabReporter', () => {
 
     it('should generate correct test report structure', async () => {
       // arrange
-      container.register(GITLAB_CONFIG, { useValue: createMockConfig('test') });
+      when(mockedGitLabConfig.reportFormat).thenReturn('test');
       reporter = container.resolve(GitLabReporter);
       when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
       when(mockedGitLabCIArtifacts.writeTestReport(anything())).thenResolve();
@@ -202,9 +203,7 @@ describe('GitLabReporter', () => {
     it('should use test file path from resolver', async () => {
       // arrange
       const customPath = 'custom/test/path.spec.ts';
-      container.register(GITLAB_CONFIG, {
-        useValue: createMockConfig('code-quality')
-      });
+      when(mockedGitLabConfig.reportFormat).thenReturn('code-quality');
       reporter = container.resolve(GitLabReporter);
 
       when(mockedTestFilePathResolver.getTestFilePath()).thenReturn(customPath);

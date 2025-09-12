@@ -6,20 +6,17 @@ describe('buildJUnitXML', () => {
     const report: TestReport = {
       testSuites: [
         {
-          name: 'Security Tests',
+          name: 'Bright Tests',
           tests: 1,
           failures: 1,
           testCases: [
             {
-              classname: 'Critical Security Issues',
-              name: 'SQL_Injection_abc123',
+              classname: 'POST https://example.com/api/users',
+              name: 'SQLi',
               file: 'test.spec.ts',
               time: 0,
-              failure: {
-                message: 'Security vulnerability detected: SQL Injection',
-                content:
-                  'SQL Injection vulnerability found at POST https://example.com/api/users'
-              }
+              failure:
+                'SQLi vulnerability found at POST https://example.com/api/users'
             }
           ]
         }
@@ -30,9 +27,9 @@ describe('buildJUnitXML', () => {
 
     const expectedXml = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="Security Tests" tests="1" failures="1">
-    <testcase classname="Critical Security Issues" name="SQL_Injection_abc123" file="test.spec.ts" time="0">
-      <failure message="Security vulnerability detected: SQL Injection">SQL Injection vulnerability found at POST https://example.com/api/users</failure>
+  <testsuite name="Bright Tests" tests="1" failures="1">
+    <testcase classname="POST https://example.com/api/users" name="SQLi" file="test.spec.ts" time="0">
+      <failure>SQLi vulnerability found at POST https://example.com/api/users</failure>
     </testcase>
   </testsuite>
 </testsuites>`;
@@ -44,21 +41,18 @@ describe('buildJUnitXML', () => {
     const report: TestReport = {
       testSuites: [
         {
-          name: 'Security Tests',
+          name: 'Bright Tests',
           tests: 1,
           failures: 1,
           testCases: [
             {
-              classname: 'High Security Issues',
-              name: 'XSS_test_def456',
+              systemOut: '{"id": "issue-1", "name": "XSS"}',
+              classname: 'GET https://example.com/api/search',
+              name: 'XSS',
               file: 'test.spec.ts',
               time: 0,
-              failure: {
-                message: 'XSS vulnerability detected',
-                content: 'Cross-site scripting vulnerability found'
-              },
-              systemOut:
-                'Request Method: GET\nRequest URL: https://example.com/api/search\nEntry Point ID: abc123\nIssue ID: issue-1'
+              failure:
+                'Cross-site scripting vulnerability found at GET https://example.com/api/search'
             }
           ]
         }
@@ -69,13 +63,10 @@ describe('buildJUnitXML', () => {
 
     const expectedXml = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="Security Tests" tests="1" failures="1">
-    <testcase classname="High Security Issues" name="XSS_test_def456" file="test.spec.ts" time="0">
-      <failure message="XSS vulnerability detected">Cross-site scripting vulnerability found</failure>
-      <system-out>Request Method: GET
-Request URL: https://example.com/api/search
-Entry Point ID: abc123
-Issue ID: issue-1</system-out>
+  <testsuite name="Bright Tests" tests="1" failures="1">
+    <testcase classname="GET https://example.com/api/search" name="XSS" file="test.spec.ts" time="0">
+      <failure>Cross-site scripting vulnerability found at GET https://example.com/api/search</failure>
+      <system-out>{&quot;id&quot;: &quot;issue-1&quot;, &quot;name&quot;: &quot;XSS&quot;}</system-out>
     </testcase>
   </testsuite>
 </testsuites>`;
@@ -87,19 +78,17 @@ Issue ID: issue-1</system-out>
     const report: TestReport = {
       testSuites: [
         {
-          name: 'Security Tests & More',
+          name: 'Bright Tests & More',
           tests: 1,
           failures: 1,
           testCases: [
             {
-              classname: 'High Security Issues <critical>',
-              name: 'XSS_test_with_"quotes"',
+              classname: 'GET https://example.com/api/search',
+              name: 'XSS',
               file: 'test.spec.ts',
               time: 0,
-              failure: {
-                message: 'XSS vulnerability with <script> tags',
-                content: 'Found <script>alert("xss")</script> in response'
-              }
+              failure:
+                'XSS vulnerability found at GET https://example.com/api/search?q=Bar & Co'
             }
           ]
         }
@@ -110,9 +99,9 @@ Issue ID: issue-1</system-out>
 
     const expectedXml = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="Security Tests &amp; More" tests="1" failures="1">
-    <testcase classname="High Security Issues &lt;critical&gt;" name="XSS_test_with_&quot;quotes&quot;" file="test.spec.ts" time="0">
-      <failure message="XSS vulnerability with &lt;script&gt; tags">Found &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt; in response</failure>
+  <testsuite name="Bright Tests &amp; More" tests="1" failures="1">
+    <testcase classname="GET https://example.com/api/search" name="XSS" file="test.spec.ts" time="0">
+      <failure>XSS vulnerability found at GET https://example.com/api/search?q=Bar &amp; Co</failure>
     </testcase>
   </testsuite>
 </testsuites>`;
@@ -124,13 +113,13 @@ Issue ID: issue-1</system-out>
     const report: TestReport = {
       testSuites: [
         {
-          name: 'Security Tests',
+          name: 'Bright Tests',
           tests: 1,
           failures: 0,
           testCases: [
             {
-              classname: 'Security Issues',
-              name: 'test_passed',
+              classname: 'GET https://example.com/api/search',
+              name: 'XSS',
               file: 'test.spec.ts',
               time: 0.5
             }
@@ -143,8 +132,8 @@ Issue ID: issue-1</system-out>
 
     const expectedXml = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="Security Tests" tests="1" failures="0">
-    <testcase classname="Security Issues" name="test_passed" file="test.spec.ts" time="0.5"/>
+  <testsuite name="Bright Tests" tests="1" failures="0">
+    <testcase classname="GET https://example.com/api/search" name="XSS" file="test.spec.ts" time="0.5"/>
   </testsuite>
 </testsuites>`;
 
@@ -155,36 +144,32 @@ Issue ID: issue-1</system-out>
     const report: TestReport = {
       testSuites: [
         {
-          name: 'Critical Security Tests',
+          name: 'Critical Bright Tests',
           tests: 1,
           failures: 1,
           testCases: [
             {
-              classname: 'Critical Security Issues',
-              name: 'sql_injection_test',
+              classname: 'POST https://example.com/api/users',
+              name: 'SQLi',
               file: 'test.spec.ts',
               time: 0,
-              failure: {
-                message: 'SQL Injection found',
-                content: 'Vulnerability detected'
-              }
+              failure:
+                'SQLi vulnerability found at POST https://example.com/api/users'
             }
           ]
         },
         {
-          name: 'High Security Tests',
+          name: 'High Bright Tests',
           tests: 1,
           failures: 1,
           testCases: [
             {
-              classname: 'High Security Issues',
-              name: 'xss_test',
+              classname: 'PUT https://example.com/api/profile',
+              name: 'XSS',
               file: 'test.spec.ts',
               time: 0,
-              failure: {
-                message: 'XSS found',
-                content: 'Cross-site scripting detected'
-              }
+              failure:
+                'Cross-site scripting vulnerability found at PUT https://example.com/api/profile'
             }
           ]
         }
@@ -195,14 +180,14 @@ Issue ID: issue-1</system-out>
 
     const expectedXml = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="Critical Security Tests" tests="1" failures="1">
-    <testcase classname="Critical Security Issues" name="sql_injection_test" file="test.spec.ts" time="0">
-      <failure message="SQL Injection found">Vulnerability detected</failure>
+  <testsuite name="Critical Bright Tests" tests="1" failures="1">
+    <testcase classname="POST https://example.com/api/users" name="SQLi" file="test.spec.ts" time="0">
+      <failure>SQLi vulnerability found at POST https://example.com/api/users</failure>
     </testcase>
   </testsuite>
-  <testsuite name="High Security Tests" tests="1" failures="1">
-    <testcase classname="High Security Issues" name="xss_test" file="test.spec.ts" time="0">
-      <failure message="XSS found">Cross-site scripting detected</failure>
+  <testsuite name="High Bright Tests" tests="1" failures="1">
+    <testcase classname="PUT https://example.com/api/profile" name="XSS" file="test.spec.ts" time="0">
+      <failure>Cross-site scripting vulnerability found at PUT https://example.com/api/profile</failure>
     </testcase>
   </testsuite>
 </testsuites>`;

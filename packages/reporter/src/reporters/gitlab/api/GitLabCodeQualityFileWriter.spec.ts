@@ -69,12 +69,9 @@ describe('GitLabCodeQualityFileWriter', () => {
                 name: 'SQL_Injection_test',
                 file: 'test.spec.ts',
                 time: 0,
-                failure: {
-                  message: 'Security vulnerability detected: SQL Injection',
-                  content: 'SQL Injection vulnerability found'
-                },
-                systemOut:
-                  'Request Method: POST\nRequest URL: https://example.com/api/users'
+                failure:
+                  'SQLi vulnerability found at POST https://example.com/api/users',
+                systemOut: '{"id": "issue-1", "name": "SQL_Injection_test"}'
               }
             ]
           }
