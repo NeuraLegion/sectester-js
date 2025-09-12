@@ -110,27 +110,39 @@ describe('GitLabReporter', () => {
       verify(mockedGitLabCIArtifacts.writeTestReport(anything())).once();
     });
 
-    it.each(['code-quality', 'test'] as const)(
-      `should generate only $reportFormat report when reportFormat is "$reportFormat"`,
-      async reportFormat => {
-        // arrange
-        when(mockedGitLabConfig.reportFormat).thenReturn(reportFormat);
-        reporter = container.resolve(GitLabReporter);
-        when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
-        when(
-          mockedGitLabCIArtifacts.writeCodeQualityReport(anything())
-        ).thenResolve();
+    it('should generate only code quality report when reportFormat is "code-quality"', async () => {
+      // arrange
+      when(mockedGitLabConfig.reportFormat).thenReturn('code-quality');
+      reporter = container.resolve(GitLabReporter);
+      when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
+      when(
+        mockedGitLabCIArtifacts.writeCodeQualityReport(anything())
+      ).thenResolve();
 
-        // act
-        await reporter.report(instance(mockedScan));
+      // act
+      await reporter.report(instance(mockedScan));
 
-        // assert
-        verify(
-          mockedGitLabCIArtifacts.writeCodeQualityReport(anything())
-        ).once();
-        verify(mockedGitLabCIArtifacts.writeTestReport(anything())).never();
-      }
-    );
+      // assert
+      verify(mockedGitLabCIArtifacts.writeCodeQualityReport(anything())).once();
+      verify(mockedGitLabCIArtifacts.writeTestReport(anything())).never();
+    });
+
+    it('should generate only test report when reportFormat is "test"', async () => {
+      // arrange
+      when(mockedGitLabConfig.reportFormat).thenReturn('test');
+      reporter = container.resolve(GitLabReporter);
+      when(mockedScan.issues()).thenResolve([fullyDescribedIssue] as Issue[]);
+      when(mockedGitLabCIArtifacts.writeTestReport(anything())).thenResolve();
+
+      // act
+      await reporter.report(instance(mockedScan));
+
+      // assert
+      verify(
+        mockedGitLabCIArtifacts.writeCodeQualityReport(anything())
+      ).never();
+      verify(mockedGitLabCIArtifacts.writeTestReport(anything())).once();
+    });
 
     it('should generate correct code quality report structure', async () => {
       // arrange
