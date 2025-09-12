@@ -3,7 +3,7 @@ import { GitLabReporter } from './GitLabReporter';
 import { GitLabCIArtifacts, GITLAB_CI_ARTIFACTS, GITLAB_CONFIG } from './api';
 import { fullyDescribedIssue } from '../../__fixtures__/issues';
 import { TEST_FILE_PATH_RESOLVER, TestFilePathResolver } from '../../utils';
-import { CodeQualityReport, GitLabConfig, GitLabReportFormat } from './types';
+import { CodeQualityReport, GitLabConfig } from './types';
 import { Issue, Scan } from '@sectester/scan';
 import { container } from 'tsyringe';
 import {
