@@ -1,2 +1,2 @@
 import './api/register';
-export { GitLabCodeQualityReporter } from './GitLabCodeQualityReporter';
+export { GitLabReporter } from './GitLabReporter';

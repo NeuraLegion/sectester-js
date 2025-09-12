@@ -2,6 +2,6 @@ export { PlainTextFormatter } from './formatters';
 export { Reporter, Formatter } from './lib';
 export {
   GitHubCheckRunReporter,
-  GitLabCodeQualityReporter,
+  GitLabReporter,
   StdReporter
 } from './reporters';

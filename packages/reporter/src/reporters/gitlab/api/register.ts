@@ -8,7 +8,10 @@ container.register(GITLAB_CONFIG, {
   useValue: {
     codeQualityReportFilename:
       process.env.GITLAB_CODE_QUALITY_REPORT_FILENAME ||
-      'gl-code-quality-report.json'
+      'gl-code-quality-report.json',
+    testReportFilename:
+      process.env.GITLAB_TEST_REPORT_FILENAME || 'gl-test-report.xml',
+    reportFormat: (process.env.GITLAB_REPORT_FORMAT as any) || 'both'
   }
 });
 

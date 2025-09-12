@@ -10,7 +10,7 @@ import { ScanFactory } from '@sectester/scan';
 import {
   Formatter,
   GitHubCheckRunReporter,
-  GitLabCodeQualityReporter,
+  GitLabReporter,
   PlainTextFormatter,
   Reporter,
   StdReporter
@@ -101,7 +101,7 @@ export class SecRunner {
       });
     } else if (process.env.GITLAB_CI === 'true') {
       configuration.container.register(Reporter, {
-        useClass: GitLabCodeQualityReporter
+        useClass: GitLabReporter
       });
     } else {
       configuration.container.register(Reporter, {
