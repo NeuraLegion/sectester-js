@@ -12,4 +12,5 @@ export interface ScanConfig {
   smart?: boolean;
   skipStaticParams?: boolean;
   starMetadata?: Record<string, unknown>;
+  testMetadata?: Record<string, unknown>;
 }

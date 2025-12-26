@@ -9,4 +9,5 @@ export type SecScanOptions = Pick<
   | 'skipStaticParams'
   | 'attackParamLocations'
   | 'starMetadata'
+  | 'testMetadata'
 >;
