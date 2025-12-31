@@ -187,5 +187,107 @@ describe('ScanSettings', () => {
         name: expect.stringMatching(/^.{1,199}…$/)
       });
     });
+
+    it('should handle broken access control test with string auth', () => {
+      // arrange
+      const testConfig = {
+        name: 'broken_access_control' as const,
+        options: {
+          auth: 'auth-object-id'
+        }
+      };
+      const settings: ScanSettingsOptions = {
+        tests: [testConfig],
+        target: { url: 'https://example.com' }
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result.tests).toEqual([testConfig]);
+    });
+
+    it('should handle broken access control test with tuple auth', () => {
+      // arrange
+      const testConfig = {
+        name: 'broken_access_control' as const,
+        options: {
+          auth: ['key', 'value'] as [string, string]
+        }
+      };
+      const settings: ScanSettingsOptions = {
+        tests: [testConfig],
+        target: { url: 'https://example.com' }
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result.tests).toEqual([testConfig]);
+    });
+
+    it('should deduplicate string tests', () => {
+      // arrange
+      const testName = 'xss';
+      const settings: ScanSettingsOptions = {
+        tests: [testName, testName],
+        target: { url: 'https://example.com' }
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result.tests).toEqual([testName]);
+    });
+
+    it('should not deduplicate object tests', () => {
+      // arrange
+      const testConfig1 = {
+        name: 'broken_access_control' as const,
+        options: {
+          auth: 'auth1'
+        }
+      };
+      const testConfig2 = {
+        name: 'broken_access_control' as const,
+        options: {
+          auth: 'auth2'
+        }
+      };
+      const settings: ScanSettingsOptions = {
+        tests: [testConfig1, testConfig2],
+        target: { url: 'https://example.com' }
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result.tests).toEqual([testConfig1, testConfig2]);
+    });
+
+    it('should handle mixed string and object tests', () => {
+      // arrange
+      const testName = 'xss';
+      const testConfig = {
+        name: 'broken_access_control' as const,
+        options: {
+          auth: 'auth-object-id'
+        }
+      };
+      const settings: ScanSettingsOptions = {
+        tests: [testName, testConfig],
+        target: { url: 'https://example.com' }
+      };
+
+      // act
+      const result = new ScanSettings(settings);
+
+      // assert
+      expect(result.tests).toEqual([testName, testConfig]);
+    });
   });
 });

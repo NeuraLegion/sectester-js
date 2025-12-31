@@ -1,10 +1,10 @@
-import { AttackParamLocation, HttpMethod } from './models';
+import { AttackParamLocation, HttpMethod, Test } from './models';
 import { Target, TargetOptions } from './target';
 import { checkBoundaries, contains, truncate } from '@sectester/core';
 
 export interface ScanSettingsOptions {
   // The list of tests to be performed against the target application
-  tests: string[];
+  tests: Test[];
   // The target that will be attacked
   target: Target | TargetOptions;
   // The scan name
@@ -26,15 +26,10 @@ export interface ScanSettingsOptions {
    * @internal
    */
   starMetadata?: Record<string, unknown>;
-  /**
-   * Additional metadata for specific tests (e.g. broken access control).
-   */
-  testMetadata?: Record<string, unknown>;
 }
 
 export class ScanSettings implements ScanSettingsOptions {
   private _starMetadata?: Record<string, unknown>;
-  private _testMetadata?: Record<string, unknown>;
 
   get starMetadata(): Record<string, unknown> | undefined {
     return this._starMetadata;
@@ -42,14 +37,6 @@ export class ScanSettings implements ScanSettingsOptions {
 
   private set starMetadata(value: Record<string, unknown> | undefined) {
     this._starMetadata = value;
-  }
-
-  get testMetadata(): Record<string, unknown> | undefined {
-    return this._testMetadata;
-  }
-
-  private set testMetadata(value: Record<string, unknown> | undefined) {
-    this._testMetadata = value;
   }
 
   private _name!: string;
@@ -133,20 +120,27 @@ export class ScanSettings implements ScanSettingsOptions {
     this._requestsRateLimit = value;
   }
 
-  private _tests!: string[];
+  private _tests!: Test[];
 
-  get tests(): string[] {
+  get tests(): Test[] {
     return this._tests;
   }
 
-  private set tests(value: string[]) {
-    const uniqueTestTypes = new Set<string>(value);
-
-    if (uniqueTestTypes.size < 1) {
+  private set tests(value: Test[]) {
+    if (value.length < 1) {
       throw new Error('Please provide at least one test.');
     }
 
-    this._tests = [...uniqueTestTypes];
+    // For string tests, ensure uniqueness
+    const stringTests = value.filter(
+      (test): test is string => typeof test === 'string'
+    );
+    const uniqueStringTests = [...new Set(stringTests)];
+
+    // Preserve non-string tests (like BrokenAccessControlTest)
+    const nonStringTests = value.filter(test => typeof test !== 'string');
+
+    this._tests = [...uniqueStringTests, ...nonStringTests];
   }
 
   private _attackParamLocations!: AttackParamLocation[];
@@ -170,7 +164,6 @@ export class ScanSettings implements ScanSettingsOptions {
     repeaterId,
     smart = true,
     starMetadata,
-    testMetadata,
     requestsRateLimit = 0, // automatic rate limiting
     poolSize = 50, // up to 2x more than default pool size
     skipStaticParams = true,
@@ -187,7 +180,6 @@ export class ScanSettings implements ScanSettingsOptions {
     this.tests = tests;
     this.attackParamLocations = attackParamLocations;
     this.starMetadata = starMetadata;
-    this.testMetadata = testMetadata;
   }
 
   private resolveAttackParamLocations(

@@ -1,10 +1,11 @@
 import { AttackParamLocation } from './AttackParamLocation';
+import { Test } from './Tests';
 
 export interface ScanConfig {
   name: string;
   projectId: string;
   entryPointIds: string[];
-  tests?: string[];
+  tests?: Test[];
   poolSize?: number;
   requestsRateLimit?: number;
   attackParamLocations?: AttackParamLocation[];
@@ -12,5 +13,4 @@ export interface ScanConfig {
   smart?: boolean;
   skipStaticParams?: boolean;
   starMetadata?: Record<string, unknown>;
-  testMetadata?: Record<string, unknown>;
 }
