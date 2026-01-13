@@ -131,16 +131,25 @@ export class ScanSettings implements ScanSettingsOptions {
       throw new Error('Please provide at least one test.');
     }
 
-    // For string tests, ensure uniqueness
-    const stringTests = value.filter(
-      (test): test is string => typeof test === 'string'
-    );
-    const uniqueStringTests = [...new Set(stringTests)];
+    const simpleTests = new Set<string>();
+    const configurableTests: Test[] = [];
+    const seenTestConfigurations = new Set<string>();
 
-    // Preserve non-string tests (like BrokenAccessControlTest)
-    const nonStringTests = value.filter(test => typeof test !== 'string');
+    for (const t of value) {
+      const testName = typeof t === 'string' ? t : t.name;
 
-    this._tests = [...uniqueStringTests, ...nonStringTests];
+      if (typeof t === 'string') {
+        simpleTests.add(t);
+      } else {
+        if (seenTestConfigurations.has(testName)) {
+          throw new Error(`Duplicate test configuration found: ${testName}`);
+        }
+        seenTestConfigurations.add(testName);
+        configurableTests.push(t);
+      }
+    }
+
+    this._tests = [...simpleTests, ...configurableTests];
   }
 
   private _attackParamLocations!: AttackParamLocation[];

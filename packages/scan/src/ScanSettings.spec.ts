@@ -243,7 +243,7 @@ describe('ScanSettings', () => {
       expect(result.tests).toEqual([testName]);
     });
 
-    it('should not deduplicate object tests', () => {
+    it('should not allow duplicated tests with options', () => {
       // arrange
       const testConfig1 = {
         name: 'broken_access_control' as const,
@@ -262,24 +262,23 @@ describe('ScanSettings', () => {
         target: { url: 'https://example.com' }
       };
 
-      // act
-      const result = new ScanSettings(settings);
-
-      // assert
-      expect(result.tests).toEqual([testConfig1, testConfig2]);
+      // act & assert
+      expect(() => new ScanSettings(settings)).toThrow(
+        'Duplicate test configuration found: broken_access_control'
+      );
     });
 
-    it('should handle mixed string and object tests', () => {
+    it('should handle mixed string and configurable tests', () => {
       // arrange
-      const testName = 'xss';
-      const testConfig = {
+      const stringTest = 'xss';
+      const testWithOptions = {
         name: 'broken_access_control' as const,
         options: {
           auth: 'auth-object-id'
         }
       };
       const settings: ScanSettingsOptions = {
-        tests: [testName, testConfig],
+        tests: [stringTest, testWithOptions],
         target: { url: 'https://example.com' }
       };
 
@@ -287,7 +286,7 @@ describe('ScanSettings', () => {
       const result = new ScanSettings(settings);
 
       // assert
-      expect(result.tests).toEqual([testName, testConfig]);
+      expect(result.tests).toEqual([stringTest, testWithOptions]);
     });
   });
 });
