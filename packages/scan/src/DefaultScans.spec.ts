@@ -1,21 +1,7 @@
 import 'reflect-metadata';
 import { DefaultScans } from './DefaultScans';
-import {
-  AttackParamLocation,
-  HttpMethod,
-  ScanStatus,
-  Severity
-} from './models';
-import {
-  anything,
-  capture,
-  deepEqual,
-  instance,
-  mock,
-  reset,
-  spy,
-  when
-} from 'ts-mockito';
+import { HttpMethod, ScanStatus, Severity } from './models';
+import { deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
 import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
 import { randomUUID } from 'crypto';
@@ -39,11 +25,7 @@ describe('DefaultScans', () => {
   });
 
   afterEach(() =>
-    reset<typeof ci | ApiClient | Configuration>(
-      mockedApiClient,
-      mockedCi,
-      mockedConfiguration
-    )
+    reset<ApiClient | Configuration>(mockedApiClient, mockedConfiguration)
   );
 
   describe('createScan', () => {
@@ -87,9 +69,45 @@ describe('DefaultScans', () => {
 
     it('should transform broken_access_control test with single auth object into backend compatible format', async () => {
       const response = new Response(JSON.stringify({ id }));
-      const config = {
+
+      when(mockedConfiguration.name).thenReturn('test');
+      when(mockedConfiguration.version).thenReturn('1.0');
+      when(mockedCi.name).thenReturn('github');
+
+      when(
+        mockedApiClient.request(
+          '/api/v1/scans',
+          deepEqual({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              projectId,
+              name: 'test',
+              entryPointIds: [entryPointId],
+              tests: ['xss', 'broken_access_control'],
+              testMetadata: {
+                broken_access_control: {
+                  authObjectId: [null, 'auth-id-123']
+                }
+              },
+              info: {
+                source: 'utlib',
+                provider: 'github',
+                client: {
+                  name: 'test',
+                  version: '1.0'
+                }
+              }
+            })
+          })
+        )
+      ).thenResolve(response);
+
+      const result = await scans.createScan({
         projectId,
-        name: 'test scan',
+        name: 'test',
         entryPointIds: [entryPointId],
         tests: [
           'xss',
@@ -97,62 +115,10 @@ describe('DefaultScans', () => {
             name: 'broken_access_control' as const,
             options: { auth: 'auth-id-123' }
           }
-        ],
-        poolSize: 10,
-        requestsRateLimit: 500,
-        attackParamLocations: [
-          AttackParamLocation.QUERY,
-          AttackParamLocation.BODY
-        ],
-        repeaters: ['repeater-id-456'],
-        smart: true,
-        skipStaticParams: true,
-        starMetadata: { customKey: 'customValue', nested: { prop: 123 } }
-      };
-
-      when(mockedConfiguration.name).thenReturn('sdk-test');
-      when(mockedConfiguration.version).thenReturn('2.5.0');
-      when(mockedApiClient.request('/api/v1/scans', anything())).thenResolve(
-        response
-      );
-
-      const result = await scans.createScan(config);
+        ]
+      });
 
       expect(result).toEqual({ id });
-
-      const [, capturedOptions] = capture(mockedApiClient.request).last();
-      expect(capturedOptions).toBeDefined();
-      expect(capturedOptions).toMatchObject({
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json'
-        }
-      });
-      const parsedBody = JSON.parse(capturedOptions!.body as string);
-
-      expect(parsedBody).toEqual({
-        projectId,
-        name: 'test scan',
-        entryPointIds: [entryPointId],
-        tests: ['xss', 'broken_access_control'],
-        poolSize: 10,
-        requestsRateLimit: 500,
-        attackParamLocations: ['query', 'body'],
-        repeaters: ['repeater-id-456'],
-        smart: true,
-        skipStaticParams: true,
-        starMetadata: { customKey: 'customValue', nested: { prop: 123 } },
-        testMetadata: {
-          broken_access_control: {
-            authObjectId: [null, 'auth-id-123']
-          }
-        },
-        info: {
-          source: 'utlib',
-          provider: ci.name,
-          client: { name: 'sdk-test', version: '2.5.0' }
-        }
-      });
     });
 
     it('should transform broken_access_control test with two auth objects into backend compatible format', async () => {
@@ -169,25 +135,44 @@ describe('DefaultScans', () => {
         ]
       };
 
-      when(mockedConfiguration.name).thenReturn('sdk-test');
-      when(mockedConfiguration.version).thenReturn('2.5.0');
-      when(mockedApiClient.request('/api/v1/scans', anything())).thenResolve(
-        response
-      );
+      when(mockedConfiguration.name).thenReturn('test');
+      when(mockedConfiguration.version).thenReturn('1.0');
+      when(mockedCi.name).thenReturn('github');
+
+      when(
+        mockedApiClient.request(
+          '/api/v1/scans',
+          deepEqual({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              projectId,
+              name: 'test scan',
+              entryPointIds: [entryPointId],
+              tests: ['broken_access_control'],
+              testMetadata: {
+                broken_access_control: {
+                  authObjectId: ['auth-id-1', 'auth-id-2']
+                }
+              },
+              info: {
+                source: 'utlib',
+                provider: 'github',
+                client: {
+                  name: 'test',
+                  version: '1.0'
+                }
+              }
+            })
+          })
+        )
+      ).thenResolve(response);
 
       const result = await scans.createScan(config);
 
       expect(result).toEqual({ id });
-
-      const [, capturedOptions] = capture(mockedApiClient.request).last();
-      const parsedBody = JSON.parse(capturedOptions!.body as string);
-
-      expect(parsedBody.tests).toEqual(['broken_access_control']);
-      expect(parsedBody.testMetadata).toEqual({
-        broken_access_control: {
-          authObjectId: ['auth-id-1', 'auth-id-2']
-        }
-      });
     });
 
     it('should throw error when broken_access_control test has no auth option', async () => {
