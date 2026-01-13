@@ -19,7 +19,7 @@ export class DefaultScans implements Scans {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        ...config,
+        ...this.transformConfig(config),
         info: {
           source: 'utlib',
           provider: ci.name,
@@ -79,5 +79,67 @@ export class DefaultScans implements Scans {
     const result = (await response.json()) as ScanState;
 
     return result;
+  }
+
+  private transformConfig(config: ScanConfig): Record<string, unknown> {
+    if (!config.tests) {
+      return { ...config };
+    }
+
+    const { tests: mappedTests, testMetadata } = this.mapTests(config.tests);
+    const { tests: _, ...restConfig } = config;
+
+    const result: Record<string, unknown> = {
+      ...restConfig,
+      tests: mappedTests
+    };
+
+    if (Object.keys(testMetadata).length > 0) {
+      result.testMetadata = testMetadata;
+    }
+
+    return result;
+  }
+
+  private mapTests(input: ScanConfig['tests']) {
+    const tests: string[] = [];
+    const testMetadata: Record<string, unknown> = {};
+
+    for (const item of input!) {
+      if (typeof item === 'string') {
+        tests.push(item);
+        continue;
+      }
+
+      const { name, options } = item;
+
+      if (name === 'broken_access_control') {
+        if (!options?.auth) {
+          throw new Error(
+            'Auth option is required for broken_access_control test'
+          );
+        }
+
+        const { auth } = options;
+        if (
+          typeof auth !== 'string' &&
+          (!Array.isArray(auth) || auth.length !== 2)
+        ) {
+          throw new Error(
+            `${name} test auth option must be either a string or a tuple of two strings`
+          );
+        }
+
+        tests.push(name);
+        testMetadata[name] = {
+          authObjectId:
+            typeof auth === 'string' ? [null, auth] : [auth[0], auth[1]]
+        };
+      } else {
+        throw new Error(`Unsupported configurable test: ${name}`);
+      }
+    }
+
+    return { tests, testMetadata };
   }
 }

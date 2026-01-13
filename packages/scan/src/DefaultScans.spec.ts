@@ -1,7 +1,21 @@
 import 'reflect-metadata';
 import { DefaultScans } from './DefaultScans';
-import { AttackParamLocation, HttpMethod, ScanStatus, Severity } from './models';
-import { anything, capture, deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
+import {
+  AttackParamLocation,
+  HttpMethod,
+  ScanStatus,
+  Severity
+} from './models';
+import {
+  anything,
+  capture,
+  deepEqual,
+  instance,
+  mock,
+  reset,
+  spy,
+  when
+} from 'ts-mockito';
 import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
 import { randomUUID } from 'crypto';
@@ -71,7 +85,7 @@ describe('DefaultScans', () => {
       expect(result).toEqual({ id });
     });
 
-    it('should stringify config with all properties in expected by backend format', async () => {
+    it('should transform broken_access_control test with single auth object into backend compatible format', async () => {
       const response = new Response(JSON.stringify({ id }));
       const config = {
         projectId,
@@ -86,7 +100,10 @@ describe('DefaultScans', () => {
         ],
         poolSize: 10,
         requestsRateLimit: 500,
-        attackParamLocations: [AttackParamLocation.QUERY, AttackParamLocation.BODY],
+        attackParamLocations: [
+          AttackParamLocation.QUERY,
+          AttackParamLocation.BODY
+        ],
         repeaters: ['repeater-id-456'],
         smart: true,
         skipStaticParams: true,
@@ -102,7 +119,7 @@ describe('DefaultScans', () => {
       const result = await scans.createScan(config);
 
       expect(result).toEqual({ id });
-      
+
       const [, capturedOptions] = capture(mockedApiClient.request).last();
       expect(capturedOptions).toBeDefined();
       expect(capturedOptions).toMatchObject({
@@ -118,13 +135,7 @@ describe('DefaultScans', () => {
         projectId,
         name: 'test scan',
         entryPointIds: [entryPointId],
-        tests: [
-          'xss',
-          {
-            name: 'broken_access_control',
-            options: { auth: 'auth-id-123' }
-          }
-        ],
+        tests: ['xss', 'broken_access_control'],
         poolSize: 10,
         requestsRateLimit: 500,
         attackParamLocations: ['query', 'body'],
@@ -132,12 +143,106 @@ describe('DefaultScans', () => {
         smart: true,
         skipStaticParams: true,
         starMetadata: { customKey: 'customValue', nested: { prop: 123 } },
+        testMetadata: {
+          broken_access_control: {
+            authObjectId: [null, 'auth-id-123']
+          }
+        },
         info: {
           source: 'utlib',
           provider: ci.name,
           client: { name: 'sdk-test', version: '2.5.0' }
         }
       });
+    });
+
+    it('should transform broken_access_control test with two auth objects into backend compatible format', async () => {
+      const response = new Response(JSON.stringify({ id }));
+      const config = {
+        projectId,
+        name: 'test scan',
+        entryPointIds: [entryPointId],
+        tests: [
+          {
+            name: 'broken_access_control' as const,
+            options: { auth: ['auth-id-1', 'auth-id-2'] as [string, string] }
+          }
+        ]
+      };
+
+      when(mockedConfiguration.name).thenReturn('sdk-test');
+      when(mockedConfiguration.version).thenReturn('2.5.0');
+      when(mockedApiClient.request('/api/v1/scans', anything())).thenResolve(
+        response
+      );
+
+      const result = await scans.createScan(config);
+
+      expect(result).toEqual({ id });
+
+      const [, capturedOptions] = capture(mockedApiClient.request).last();
+      const parsedBody = JSON.parse(capturedOptions!.body as string);
+
+      expect(parsedBody.tests).toEqual(['broken_access_control']);
+      expect(parsedBody.testMetadata).toEqual({
+        broken_access_control: {
+          authObjectId: ['auth-id-1', 'auth-id-2']
+        }
+      });
+    });
+
+    it('should throw error when broken_access_control test has no auth option', async () => {
+      const config = {
+        projectId,
+        name: 'test scan',
+        entryPointIds: [entryPointId],
+        tests: [
+          {
+            name: 'broken_access_control' as const,
+            options: {} as any
+          }
+        ]
+      };
+
+      await expect(scans.createScan(config)).rejects.toThrow(
+        'Auth option is required for broken_access_control test'
+      );
+    });
+
+    it('should throw error when broken_access_control test has empty auth array', async () => {
+      const config = {
+        projectId,
+        name: 'test scan',
+        entryPointIds: [entryPointId],
+        tests: [
+          {
+            name: 'broken_access_control' as const,
+            options: { auth: [] as any }
+          }
+        ]
+      };
+
+      await expect(scans.createScan(config)).rejects.toThrow(
+        'broken_access_control test auth option must be either a string or a tuple of two strings'
+      );
+    });
+
+    it('should throw error when broken_access_control test has auth array with 3 elements', async () => {
+      const config = {
+        projectId,
+        name: 'test scan',
+        entryPointIds: [entryPointId],
+        tests: [
+          {
+            name: 'broken_access_control' as const,
+            options: { auth: ['auth-id-1', 'auth-id-2', 'auth-id-3'] as any }
+          }
+        ]
+      };
+
+      await expect(scans.createScan(config)).rejects.toThrow(
+        'broken_access_control test auth option must be either a string or a tuple of two strings'
+      );
     });
   });
 
