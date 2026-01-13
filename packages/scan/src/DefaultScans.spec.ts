@@ -129,7 +129,6 @@ describe('DefaultScans', () => {
         }
       });
       const parsedBody = JSON.parse(capturedOptions!.body as string);
-      console.log('Parsed body:', JSON.stringify(parsedBody, null, 2));
 
       expect(parsedBody).toEqual({
         projectId,
