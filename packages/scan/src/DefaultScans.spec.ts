@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { DefaultScans } from './DefaultScans';
-import { HttpMethod, ScanStatus, Severity } from './models';
-import { deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
+import { AttackParamLocation, HttpMethod, ScanStatus, Severity } from './models';
+import { anything, capture, deepEqual, instance, mock, reset, spy, when } from 'ts-mockito';
 import { ApiClient, Configuration } from '@sectester/core';
 import ci from 'ci-info';
 import { randomUUID } from 'crypto';
@@ -69,6 +69,75 @@ describe('DefaultScans', () => {
       });
 
       expect(result).toEqual({ id });
+    });
+
+    it('should stringify config with all properties in expected by backend format', async () => {
+      const response = new Response(JSON.stringify({ id }));
+      const config = {
+        projectId,
+        name: 'test scan',
+        entryPointIds: [entryPointId],
+        tests: [
+          'xss',
+          {
+            name: 'broken_access_control' as const,
+            options: { auth: 'auth-id-123' }
+          }
+        ],
+        poolSize: 10,
+        requestsRateLimit: 500,
+        attackParamLocations: [AttackParamLocation.QUERY, AttackParamLocation.BODY],
+        repeaters: ['repeater-id-456'],
+        smart: true,
+        skipStaticParams: true,
+        starMetadata: { customKey: 'customValue', nested: { prop: 123 } }
+      };
+
+      when(mockedConfiguration.name).thenReturn('sdk-test');
+      when(mockedConfiguration.version).thenReturn('2.5.0');
+      when(mockedApiClient.request('/api/v1/scans', anything())).thenResolve(
+        response
+      );
+
+      const result = await scans.createScan(config);
+
+      expect(result).toEqual({ id });
+      
+      const [, capturedOptions] = capture(mockedApiClient.request).last();
+      expect(capturedOptions).toBeDefined();
+      expect(capturedOptions).toMatchObject({
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        }
+      });
+      const parsedBody = JSON.parse(capturedOptions!.body as string);
+      console.log('Parsed body:', JSON.stringify(parsedBody, null, 2));
+
+      expect(parsedBody).toEqual({
+        projectId,
+        name: 'test scan',
+        entryPointIds: [entryPointId],
+        tests: [
+          'xss',
+          {
+            name: 'broken_access_control',
+            options: { auth: 'auth-id-123' }
+          }
+        ],
+        poolSize: 10,
+        requestsRateLimit: 500,
+        attackParamLocations: ['query', 'body'],
+        repeaters: ['repeater-id-456'],
+        smart: true,
+        skipStaticParams: true,
+        starMetadata: { customKey: 'customValue', nested: { prop: 123 } },
+        info: {
+          source: 'utlib',
+          provider: ci.name,
+          client: { name: 'sdk-test', version: '2.5.0' }
+        }
+      });
     });
   });
 
