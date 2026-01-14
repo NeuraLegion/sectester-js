@@ -1,5 +1,6 @@
 import { Scans } from './Scans';
 import { Issue, ScanConfig, ScanState } from './models';
+import { BrokenAccessControlTest } from './models/Tests';
 import { inject, injectable } from 'tsyringe';
 import { ApiClient, ApiError, Configuration } from '@sectester/core';
 import ci from 'ci-info';
@@ -86,7 +87,7 @@ export class DefaultScans implements Scans {
       return { ...config };
     }
 
-    const { tests: mappedTests, testMetadata } = this.mapTests(config.tests);
+    const { mappedTests, testMetadata } = this.mapTests(config.tests);
     const { tests: originalTests, ...restConfig } = config;
 
     const result: Record<string, unknown> = {
@@ -101,45 +102,52 @@ export class DefaultScans implements Scans {
     return result;
   }
 
-  private mapTests(input: ScanConfig['tests']) {
-    const tests: string[] = [];
+  private mapTests(tests: ScanConfig['tests']) {
+    const mappedTests: string[] = [];
     const testMetadata: Record<string, unknown> = {};
 
-    for (const item of input!) {
-      if (typeof item === 'string') {
-        tests.push(item);
+    if (!tests) {
+      throw new Error('Scan config should have tests defined');
+    }
+
+    for (const test of tests) {
+      if (typeof test === 'string') {
+        mappedTests.push(test);
         continue;
       }
 
-      const { name, options } = item;
-
-      if (name === 'broken_access_control') {
-        if (!options?.auth) {
-          throw new Error(
-            'Auth option is required for broken_access_control test'
-          );
-        }
-
-        const { auth } = options;
-        if (
-          typeof auth !== 'string' &&
-          (!Array.isArray(auth) || auth.length !== 2)
-        ) {
-          throw new Error(
-            `${name} test auth option must be either a string or a tuple of two strings`
-          );
-        }
-
-        tests.push(name);
-        testMetadata[name] = {
-          authObjectId:
-            typeof auth === 'string' ? [null, auth] : [auth[0], auth[1]]
-        };
+      if (test.name === 'broken_access_control') {
+        this.mapBrokenAccessControlTest(test, mappedTests, testMetadata);
       } else {
-        throw new Error(`Unsupported configurable test: ${name}`);
+        throw new Error(`Unsupported configurable test: ${test.name}`);
       }
     }
 
-    return { tests, testMetadata };
+    return { mappedTests, testMetadata };
+  }
+
+  private mapBrokenAccessControlTest(
+    test: BrokenAccessControlTest,
+    mappedTests: string[],
+    testMetadata: Record<string, unknown>
+  ) {
+    if (!test.options?.auth) {
+      throw new Error('Auth option is required for broken_access_control test');
+    }
+
+    const { auth } = test.options;
+    if (
+      typeof auth !== 'string' &&
+      (!Array.isArray(auth) || auth.length !== 2)
+    ) {
+      throw new Error(
+        `${test.name} test auth option must be either a string or a tuple of two strings`
+      );
+    }
+
+    mappedTests.push(test.name);
+    testMetadata[test.name] = {
+      authObjectId: typeof auth === 'string' ? [null, auth] : [auth[0], auth[1]]
+    };
   }
 }

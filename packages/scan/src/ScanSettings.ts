@@ -135,18 +135,19 @@ export class ScanSettings implements ScanSettingsOptions {
     const configurableTests: Test[] = [];
     const seenTestConfigurations = new Set<string>();
 
-    for (const t of value) {
-      const testName = typeof t === 'string' ? t : t.name;
+    for (const test of value) {
+      const testName = typeof test === 'string' ? test : test.name;
 
-      if (typeof t === 'string') {
-        simpleTests.add(t);
-      } else {
-        if (seenTestConfigurations.has(testName)) {
-          throw new Error(`Duplicate test configuration found: ${testName}`);
-        }
-        seenTestConfigurations.add(testName);
-        configurableTests.push(t);
+      if (typeof test === 'string') {
+        simpleTests.add(test);
+        continue;
       }
+
+      if (seenTestConfigurations.has(testName)) {
+        throw new Error(`Duplicate test configuration found: ${testName}`);
+      }
+      seenTestConfigurations.add(testName);
+      configurableTests.push(test);
     }
 
     this._tests = [...simpleTests, ...configurableTests];
