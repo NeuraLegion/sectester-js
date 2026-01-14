@@ -90,16 +90,17 @@ export class DefaultScans implements Scans {
     const { mappedTests, testMetadata } = this.mapTests(config.tests);
     const { tests: originalTests, ...restConfig } = config;
 
-    const result: Record<string, unknown> = {
-      ...restConfig,
-      tests: mappedTests
-    };
-
     if (Object.keys(testMetadata).length > 0) {
-      result.testMetadata = testMetadata;
+      const result: Record<string, unknown> = {
+        ...restConfig,
+        tests: mappedTests,
+        testMetadata
+      };
+      
+      return result;
     }
 
-    return result;
+    return { ...config };
   }
 
   private mapTests(tests: ScanConfig['tests']) {
