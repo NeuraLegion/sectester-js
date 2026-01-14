@@ -96,7 +96,7 @@ export class DefaultScans implements Scans {
         tests: mappedTests,
         testMetadata
       };
-      
+
       return result;
     }
 
