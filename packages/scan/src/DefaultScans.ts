@@ -132,20 +132,8 @@ export class DefaultScans implements Scans {
     mappedTests: string[],
     testMetadata: Record<string, unknown>
   ) {
-    if (!test.options?.auth) {
-      throw new Error('Auth option is required for broken_access_control test');
-    }
-
     const { auth } = test.options;
-    if (
-      typeof auth !== 'string' &&
-      (!Array.isArray(auth) || auth.length !== 2)
-    ) {
-      throw new Error(
-        `${test.name} test auth option must be either a string or a tuple of two strings`
-      );
-    }
-
+    
     mappedTests.push(test.name);
     testMetadata[test.name] = {
       authObjectId: typeof auth === 'string' ? [null, auth] : [auth[0], auth[1]]
