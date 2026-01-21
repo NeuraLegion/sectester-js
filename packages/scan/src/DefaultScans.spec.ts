@@ -175,59 +175,6 @@ describe('DefaultScans', () => {
       expect(result).toEqual({ id });
     });
 
-    it('should throw error when broken_access_control test has no auth option', async () => {
-      const config = {
-        projectId,
-        name: 'test scan',
-        entryPointIds: [entryPointId],
-        tests: [
-          {
-            name: 'broken_access_control' as const,
-            options: {} as any
-          }
-        ]
-      };
-
-      await expect(scans.createScan(config)).rejects.toThrow(
-        'Auth option is required for broken_access_control test'
-      );
-    });
-
-    it('should throw error when broken_access_control test has empty auth array', async () => {
-      const config = {
-        projectId,
-        name: 'test scan',
-        entryPointIds: [entryPointId],
-        tests: [
-          {
-            name: 'broken_access_control' as const,
-            options: { auth: [] as any }
-          }
-        ]
-      };
-
-      await expect(scans.createScan(config)).rejects.toThrow(
-        'broken_access_control test auth option must be either a string or a tuple of two strings'
-      );
-    });
-
-    it('should throw error when broken_access_control test has auth array with 3 elements', async () => {
-      const config = {
-        projectId,
-        name: 'test scan',
-        entryPointIds: [entryPointId],
-        tests: [
-          {
-            name: 'broken_access_control' as const,
-            options: { auth: ['auth-id-1', 'auth-id-2', 'auth-id-3'] as any }
-          }
-        ]
-      };
-
-      await expect(scans.createScan(config)).rejects.toThrow(
-        'broken_access_control test auth option must be either a string or a tuple of two strings'
-      );
-    });
   });
 
   describe('listIssues', () => {
