@@ -1,6 +1,7 @@
 import { Scans } from './Scans';
 import { Issue, ScanConfig, ScanState } from './models';
-import { BrokenAccessControlTest } from './models/Test';
+import { Test, BrokenAccessControlTest } from './models/Test';
+import { TestMetadata } from './models/TestMetadata';
 import { inject, injectable } from 'tsyringe';
 import { ApiClient, ApiError, Configuration } from '@sectester/core';
 import ci from 'ci-info';
@@ -20,7 +21,7 @@ export class DefaultScans implements Scans {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        ...this.transformConfig(config),
+        ...this.convertToBackendFormat(config),
         info: {
           source: 'utlib',
           provider: ci.name,
@@ -82,57 +83,61 @@ export class DefaultScans implements Scans {
     return result;
   }
 
-  private transformConfig(config: ScanConfig): Record<string, unknown> {
+  private convertToBackendFormat(config: ScanConfig): Record<string, unknown> {
     if (!config.tests) {
       return { ...config };
     }
 
-    const { mappedTests, testMetadata } = this.mapTests(config.tests);
-    const { tests: originalTests, ...restConfig } = config;
+    const mapped = config.tests.map(test => this.mapTest(test));
+    const tests = mapped.map(t => t.name);
+    const testMetadata = mapped.reduce<TestMetadata | undefined>(
+      (acc, { metadata }) => {
+        if (!metadata) return acc;
+        if (!acc) return metadata;
 
-    if (Object.keys(testMetadata).length > 0) {
-      const result: Record<string, unknown> = {
-        ...restConfig,
-        tests: mappedTests,
-        testMetadata
-      };
+        return {
+          ...acc,
+          ...metadata
+        };
+      },
+      undefined
+    );
 
-      return result;
-    }
-
-    return { ...config };
+    return { ...config, tests, ...(testMetadata && { testMetadata }) };
   }
 
-  private mapTests(tests: ScanConfig['tests']) {
-    const mappedTests: string[] = [];
-    const testMetadata: Record<string, unknown> = {};
-
-    if (!tests) {
-      throw new Error('Scan config should have tests defined');
+  private mapTest(test: Test): {
+    name: string;
+    metadata?: TestMetadata;
+  } {
+    if (typeof test === 'string') {
+      return { name: test };
     }
 
-    for (const test of tests) {
-      if (typeof test === 'string') {
-        mappedTests.push(test);
-        continue;
-      }
+    switch (test.name) {
+      case 'broken_access_control':
+        return this.mapBrokenAccessControl(test);
 
-      this.mapBrokenAccessControlTest(test, mappedTests, testMetadata);
+      default:
+        throw new Error(`Unsupported configurable test: ${test.name}`);
     }
-
-    return { mappedTests, testMetadata };
   }
 
-  private mapBrokenAccessControlTest(
-    test: BrokenAccessControlTest,
-    mappedTests: string[],
-    testMetadata: Record<string, unknown>
-  ) {
+  private mapBrokenAccessControl(test: BrokenAccessControlTest): {
+    name: string;
+    metadata: TestMetadata;
+  } {
     const { auth } = test.options;
+    const authObjectId: [null, string] | [string, string] =
+      typeof auth === 'string' ? [null, auth] : [auth[0], auth[1]];
 
-    mappedTests.push(test.name);
-    testMetadata[test.name] = {
-      authObjectId: typeof auth === 'string' ? [null, auth] : [auth[0], auth[1]]
+    return {
+      name: test.name,
+      metadata: {
+        broken_access_control: {
+          authObjectId
+        }
+      }
     };
   }
 }

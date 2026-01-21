@@ -7,3 +7,4 @@ export * from './ScanState';
 export * from './ScanConfig';
 export * from './HttpMethod';
 export * from './Test';
+export * from './TestMetadata';
