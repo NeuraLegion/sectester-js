@@ -1,6 +1,6 @@
 import { Scans } from './Scans';
 import { Issue, ScanConfig, ScanState } from './models';
-import { BrokenAccessControlTest } from './models/Tests';
+import { BrokenAccessControlTest } from './models/Test';
 import { inject, injectable } from 'tsyringe';
 import { ApiClient, ApiError, Configuration } from '@sectester/core';
 import ci from 'ci-info';

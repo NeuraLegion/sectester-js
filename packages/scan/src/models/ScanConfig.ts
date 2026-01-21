@@ -1,5 +1,5 @@
 import { AttackParamLocation } from './AttackParamLocation';
-import { Test } from './Tests';
+import { Test } from './Test';
 
 export interface ScanConfig {
   name: string;

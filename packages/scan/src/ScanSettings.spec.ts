@@ -264,7 +264,7 @@ describe('ScanSettings', () => {
 
       // act & assert
       expect(() => new ScanSettings(settings)).toThrow(
-        'Duplicate test configuration found: broken_access_control'
+        'Please remove a duplicate for the broken_access_control test'
       );
     });
 
