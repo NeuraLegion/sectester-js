@@ -25,7 +25,11 @@ describe('DefaultScans', () => {
   });
 
   afterEach(() =>
-    reset<ApiClient | Configuration>(mockedApiClient, mockedConfiguration)
+    reset<typeof ci | ApiClient | Configuration>(
+      mockedApiClient,
+      mockedCi,
+      mockedConfiguration
+    )
   );
 
   describe('createScan', () => {
@@ -174,7 +178,6 @@ describe('DefaultScans', () => {
 
       expect(result).toEqual({ id });
     });
-
   });
 
   describe('listIssues', () => {

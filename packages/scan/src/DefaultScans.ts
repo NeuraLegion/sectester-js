@@ -118,7 +118,6 @@ export class DefaultScans implements Scans {
       }
 
       this.mapBrokenAccessControlTest(test, mappedTests, testMetadata);
-
     }
 
     return { mappedTests, testMetadata };
@@ -130,7 +129,7 @@ export class DefaultScans implements Scans {
     testMetadata: Record<string, unknown>
   ) {
     const { auth } = test.options;
-    
+
     mappedTests.push(test.name);
     testMetadata[test.name] = {
       authObjectId: typeof auth === 'string' ? [null, auth] : [auth[0], auth[1]]
