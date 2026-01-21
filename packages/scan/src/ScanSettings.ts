@@ -1,10 +1,10 @@
-import { AttackParamLocation, HttpMethod } from './models';
+import { AttackParamLocation, HttpMethod, Test } from './models';
 import { Target, TargetOptions } from './target';
 import { checkBoundaries, contains, truncate } from '@sectester/core';
 
 export interface ScanSettingsOptions {
   // The list of tests to be performed against the target application
-  tests: string[];
+  tests: Test[];
   // The target that will be attacked
   target: Target | TargetOptions;
   // The scan name
@@ -120,20 +120,37 @@ export class ScanSettings implements ScanSettingsOptions {
     this._requestsRateLimit = value;
   }
 
-  private _tests!: string[];
+  private _tests!: Test[];
 
-  get tests(): string[] {
+  get tests(): Test[] {
     return this._tests;
   }
 
-  private set tests(value: string[]) {
-    const uniqueTestTypes = new Set<string>(value);
-
-    if (uniqueTestTypes.size < 1) {
+  private set tests(value: Test[]) {
+    if (value.length < 1) {
       throw new Error('Please provide at least one test.');
     }
 
-    this._tests = [...uniqueTestTypes];
+    const simpleTests = new Set<string>();
+    const configurableTests: Test[] = [];
+    const seenTestConfigurations = new Set<string>();
+
+    for (const test of value) {
+      const testName = typeof test === 'string' ? test : test.name;
+
+      if (typeof test === 'string') {
+        simpleTests.add(test);
+        continue;
+      }
+
+      if (seenTestConfigurations.has(testName) || simpleTests.has(testName)) {
+        throw new Error(`Please remove a duplicate for the ${testName} test`);
+      }
+      seenTestConfigurations.add(testName);
+      configurableTests.push(test);
+    }
+
+    this._tests = [...simpleTests, ...configurableTests];
   }
 
   private _attackParamLocations!: AttackParamLocation[];

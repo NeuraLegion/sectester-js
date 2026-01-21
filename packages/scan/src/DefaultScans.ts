@@ -1,5 +1,7 @@
 import { Scans } from './Scans';
 import { Issue, ScanConfig, ScanState } from './models';
+import { Test, BrokenAccessControlTest } from './models/Test';
+import { TestMetadata } from './models/TestMetadata';
 import { inject, injectable } from 'tsyringe';
 import { ApiClient, ApiError, Configuration } from '@sectester/core';
 import ci from 'ci-info';
@@ -19,7 +21,7 @@ export class DefaultScans implements Scans {
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        ...config,
+        ...this.convertToBackendFormat(config),
         info: {
           source: 'utlib',
           provider: ci.name,
@@ -79,5 +81,63 @@ export class DefaultScans implements Scans {
     const result = (await response.json()) as ScanState;
 
     return result;
+  }
+
+  private convertToBackendFormat(config: ScanConfig): Record<string, unknown> {
+    if (!config.tests) {
+      return { ...config };
+    }
+
+    const mapped = config.tests.map(test => this.mapTest(test));
+    const tests = mapped.map(t => t.name);
+    const testMetadata = mapped.reduce<TestMetadata | undefined>(
+      (acc, { metadata }) => {
+        if (!metadata) return acc;
+        if (!acc) return metadata;
+
+        return {
+          ...acc,
+          ...metadata
+        };
+      },
+      undefined
+    );
+
+    return { ...config, tests, ...(testMetadata && { testMetadata }) };
+  }
+
+  private mapTest(test: Test): {
+    name: string;
+    metadata?: TestMetadata;
+  } {
+    if (typeof test === 'string') {
+      return { name: test };
+    }
+
+    switch (test.name) {
+      case 'broken_access_control':
+        return this.mapBrokenAccessControl(test);
+
+      default:
+        throw new Error(`Unsupported configurable test: ${test.name}`);
+    }
+  }
+
+  private mapBrokenAccessControl(test: BrokenAccessControlTest): {
+    name: string;
+    metadata: TestMetadata;
+  } {
+    const { auth } = test.options;
+    const authObjectId: [null, string] | [string, string] =
+      typeof auth === 'string' ? [null, auth] : [auth[0], auth[1]];
+
+    return {
+      name: test.name,
+      metadata: {
+        broken_access_control: {
+          authObjectId
+        }
+      }
+    };
   }
 }

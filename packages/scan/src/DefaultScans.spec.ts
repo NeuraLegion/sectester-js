@@ -11,12 +11,13 @@ describe('DefaultScans', () => {
   const entryPointId = randomUUID();
   const projectId = randomUUID();
 
-  const mockedCi = spy<typeof ci>(ci);
+  let mockedCi: typeof ci;
   const mockedApiClient = mock<ApiClient>();
   const mockedConfiguration = mock<Configuration>();
   let scans!: DefaultScans;
 
   beforeEach(() => {
+    mockedCi = spy<typeof ci>(ci);
     when(mockedConfiguration.projectId).thenReturn(projectId);
     scans = new DefaultScans(
       instance(mockedConfiguration),
@@ -67,6 +68,114 @@ describe('DefaultScans', () => {
         entryPointIds: [entryPointId],
         tests: ['xss']
       });
+
+      expect(result).toEqual({ id });
+    });
+
+    it('should transform broken_access_control test with single auth object into backend compatible format', async () => {
+      const response = new Response(JSON.stringify({ id }));
+
+      when(mockedConfiguration.name).thenReturn('test');
+      when(mockedConfiguration.version).thenReturn('1.0');
+      when(mockedCi.name).thenReturn('github');
+
+      when(
+        mockedApiClient.request(
+          '/api/v1/scans',
+          deepEqual({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              projectId,
+              name: 'test',
+              entryPointIds: [entryPointId],
+              tests: ['xss', 'broken_access_control'],
+              testMetadata: {
+                broken_access_control: {
+                  authObjectId: [null, 'auth-id-123']
+                }
+              },
+              info: {
+                source: 'utlib',
+                provider: 'github',
+                client: {
+                  name: 'test',
+                  version: '1.0'
+                }
+              }
+            })
+          })
+        )
+      ).thenResolve(response);
+
+      const result = await scans.createScan({
+        projectId,
+        name: 'test',
+        entryPointIds: [entryPointId],
+        tests: [
+          'xss',
+          {
+            name: 'broken_access_control' as const,
+            options: { auth: 'auth-id-123' }
+          }
+        ]
+      });
+
+      expect(result).toEqual({ id });
+    });
+
+    it('should transform broken_access_control test with two auth objects into backend compatible format', async () => {
+      const response = new Response(JSON.stringify({ id }));
+      const config = {
+        projectId,
+        name: 'test scan',
+        entryPointIds: [entryPointId],
+        tests: [
+          {
+            name: 'broken_access_control' as const,
+            options: { auth: ['auth-id-1', 'auth-id-2'] as [string, string] }
+          }
+        ]
+      };
+
+      when(mockedConfiguration.name).thenReturn('test');
+      when(mockedConfiguration.version).thenReturn('1.0');
+      when(mockedCi.name).thenReturn('github');
+
+      when(
+        mockedApiClient.request(
+          '/api/v1/scans',
+          deepEqual({
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              projectId,
+              name: 'test scan',
+              entryPointIds: [entryPointId],
+              tests: ['broken_access_control'],
+              testMetadata: {
+                broken_access_control: {
+                  authObjectId: ['auth-id-1', 'auth-id-2']
+                }
+              },
+              info: {
+                source: 'utlib',
+                provider: 'github',
+                client: {
+                  name: 'test',
+                  version: '1.0'
+                }
+              }
+            })
+          })
+        )
+      ).thenResolve(response);
+
+      const result = await scans.createScan(config);
 
       expect(result).toEqual({ id });
     });

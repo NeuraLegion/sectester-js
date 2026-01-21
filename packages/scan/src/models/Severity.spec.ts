@@ -23,8 +23,8 @@ describe('Severity', () => {
           item.expected === 0
             ? 'zero'
             : item.expected > 0
-            ? 'positive'
-            : 'negative'
+              ? 'positive'
+              : 'negative'
       }))
     )(
       'should return $expectedLabel comparing $input.a and $input.b',
