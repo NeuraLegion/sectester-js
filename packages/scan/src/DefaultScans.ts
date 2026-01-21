@@ -117,11 +117,8 @@ export class DefaultScans implements Scans {
         continue;
       }
 
-      if (test.name === 'broken_access_control') {
-        this.mapBrokenAccessControlTest(test, mappedTests, testMetadata);
-      } else {
-        throw new Error(`Unsupported configurable test: ${test.name}`);
-      }
+      this.mapBrokenAccessControlTest(test, mappedTests, testMetadata);
+
     }
 
     return { mappedTests, testMetadata };

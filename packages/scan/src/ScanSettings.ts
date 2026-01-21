@@ -144,7 +144,7 @@ export class ScanSettings implements ScanSettingsOptions {
       }
 
       if (seenTestConfigurations.has(testName) || simpleTests.has(testName)) {
-        throw new Error(`Duplicate test configuration found: ${testName}`);
+        throw new Error(`Please remove a duplicate for the ${testName} test`);
       }
       seenTestConfigurations.add(testName);
       configurableTests.push(test);
