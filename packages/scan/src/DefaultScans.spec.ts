@@ -11,12 +11,13 @@ describe('DefaultScans', () => {
   const entryPointId = randomUUID();
   const projectId = randomUUID();
 
-  const mockedCi = spy<typeof ci>(ci);
+  let mockedCi: typeof ci;
   const mockedApiClient = mock<ApiClient>();
   const mockedConfiguration = mock<Configuration>();
   let scans!: DefaultScans;
 
   beforeEach(() => {
+    mockedCi = spy<typeof ci>(ci);
     when(mockedConfiguration.projectId).thenReturn(projectId);
     scans = new DefaultScans(
       instance(mockedConfiguration),
