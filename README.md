@@ -1,7 +1,7 @@
 # SecTester SDK for JavaScript
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/a5f72ececc9b0f402802/maintainability)](https://codeclimate.com/github/NeuraLegion/sectester-js/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/a5f72ececc9b0f402802/test_coverage)](https://codeclimate.com/github/NeuraLegion/sectester-js/test_coverage)
+[![Maintainability](https://qlty.sh/gh/NeuraLegion/projects/sectester-js/maintainability.svg)](https://qlty.sh/gh/NeuraLegion/projects/sectester-js)
+[![Code Coverage](https://qlty.sh/gh/NeuraLegion/projects/sectester-js/coverage.svg)](https://qlty.sh/gh/NeuraLegion/projects/sectester-js)
 ![Build Status](https://github.com/NeuraLegion/sectester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
 ![NPM Downloads](https://img.shields.io/npm/dw/@sectester/core)
 
