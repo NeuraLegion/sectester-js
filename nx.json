@@ -60,6 +60,5 @@
   },
   "parallel": 1,
   "useInferencePlugins": false,
-  "defaultBase": "master",
-  "useLegacyCache": true
+  "defaultBase": "master"
 }
