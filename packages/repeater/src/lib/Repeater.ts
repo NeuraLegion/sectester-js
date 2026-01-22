@@ -6,10 +6,11 @@ import {
   RepeaterServerReconnectionAttemptedEvent,
   RepeaterServerReconnectionFailedEvent,
   RepeaterServerRequestEvent,
-  RepeaterUpgradeAvailableEvent
+  RepeaterUpgradeAvailableEvent,
+  RepeaterLimitsEvent
 } from './RepeaterServer';
 import { RepeaterCommands } from './RepeaterCommands';
-import { Request } from '../request-runner/Request';
+import { Request, RequestRunnerOptions } from '../request-runner';
 import { Logger } from '@sectester/core';
 import chalk from 'chalk';
 import { inject, injectable, Lifecycle, scoped } from 'tsyringe';
@@ -40,7 +41,9 @@ export class Repeater {
     @inject(RepeaterServer)
     private readonly repeaterServer: RepeaterServer,
     @inject(RepeaterCommands)
-    private readonly repeaterCommands: RepeaterCommands
+    private readonly repeaterCommands: RepeaterCommands,
+    @inject(RequestRunnerOptions)
+    private readonly requestRunnerOptions: RequestRunnerOptions
   ) {}
 
   public async start(): Promise<void> {
@@ -114,6 +117,7 @@ export class Repeater {
     this.repeaterServer.on(RepeaterServerEvents.RECONNECTION_SUCCEEDED, () =>
       this.logger.log('The Repeater (%s) connected', this.repeaterId)
     );
+    this.repeaterServer.on(RepeaterServerEvents.LIMITS, this.limitsReceived);
   }
 
   private handleError = ({
@@ -173,6 +177,11 @@ export class Repeater {
       attempt,
       maxAttempts
     );
+  };
+
+  private limitsReceived = ({ maxBodySize }: RepeaterLimitsEvent) => {
+    this.logger.debug('Limits received: %d', maxBodySize);
+    this.requestRunnerOptions.maxContentLength = maxBodySize;
   };
 
   private reconnectionFailed = ({

@@ -61,6 +61,10 @@ export interface RepeaterUpgradeAvailableEvent {
   version: string;
 }
 
+export interface RepeaterLimitsEvent {
+  maxBodySize: number;
+}
+
 export interface DeployCommandOptions {
   repeaterId?: string;
 }
@@ -72,6 +76,7 @@ export const enum RepeaterServerEvents {
   DISCONNECTED = 'disconnected',
   REQUEST = 'request',
   UPDATE_AVAILABLE = 'update_available',
+  LIMITS = 'limits',
   RECONNECTION_FAILED = 'reconnection_failed',
   RECONNECT_ATTEMPT = 'reconnect_attempt',
   RECONNECTION_SUCCEEDED = 'reconnection_succeeded',
@@ -86,6 +91,7 @@ export interface RepeaterServerEventsMap {
   [RepeaterServerEvents.DISCONNECTED]: void;
   [RepeaterServerEvents.REQUEST]: RepeaterServerRequestEvent;
   [RepeaterServerEvents.UPDATE_AVAILABLE]: RepeaterUpgradeAvailableEvent;
+  [RepeaterServerEvents.LIMITS]: RepeaterLimitsEvent;
   [RepeaterServerEvents.RECONNECTION_FAILED]: RepeaterServerReconnectionFailedEvent;
   [RepeaterServerEvents.RECONNECT_ATTEMPT]: RepeaterServerReconnectionAttemptedEvent;
   [RepeaterServerEvents.RECONNECTION_SUCCEEDED]: void;

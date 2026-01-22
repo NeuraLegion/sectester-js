@@ -13,6 +13,7 @@ import {
   RepeaterServerRequestEvent,
   RepeaterServerRequestResponse,
   RepeaterUpgradeAvailableEvent,
+  RepeaterLimitsEvent,
   HandlerFunction
 } from './RepeaterServer';
 import { Logger } from '@sectester/core';
@@ -41,6 +42,7 @@ export const enum SocketEvents {
   UNDEPLOYED = 'undeployed',
   ERROR = 'error',
   UPDATE_AVAILABLE = 'update-available',
+  LIMITS = 'limits',
   PING = 'ping',
   REQUEST = 'request'
 }
@@ -52,6 +54,7 @@ interface SocketListeningEventMap {
   [SocketEvents.UPDATE_AVAILABLE]: (
     event: RepeaterUpgradeAvailableEvent
   ) => void;
+  [SocketEvents.LIMITS]: (event: RepeaterLimitsEvent) => void;
   [SocketEvents.REQUEST]: (
     request: RepeaterServerRequestEvent,
     callback: CallbackFunction<RepeaterServerRequestResponse>
@@ -208,6 +211,9 @@ export class DefaultRepeaterServer implements RepeaterServer {
     });
     this.socket.on(SocketEvents.UPDATE_AVAILABLE, event =>
       this.events.emit(RepeaterServerEvents.UPDATE_AVAILABLE, event)
+    );
+    this.socket.on(SocketEvents.LIMITS, event =>
+      this.events.emit(RepeaterServerEvents.LIMITS, event)
     );
   }
 

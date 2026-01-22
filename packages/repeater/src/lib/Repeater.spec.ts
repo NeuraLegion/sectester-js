@@ -1,6 +1,6 @@
 import { Repeater, RunningStatus } from './Repeater';
 import { Protocol } from '../models/Protocol';
-import { Request, Response } from '../request-runner';
+import { Request, Response, RequestRunnerOptions } from '../request-runner';
 import {
   RepeaterErrorCodes,
   RepeaterServer,
@@ -28,6 +28,7 @@ describe('Repeater', () => {
   const mockedRepeaterServer = mock<RepeaterServer>();
   const repeaterCommands = mock<RepeaterCommands>();
   const mockedLogger = mock<Logger>();
+  const requestRunnerOptions: RequestRunnerOptions = {};
 
   beforeEach(() => {
     when(mockedRepeaterServer.deploy(anything())).thenResolve({
@@ -38,7 +39,8 @@ describe('Repeater', () => {
       RepeaterId,
       instance(mockedLogger),
       instance(mockedRepeaterServer),
-      instance(repeaterCommands)
+      instance(repeaterCommands),
+      requestRunnerOptions
     );
   });
 
@@ -157,6 +159,22 @@ describe('Repeater', () => {
           '1.0.0'
         )
       ).once();
+    });
+
+    it(`should subscribe to ${RepeaterServerEvents.LIMITS} and update maxContentLength`, async () => {
+      // arrange
+      const event = { maxBodySize: 500 };
+
+      when(
+        mockedRepeaterServer.on(RepeaterServerEvents.LIMITS, anything())
+      ).thenCall((_, handler) => handler(event));
+
+      // act
+      await sut.start();
+
+      // assert
+      expect(requestRunnerOptions.maxContentLength).toBe(500);
+      verify(mockedLogger.debug('Limits received: %d', 500)).once();
     });
 
     it(`should subscribe to ${RepeaterServerEvents.REQUEST} and proceed on event`, async () => {
