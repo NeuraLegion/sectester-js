@@ -1,9 +1,10 @@
 import { HttpMethod, isHttpMethod } from '../models';
 import { Body, BodyType } from './Body';
-import { HeadersType } from './HeadersType';
 import { QueryParamsType } from './QueryParamsType';
 import { normalizeUrl } from '@har-sdk/core';
 import { MIMEType } from 'util';
+
+type HeadersInit = NonNullable<ConstructorParameters<typeof Headers>[0]>;
 
 export interface TargetOptions {
   // The server URL that will be used for the request
@@ -16,7 +17,7 @@ export interface TargetOptions {
   // The request method to be used when making the request, GET by default
   method?: HttpMethod | string;
   // The headers
-  headers?: HeadersType;
+  headers?: HeadersInit;
   // The authentication/authorization to be used when making the request
   auth?: string;
   // The optional method of serializing `query`
@@ -89,9 +90,9 @@ export class Target implements TargetOptions {
   }
 
   private _parsedHeaders!: Headers;
-  private _headers?: HeadersType;
+  private _headers?: HeadersInit;
 
-  get headers(): HeadersType {
+  get headers(): HeadersInit {
     if (this._headers) {
       return this._headers;
     }
@@ -108,7 +109,7 @@ export class Target implements TargetOptions {
     return this._headers;
   }
 
-  private set headers(value: HeadersType) {
+  private set headers(value: HeadersInit) {
     this._parsedHeaders = new Headers(value);
     delete this._headers;
   }

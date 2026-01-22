@@ -56,7 +56,7 @@ export class FetchApiClient implements ApiClient {
       () => this.makeRequest(url, requestOptions),
       {
         idempotent,
-        signal: requestOptions.signal
+        signal: requestOptions.signal ?? undefined
       }
     );
   }
@@ -120,7 +120,7 @@ export class FetchApiClient implements ApiClient {
   }
 
   private createHeaders(
-    headersInit: import('undici-types').HeadersInit = {}
+    headersInit: NonNullable<ConstructorParameters<typeof Headers>[0]> = {}
   ): Headers {
     const headers = new Headers({
       ...headersInit,

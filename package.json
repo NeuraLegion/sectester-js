@@ -7,8 +7,8 @@
     "url": "git+https://github.com/NeuraLegion/sectester-js.git"
   },
   "engines": {
-    "node": ">=18",
-    "npm": ">=10"
+    "node": ">=24",
+    "npm": ">=11"
   },
   "workspaces": [
     "packages/**"
@@ -104,7 +104,7 @@
     "@semantic-release/git": "^10.0.1",
     "@types/content-type": "^1.1.8",
     "@types/jest": "29.5.13",
-    "@types/node": "^18.19.57",
+    "@types/node": "^24.10.9",
     "@types/request-promise": "^4.1.51",
     "@types/semver": "^7.5.8",
     "@types/supertest": "^6.0.2",
