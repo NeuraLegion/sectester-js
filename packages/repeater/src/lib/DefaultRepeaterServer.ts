@@ -113,7 +113,7 @@ export class DefaultRepeaterServer implements RepeaterServer {
     process.nextTick(() => this.socket.emit(SocketEvents.DEPLOY, options));
 
     const [result]: RepeaterServerDeployedEvent[] = await Promise.race([
-      once(this.socket, SocketEvents.DEPLOYED),
+      once(this.socket as unknown as EventEmitter, SocketEvents.DEPLOYED),
       new Promise<never>((_, reject) =>
         setTimeout(
           reject,
@@ -141,7 +141,7 @@ export class DefaultRepeaterServer implements RepeaterServer {
     this.listenToReservedEvents();
     this.listenToApplicationEvents();
 
-    await once(this.socket, 'connect');
+    await once(this.socket as unknown as EventEmitter, 'connect');
 
     this.logger.debug('Repeater connected to %s', this.options.uri);
   }
