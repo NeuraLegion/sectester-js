@@ -34,12 +34,21 @@ export class BitbucketApiClient implements BitbucketClient {
       dispatcher: this.proxyAgent
     });
 
-    if (!res.ok) {
+    if (res.status === 400) {
+      const body = (await res.json()) as { key: string };
+
+      // If the error is due to exceeding the maximum number of reports, we can ignore it
+      if (body['key'] === 'report-service.report.max-reports') {
+        return;
+      }
+    } else if (!res.ok) {
       const errorBody = await res.text();
       throw new Error(
         `Bitbucket API error: ${res.status} ${res.statusText}: ${errorBody}`
       );
     }
+
+    await res.body?.cancel();
   }
 
   public async createAnnotations(
@@ -54,24 +63,21 @@ export class BitbucketApiClient implements BitbucketClient {
       `/repositories/${this.config.workspace}/${this.config.repo}/commit/${this.config.commitSha}/reports/${reportId}/annotations`
     );
 
-    // Bitbucket API allows up to 100 annotations per request
-    const chunks = this.chunkArray(annotations, 100);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(annotations),
+      dispatcher: this.proxyAgent
+    });
 
-    for (const chunk of chunks) {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(chunk),
-        dispatcher: this.proxyAgent
-      });
-
-      if (!res.ok) {
-        const errorBody = await res.text();
-        throw new Error(
-          `Bitbucket API error: ${res.status} ${res.statusText}: ${errorBody}`
-        );
-      }
+    if (!res.ok) {
+      const errorBody = await res.text();
+      throw new Error(
+        `Bitbucket API error: ${res.status} ${res.statusText}: ${errorBody}`
+      );
     }
+
+    await res.body?.cancel();
   }
 
   private buildUrl(path: string): string {
@@ -96,15 +102,5 @@ export class BitbucketApiClient implements BitbucketClient {
     }
 
     return headers;
-  }
-
-  private chunkArray<T>(array: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
-    }
-
-    return chunks;
   }
 }
