@@ -70,7 +70,12 @@ export class BitbucketApiClient implements BitbucketClient {
       dispatcher: this.proxyAgent
     });
 
-    if (!res.ok) {
+    if (res.status === 400) {
+      // It can happen that the report was not created due to exceeding the maximum number of reports, in which case we can ignore the error,
+      // or we accidentally sent too many annotations
+      // or exceeded some field length limits
+      // In all cases, we cannot do anything about it, so we just ignore the error
+    } else if (!res.ok) {
       const errorBody = await res.text();
       throw new Error(
         `Bitbucket API error: ${res.status} ${res.statusText}: ${errorBody}`
