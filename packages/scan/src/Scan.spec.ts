@@ -43,7 +43,8 @@ describe('Scan', () => {
     options = {
       id,
       scans: instance(mockedScans),
-      logger: instance(mockedLogger)
+      logger: instance(mockedLogger),
+      baseURL: 'https://example.com'
     };
     spiedOptions = spy(options);
     scan = new Scan(options);
@@ -57,6 +58,14 @@ describe('Scan', () => {
       mockedLogger,
       spiedOptions
     );
+  });
+
+  describe('link', () => {
+    it('should return the scan URL', () => {
+      const result = scan.link;
+
+      expect(result).toBe(`https://example.com/scans/${id}`);
+    });
   });
 
   describe('issues', () => {
