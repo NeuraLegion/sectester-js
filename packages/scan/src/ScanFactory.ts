@@ -30,7 +30,13 @@ export class ScanFactory {
     const config = await this.createScanConfig(new ScanSettings(settings));
     const { id } = await this.scans.createScan(config);
 
-    return new Scan({ id, logger: this.logger, scans: this.scans, ...options });
+    return new Scan({
+      id,
+      logger: this.logger,
+      scans: this.scans,
+      baseURL: this.configuration.baseURL,
+      ...options
+    });
   }
 
   private async createScanConfig({

@@ -36,14 +36,6 @@ export class SingleItemReportBuilder extends BaseReportBuilder {
           title: 'Severity',
           type: 'TEXT',
           value: this.issue.severity
-        },
-        {
-          title: 'View in Bright',
-          type: 'LINK',
-          value: {
-            text: 'Open in Bright UI',
-            href: this.issue.link
-          }
         }
       ]
     };

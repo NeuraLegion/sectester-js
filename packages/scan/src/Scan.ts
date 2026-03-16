@@ -17,6 +17,7 @@ export interface ScanOptions {
   logger?: Logger;
   pollingInterval?: number;
   timeout?: number;
+  baseURL: string;
 }
 
 export class Scan {
@@ -37,12 +38,14 @@ export class Scan {
   private readonly logger: Logger | undefined;
   private readonly timeout: number | undefined;
   private state: ScanState = { status: ScanStatus.PENDING };
+  private readonly baseURL: string;
 
   constructor({
     id,
     scans,
     logger,
     timeout,
+    baseURL: baseUrl,
     pollingInterval = 5 * 1000
   }: ScanOptions) {
     this.scans = scans;
@@ -50,6 +53,7 @@ export class Scan {
     this.id = id;
     this.pollingInterval = pollingInterval;
     this.timeout = timeout;
+    this.baseURL = baseUrl;
   }
 
   get active(): boolean {
@@ -58,6 +62,10 @@ export class Scan {
 
   get done(): boolean {
     return this.DONE_STATUSES.has(this.state.status);
+  }
+
+  get link(): string {
+    return `${this.baseURL}/scans/${this.id}`;
   }
 
   public async issues(): Promise<Issue[]> {

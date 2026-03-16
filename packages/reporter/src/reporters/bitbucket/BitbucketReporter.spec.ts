@@ -102,14 +102,6 @@ describe('BitbucketReporter', () => {
                 title: 'Severity',
                 type: 'TEXT',
                 value: fullyDescribedIssue.severity
-              },
-              {
-                title: 'View in Bright',
-                type: 'LINK',
-                value: {
-                  text: 'Open in Bright UI',
-                  href: fullyDescribedIssue.link
-                }
               }
             ]
           })
@@ -142,6 +134,8 @@ describe('BitbucketReporter', () => {
     });
 
     it('should create report for multiple issues', async () => {
+      const scanLink = `https://example.com/scan/${crypto.randomUUID()}`;
+      when(mockedScan.link).thenReturn(scanLink);
       when(mockedScan.issues()).thenResolve([
         fullyDescribedIssue,
         issueWithoutResources
@@ -156,6 +150,7 @@ describe('BitbucketReporter', () => {
             title: 'SecTester (2 issues)',
             details: 'SecTester found 2 issues',
             reporter: 'SecTester',
+            link: scanLink,
             report_type: 'SECURITY',
             result: 'FAILED',
             data: [

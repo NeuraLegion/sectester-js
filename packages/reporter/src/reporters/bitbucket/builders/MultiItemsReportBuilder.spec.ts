@@ -1,8 +1,15 @@
 import 'reflect-metadata';
 import { MultiItemsReportBuilder } from './MultiItemsReportBuilder';
-import { HttpMethod, Issue, Severity } from '@sectester/scan';
+import { HttpMethod, Issue, Scan, Severity } from '@sectester/scan';
+import { instance, mock, reset, when } from 'ts-mockito';
 
 describe('MultiItemsReportBuilder', () => {
+  const mockedScan = mock<Scan>();
+
+  afterEach(() => {
+    reset<Scan>(mockedScan);
+  });
+
   const createIssue = (severity: Severity): Issue => ({
     name: `Test Issue ${crypto.randomUUID()} with ${severity} severity`,
     severity,
@@ -32,14 +39,21 @@ describe('MultiItemsReportBuilder', () => {
       createIssue(Severity.MEDIUM),
       createIssue(Severity.LOW)
     ];
+    const scanLink = `https://example.com/scan/${crypto.randomUUID()}`;
+    when(mockedScan.link).thenReturn(scanLink);
+    const builder = new MultiItemsReportBuilder(
+      instance(mockedScan),
+      issues,
+      'test.spec.ts'
+    );
 
-    const builder = new MultiItemsReportBuilder(issues, 'test.spec.ts');
     const { report, annotations } = builder.build();
 
     expect(report).toEqual({
       title: `SecTester (${issues.length} issues)`,
       details: `SecTester found ${issues.length} issues`,
       reporter: 'SecTester',
+      link: scanLink,
       report_type: 'SECURITY',
       result: 'FAILED',
       data: [

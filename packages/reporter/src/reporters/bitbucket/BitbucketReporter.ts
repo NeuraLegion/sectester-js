@@ -24,7 +24,7 @@ export class BitbucketReporter implements Reporter {
     const issues = await scan.issues();
     if (issues.length === 0) return;
 
-    const builder = this.createReportBuilder(issues);
+    const builder = this.createReportBuilder(scan, issues);
     const { report, annotations } = builder.build();
     const reportId = builder.getReportId();
 
@@ -53,11 +53,11 @@ export class BitbucketReporter implements Reporter {
     await writeFile(fileName, reportXml, 'utf-8');
   }
 
-  private createReportBuilder(issues: Issue[]): BaseReportBuilder {
+  private createReportBuilder(scan: Scan, issues: Issue[]): BaseReportBuilder {
     const testFilePath = this.testFilePathResolver.getTestFilePath();
 
     return issues.length === 1
       ? new SingleItemReportBuilder(issues[0], testFilePath)
-      : new MultiItemsReportBuilder(issues, testFilePath);
+      : new MultiItemsReportBuilder(scan, issues, testFilePath);
   }
 }

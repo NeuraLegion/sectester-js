@@ -55,15 +55,7 @@ describe('SingleItemReportBuilder', () => {
         link: issue.link,
         data: [
           { title: 'Vulnerability', type: 'TEXT', value: issue.name },
-          { title: 'Severity', type: 'TEXT', value: severity },
-          {
-            title: 'View in Bright',
-            type: 'LINK',
-            value: {
-              text: 'Open in Bright UI',
-              href: issue.link
-            }
-          }
+          { title: 'Severity', type: 'TEXT', value: severity }
         ]
       });
 

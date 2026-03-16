@@ -1,11 +1,12 @@
 import type { Report } from '../types';
 import { BaseReportBuilder } from './BaseReportBuilder';
 import { ReportBuildResult } from './ReportBuilder';
-import type { Issue } from '@sectester/scan';
+import type { Issue, Scan } from '@sectester/scan';
 import { Severity } from '@sectester/scan';
 
 export class MultiItemsReportBuilder extends BaseReportBuilder {
   constructor(
+    private readonly scan: Scan,
     private readonly issues: Issue[],
     testFilePath: string
   ) {
@@ -28,6 +29,7 @@ export class MultiItemsReportBuilder extends BaseReportBuilder {
       title: `SecTester (${this.issues.length} issues)`,
       details: this.buildDetails(),
       reporter: 'SecTester',
+      link: this.scan.link,
       report_type: 'SECURITY',
       result: 'FAILED',
       data: [
