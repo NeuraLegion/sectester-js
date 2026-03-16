@@ -23,5 +23,3 @@ export interface JUnitTestSuite {
 export interface JUnitTestSuites {
   testSuites: JUnitTestSuite[];
 }
-
-export type TestReport = JUnitTestSuites;

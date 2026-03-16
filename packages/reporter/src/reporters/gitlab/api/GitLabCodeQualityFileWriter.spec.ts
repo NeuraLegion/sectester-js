@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { GitLabCIArtifactsFileWriter } from './GitLabCodeQualityFileWriter';
-import type { CodeQualityReport, TestReport } from '../types';
+import { JUnitTestSuites } from '../../../junit';
+import type { CodeQualityReport } from '../types';
 import type { GitLabConfig } from './GitLabConfig';
 import { writeFile } from 'node:fs/promises';
 
@@ -56,7 +57,7 @@ describe('GitLabCodeQualityFileWriter', () => {
 
   describe('writeTestReport', () => {
     it('should write test report as JUnit XML to specified file', async () => {
-      const report: TestReport = {
+      const report: JUnitTestSuites = {
         testSuites: [
           {
             name: 'Security Tests',

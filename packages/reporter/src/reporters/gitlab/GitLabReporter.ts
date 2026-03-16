@@ -1,7 +1,8 @@
 import { Reporter } from '../../lib';
 import { GITLAB_CI_ARTIFACTS, GITLAB_CONFIG } from './api';
 import type { GitLabCIArtifacts, GitLabConfig } from './api';
-import { CodeQualityReportBuilder, JUnitReportBuilder } from './builders';
+import { CodeQualityReportBuilder } from './builders';
+import { JUnitReportBuilder } from '../../junit';
 import { TEST_FILE_PATH_RESOLVER, TestFilePathResolver } from '../../utils';
 import { inject, injectable } from 'tsyringe';
 import type { Issue, Scan } from '@sectester/scan';

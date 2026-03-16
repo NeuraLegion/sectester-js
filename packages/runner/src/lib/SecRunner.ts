@@ -8,6 +8,7 @@ import {
 } from '@sectester/repeater';
 import { ScanFactory } from '@sectester/scan';
 import {
+  BitbucketReporter,
   Formatter,
   GitHubCheckRunReporter,
   GitLabReporter,
@@ -102,6 +103,10 @@ export class SecRunner {
     } else if (process.env.GITLAB_CI === 'true') {
       configuration.container.register(Reporter, {
         useClass: GitLabReporter
+      });
+    } else if (typeof process.env.BITBUCKET_BRANCH === 'string') {
+      configuration.container.register(Reporter, {
+        useClass: BitbucketReporter
       });
     } else {
       configuration.container.register(Reporter, {

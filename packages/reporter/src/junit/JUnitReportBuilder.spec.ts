@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { JUnitReportBuilder } from './JUnitReportBuilder';
-import { fullyDescribedIssue } from '../../../__fixtures__/issues';
+import { fullyDescribedIssue } from '../__fixtures__/issues';
 import { type Issue } from '@sectester/scan';
 
 describe('JUnitReportBuilder', () => {
