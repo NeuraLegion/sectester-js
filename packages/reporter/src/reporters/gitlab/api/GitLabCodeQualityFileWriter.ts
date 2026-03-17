@@ -1,8 +1,8 @@
-import type { CodeQualityReport, TestReport } from '../types';
+import type { CodeQualityReport } from '../types';
 import type { GitLabCIArtifacts } from './GitLabCIArtifacts';
 import type { GitLabConfig } from './GitLabConfig';
 import { GITLAB_CONFIG } from './GitLabConfig';
-import { buildJUnitXML } from '../utils';
+import { buildJUnitXML, JUnitTestSuites } from '../../../junit';
 import { injectable, inject } from 'tsyringe';
 import { writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
@@ -25,7 +25,7 @@ export class GitLabCIArtifactsFileWriter implements GitLabCIArtifacts {
     await writeFile(filename, reportJson, 'utf-8');
   }
 
-  public async writeTestReport(report: TestReport): Promise<void> {
+  public async writeTestReport(report: JUnitTestSuites): Promise<void> {
     const fileName = this.generateUniqueFileName();
     // This method writes GitLab Test reports in JUnit XML format to a file.
     // To display these reports in GitLab merge requests, you need to configure your .gitlab-ci.yml:

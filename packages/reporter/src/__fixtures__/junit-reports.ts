@@ -1,8 +1,4 @@
-import type {
-  TestReport,
-  JUnitTestSuite,
-  JUnitTestCase
-} from '../reporters/gitlab/types';
+import type { JUnitTestSuites, JUnitTestSuite, JUnitTestCase } from '../junit';
 
 export const createVulnerabilityTestCase = (
   method: string,
@@ -68,11 +64,11 @@ export const highBrightTestSuite = createTestSuite('High Bright Tests', [
   createVulnerabilityTestCase('PUT', 'https://example.com/api/profile', 'XSS')
 ]);
 
-export const minimalTestReport: TestReport = {
+export const minimalTestReport: JUnitTestSuites = {
   testSuites: [brightTestSuite]
 };
 
-export const testReportWithSystemOut: TestReport = {
+export const testReportWithSystemOut: JUnitTestSuites = {
   testSuites: [
     createTestSuite('Bright Tests', [
       createTestCaseWithSystemOut(
@@ -87,7 +83,7 @@ export const testReportWithSystemOut: TestReport = {
   ]
 };
 
-export const testReportWithSpecialCharacters: TestReport = {
+export const testReportWithSpecialCharacters: JUnitTestSuites = {
   testSuites: [
     createTestSuite('Bright Tests & More', [
       createTestCaseWithSpecialChars(
@@ -97,7 +93,7 @@ export const testReportWithSpecialCharacters: TestReport = {
   ]
 };
 
-export const testReportWithoutFailures: TestReport = {
+export const testReportWithoutFailures: JUnitTestSuites = {
   testSuites: [
     createTestSuite(
       'Bright Tests',
@@ -107,6 +103,6 @@ export const testReportWithoutFailures: TestReport = {
   ]
 };
 
-export const multipleTestSuitesReport: TestReport = {
+export const multipleTestSuitesReport: JUnitTestSuites = {
   testSuites: [criticalBrightTestSuite, highBrightTestSuite]
 };

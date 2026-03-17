@@ -1,4 +1,4 @@
-import type { TestReport, JUnitTestSuite, JUnitTestCase } from '../types';
+import type { JUnitTestSuites, JUnitTestSuite, JUnitTestCase } from './types';
 import { XMLBuilder } from 'fast-xml-parser';
 
 const xmlBuilder = new XMLBuilder({
@@ -11,7 +11,7 @@ const xmlBuilder = new XMLBuilder({
   suppressUnpairedNode: false
 });
 
-export function buildJUnitXML(report: TestReport): string {
+export function buildJUnitXML(report: JUnitTestSuites): string {
   const xmlObject = {
     '?xml': {
       '@_version': '1.0',

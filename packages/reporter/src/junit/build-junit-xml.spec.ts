@@ -5,7 +5,7 @@ import {
   testReportWithSpecialCharacters,
   testReportWithoutFailures,
   multipleTestSuitesReport
-} from '../../../__fixtures__/junit-reports';
+} from '../__fixtures__/junit-reports';
 
 describe('buildJUnitXML', () => {
   it('should generate valid JUnit XML with minimal test suite', () => {

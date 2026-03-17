@@ -1,4 +1,4 @@
-import type { TestReport, JUnitTestSuite, JUnitTestCase } from '../types';
+import type { JUnitTestSuites, JUnitTestSuite, JUnitTestCase } from './types';
 import { type Issue } from '@sectester/scan';
 
 export class JUnitReportBuilder {
@@ -7,7 +7,7 @@ export class JUnitReportBuilder {
     private readonly testFilePath: string
   ) {}
 
-  public build(): TestReport {
+  public build(): JUnitTestSuites {
     const testSuite = this.createTestSuite();
 
     return {
