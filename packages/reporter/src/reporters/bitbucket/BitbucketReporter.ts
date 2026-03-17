@@ -11,6 +11,7 @@ import { JUnitReportBuilder, buildJUnitXML } from '../../junit';
 import { inject, injectable } from 'tsyringe';
 import type { Issue, Scan } from '@sectester/scan';
 import { writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 
 @injectable()
 export class BitbucketReporter implements Reporter {
@@ -48,7 +49,7 @@ export class BitbucketReporter implements Reporter {
     const junitBuilder = new JUnitReportBuilder(issues, testFilePath);
     const testReport = junitBuilder.build();
     const reportXml = buildJUnitXML(testReport);
-    const fileName = `bb-test-report-${crypto.randomUUID()}.xml`;
+    const fileName = `bb-test-report-${randomUUID()}.xml`;
 
     await writeFile(fileName, reportXml, 'utf-8');
   }
