@@ -45,7 +45,7 @@ export class Scan {
     scans,
     logger,
     timeout,
-    baseURL: baseUrl,
+    baseURL,
     pollingInterval = 5 * 1000
   }: ScanOptions) {
     this.scans = scans;
@@ -53,7 +53,7 @@ export class Scan {
     this.id = id;
     this.pollingInterval = pollingInterval;
     this.timeout = timeout;
-    this.baseURL = baseUrl;
+    this.baseURL = baseURL;
   }
 
   get active(): boolean {
