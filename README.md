@@ -1,5 +1,8 @@
 # SecTester SDK for JavaScript
 
+> [!CAUTION]
+> This repository is **archived** and development will no longer continue. No further updates, bug fixes, or support will be provided.
+
 [![Maintainability](https://qlty.sh/gh/NeuraLegion/projects/sectester-js/maintainability.svg)](https://qlty.sh/gh/NeuraLegion/projects/sectester-js)
 [![Code Coverage](https://qlty.sh/gh/NeuraLegion/projects/sectester-js/coverage.svg)](https://qlty.sh/gh/NeuraLegion/projects/sectester-js)
 ![Build Status](https://github.com/NeuraLegion/sectester-js/actions/workflows/coverage.yml/badge.svg?branch=master&event=push)
